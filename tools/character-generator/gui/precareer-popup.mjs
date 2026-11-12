@@ -26,6 +26,7 @@ const diceArt='<svg class="admission-dice" viewBox="0 0 80 80" aria-hidden="true
 // This prompt changes presentation only; the existing command owns all event effects.
 export function educationEventModel(state,projection){
  const potential=educationPotentialModel(state);if(potential)return potential;
+ const nested=educationNestedChoiceModel(state);if(nested)return nested;
  if(projection?.educationGraduationPreview)return {name:'University',kind:'graduation',preview:projection.educationGraduationPreview};
  return state?.stage==='education-event'&&state.character.educations?.[state.education]?.id==='core.university'?{name:'University'}:null;
 }
@@ -41,13 +42,32 @@ export function educationPotentialView(model){
  return '<section class="education-event-prompt education-potential-prompt"><div class="education-event-heading">'+icon('core.university')+'<h3>University education event</h3></div><section class="education-event-content"><p class="education-potential-label">Event 2 · Psionic potential</p><h4>'+(model.recorded?'Use your recorded psionic potential?':'Test your psionic potential?')+'</h4><p>'+(model.recorded?'Use your recorded PSI without another roll.':'Roll 2D to determine PSI.')+' Accepting permits a future Psion career attempt, not admission or training.</p><button type="button" class="education-potential-rules" data-education-info="potential"><span class="precareer-info-icon" aria-hidden="true">i</span> Rules and consequences</button></section><button type="button" data-action="choose-effect" data-index="0" class="education-event-roll">'+(model.recorded?icon('core.university'):diceArt)+'<span>'+(model.recorded?'Use recorded PSI':'Test potential · Roll 2D')+'</span>'+(model.recorded?'':diceArt)+'</button><button type="button" data-action="choose-effect" data-index="1" class="education-potential-decline">Decline</button><p class="education-event-agency">'+(model.recorded?'Your recorded PSI is kept. No potential test is rolled.':'No potential test is rolled until you choose Test.')+'</p></section>';
 }
 
+// Only the two already-explicit Core decisions; all other event timing is unchanged.
+export function educationNestedChoiceModel(state){
+ const record=state?.character.educations?.[state.education],p=state?.pendingChoice,source={id:'core',page:17};
+ if(record?.id!=='core.university'||record.completed||record.entry?.success!==true||record.entry.manual||record.graduationAllowed!==true||state.pending||state.effectNext!=='education-graduation'||state.effectsQueue?.length)return null;
+ const hobby={kind:'education-skill-choice',selectionId:'hobby',options:'any',exclude:['Jack-of-all-Trades'],mode:'set',value:0,source};
+ const challenge={kind:'check',skillScope:'learned-this-term',target:9,success:[{kind:'checked-skill',mode:'increase',value:1,source},{kind:'relationship',type:'Rival',count:1,source}],failure:[],source};
+ if(record.event===9&&state.character.species==='human'&&state.stage==='education-skill'&&JSON.stringify(p)===JSON.stringify(hobby))return {name:'University',kind:'hobby',event:9};
+ if(record.event===10&&state.stage==='education-check'&&state.educationCheckSkills?.length&&JSON.stringify(p)===JSON.stringify(challenge))return {name:'University',kind:'challenge',event:10};
+ return null;
+}
+export function educationNestedChoiceView(model,state,{esc}){
+ const hobby=model.kind==='hobby',choices=hobby?state.educationOptions.map(o=>o.name):state.educationCheckSkills,id=hobby?'education-hobby-skill':'education-check-skill';
+ return '<section class="education-event-prompt education-nested-prompt" data-education-choice="'+model.kind+'"><div class="education-event-heading">'+icon('core.university')+'<h3>University education event</h3></div><section class="education-event-content"><p class="education-potential-label">Event '+model.event+' · '+(hobby?'Hobby skill':'Study challenge')+'</p><h4>'+(hobby?'Choose a hobby skill':'Choose a skill you learned')+'</h4><p>'+(hobby?'Gain an allowed base skill at level 0.':'Study challenge · Target 9+')+'</p><button type="button" class="education-potential-rules" data-education-info="nested"><span class="precareer-info-icon" aria-hidden="true">i</span> Rules and consequences</button></section><label class="education-nested-label">'+(hobby?'Hobby skill':'Skill learned or improved this term')+'<select id="'+id+'"><option value="">Choose a skill</option>'+choices.map(name=>'<option value="'+esc(name)+'">'+esc(name)+'</option>').join('')+'</select></label><button type="button" class="education-event-roll" data-action="'+(hobby?'education-skill':'education-check')+'" disabled>'+(hobby?icon('core.university'):diceArt)+'<span>'+(hobby?'Record hobby skill':'Roll the study challenge')+'</span></button><p class="education-event-agency">'+(hobby?'Choose a skill, then record your choice.':'No challenge roll is made until you press Roll.')+'</p></section>';
+}
+
 export function educationEventView(){
  return '<section class="education-event-prompt"><div class="education-event-heading">'+icon('core.university')+'<div><h3>University education event</h3><p>Your initial study skills and EDU gain are recorded.</p></div></div><section class="education-event-content"><h4>What happened during your studies?</h4><p>Roll 2D for one education event.</p><p>Resolve its outcome and any choices before graduation.</p></section><button type="button" data-action="education-event" class="education-event-roll">'+diceArt+'<span>Roll education event</span>'+diceArt+'</button><p class="education-event-agency">You choose when to roll. Nothing has been rolled yet.</p></section>';
 }
 
+// Filled, dimensional cartoon art for the approved graduation prompt.
+const graduationCap='<svg class="graduation-cap-art" viewBox="0 0 120 96" aria-hidden="true"><g stroke-linejoin="round" stroke-linecap="round"><path d="M25 46v26c17 14 43 14 60 0V46" fill="#082735" stroke="#f7fafb" stroke-width="6"/><path d="M26 72c15 14 44 14 58 0" fill="none" stroke="#ffd338" stroke-width="7"/><path d="m7 35 51-25 54 25-54 26Z" fill="#092434" stroke="#f7fafb" stroke-width="6"/><path d="M106 39v37m-5 0h10l3 12H98Z" fill="#082735" stroke="#f7fafb" stroke-width="5"/><circle cx="58" cy="34" r="4" fill="#f7fafb"/></g></svg>';
+const graduationDice='<svg class="graduation-dice-art" viewBox="0 0 110 100" aria-hidden="true"><g stroke="#171b0d" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"><path d="m22 38 21-23 39 2-18 26Z" fill="#ffe88a"/><path d="m22 38 42 5 9 42-40-8Z" fill="#ffda45"/><path d="m64 43 18-26 15 39-24 29Z" fill="#efb929"/><path d="m11 25-7-8m9 24-10-2m27-31-1-7m64 12 8-8m-1 73 8 4" fill="none"/></g><g fill="#171b0d"><ellipse cx="52" cy="29" rx="4" ry="3"/><circle cx="33" cy="48" r="3.7"/><circle cx="54" cy="50" r="3.7"/><circle cx="45" cy="60" r="3.7"/><circle cx="37" cy="70" r="3.7"/><circle cx="60" cy="74" r="3.7"/><ellipse cx="79" cy="40" rx="3" ry="4"/><ellipse cx="85" cy="56" rx="3" ry="4"/><ellipse cx="77" cy="69" rx="3" ry="4"/></g></svg>';
+
 export function educationGraduationView(model,{esc}){
  const p=model.preview,info=(kind,label)=>'<button type="button" class="education-prompt-info" data-education-info="'+kind+'" aria-label="'+label+'">i</button>';
- return '<section class="education-event-prompt education-graduation-prompt"><div class="education-event-heading">'+icon('core.university')+'<h3>University graduation</h3>'+info('graduation','What graduation changes')+'</div><section class="education-event-content"><h4>Graduation '+esc(p.target)+'+ · Honours '+esc(p.honoursTarget)+'+</h4><p class="graduation-formula">Roll 2D '+(p.modifier<0?'− '+Math.abs(p.modifier):'+ '+p.modifier)+'</p><p>'+esc(p.stat)+' '+esc(p.score)+' · Modifier '+esc(signed(p.modifier))+' '+info('calculation','How the graduation roll is calculated')+'</p></section><button type="button" data-action="education-graduation" class="education-event-roll">'+diceArt+'<span>Roll for graduation</span>'+diceArt+'</button><p class="education-event-agency">You choose when to roll.</p></section>';
+ return '<section class="education-event-prompt education-graduation-prompt"><div class="education-event-heading">'+graduationCap+'<div class="graduation-title-group"><h3>University graduation</h3>'+info('graduation','What graduation changes')+'</div>'+'</div><section class="education-event-content"><h4>Graduation '+esc(p.target)+'+ · Honours '+esc(p.honoursTarget)+'+</h4><p class="graduation-formula">Roll 2D '+(p.modifier<0?'− '+Math.abs(p.modifier):'+ '+p.modifier)+'</p><p>'+esc(p.stat)+' '+esc(p.score)+' · Modifier '+esc(signed(p.modifier))+' '+info('calculation','How the graduation roll is calculated')+'</p></section><button type="button" data-action="education-graduation" class="education-event-roll">'+graduationDice+'<span>Roll for graduation</span>'+graduationDice+'</button><p class="education-event-agency">You choose when to roll.</p></section>';
 }
 
 export function admissionPreviewView(state,catalog,id,{esc,sourceLabel}){
@@ -105,7 +125,7 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  function dismiss(){dialog.close();context.querySelector('#precareer-resume').hidden=false;context.querySelector('#precareer-resume').focus({preventScroll:true});}
  function openInfo(kind,title,trigger){info._opener=trigger;for(const name of ['result','rules','previous'])info.querySelector('#precareer-information-'+name).hidden=kind==='details'?name==='previous':name!==kind;info.querySelector('#precareer-information-title').textContent=title;if(!info.open)info.showModal();info.querySelector('#precareer-information-title').focus();}
  function closeInfo(){info.close();if(info._restoreResult!==undefined){info.querySelector('#precareer-information-result').innerHTML=info._restoreResult;delete info._restoreResult;}if(info._opener?.isConnected)info._opener.focus({preventScroll:true});}
- layout.classList.add('precareer-layout');
+ layout.classList.add('precareer-layout');dialog.dataset.educationKind=eventModel?.kind??'';
  const c=state.character,species=catalog.species.find(s=>s.id===c.species)?.name??c.species;
  const overview=context.querySelector('#precareer-overview');overview.innerHTML='<p class="precareer-eyebrow">YOUR TRAVELLER</p><h2>'+esc(c.name||'Your Traveller')+'</h2><p>'+esc(species)+' · Age '+esc(c.age)+'</p><p>'+esc(c.terms)+' completed terms</p>';
  const step=workspace.querySelector('.step-count');step.textContent=species.toUpperCase()+' · PRE-CAREER';
@@ -158,6 +178,14 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  info.querySelector('#precareer-information-result').innerHTML='<p>Without recorded PSI, Test potential rolls 2D and reduces the result by completed career terms, not education terms. Recorded PSI is reused without another roll.</p><p>Accepting also permits a future Psion career attempt. It does not grant admission, training or talents. Declining grants neither a potential test nor that permission. Graduation remains separate.</p><p>Core Rulebook Update 2022 · p. 17</p>';
  openInfo('result','Rules and consequences',event.currentTarget);
  });
+ if(['hobby','challenge'].includes(eventModel?.kind)){
+ const select=workspace.querySelector('.education-nested-label select'),roll=workspace.querySelector('.education-nested-prompt [data-action]');select.addEventListener('change',()=>{roll.disabled=!select.value;});
+ workspace.querySelector('[data-education-info="nested"]').addEventListener('click',event=>{
+ info._restoreResult=info.querySelector('#precareer-information-result').innerHTML;
+ info.querySelector('#precareer-information-result').innerHTML=eventModel.kind==='hobby'?'<p>Choose an allowed base skill except Jack-of-all-Trades. No specialisation is needed for this level-0 award. An existing higher level is retained. This is an event award, not one of your University study subjects.</p>':'<p>Choose a skill learned or improved during this education term. Roll 2D with its existing skill modifier, including applicable species traits, against 9+. No characteristic modifier is added. Success increases that skill by 1 and adds the tutor as a Rival; failure grants neither award.</p>';
+ openInfo('result','Rules and consequences',event.currentTarget);
+ });
+ }
  if(resultModel||eventModel)workspace.querySelector('#precareer-dismiss').textContent='Close';
  if(eventModel){for(const small of workspace.querySelectorAll('.precareer-information-rows small'))small.remove();if(dialog.open&&!dialog.matches(':modal')){dialog.close();open();}}
  if(!eventModel&&dialog.open&&dialog.matches(':modal')){dialog.close();open();}

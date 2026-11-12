@@ -14,6 +14,6 @@ test('University event prompt is presentation only and retains the existing expl
 
 test('graduation preview has only explicit roll and non-mutating information controls',()=>{
  const model={kind:'graduation',preview:{stat:'INT',score:8,modifier:0,target:6,honoursTarget:10}},before=structuredClone(model),html=educationGraduationView(model,{esc:String});
- assert.match(html,/Graduation 6\+ · Honours 10\+/);assert.match(html,/Roll 2D \+ 0/);assert.match(html,/INT 8 · Modifier \+0/);assert.equal((html.match(/data-action=/g)||[]).length,1);assert.match(html,/data-action="education-graduation"/);assert.match(html,/data-education-info="graduation"/);assert.match(html,/data-education-info="calculation"/);assert.doesNotMatch(html,/initial awards|Success adds|You graduated/);assert.deepEqual(model,before);
+ assert.match(html,/Graduation 6\+ · Honours 10\+/);assert.match(html,/Roll 2D \+ 0/);assert.match(html,/INT 8 · Modifier \+0/);assert.equal((html.match(/data-action=/g)||[]).length,1);assert.match(html,/data-action="education-graduation"/);assert.match(html,/data-education-info="graduation"/);assert.match(html,/data-education-info="calculation"/);assert.match(html,/graduation-cap-art/);assert.equal((html.match(/graduation-dice-art/g)||[]).length,2);assert.match(html,/graduation-title-group/);assert.doesNotMatch(html,/initial awards|Success adds|You graduated/);assert.deepEqual(model,before);
  const negative=educationGraduationView({preview:{...model.preview,score:2,modifier:-2}},{esc:String});assert.match(negative,/Roll 2D − 2/);
 });

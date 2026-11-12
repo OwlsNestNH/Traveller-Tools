@@ -1,4 +1,4 @@
-import {educationEventModel,educationEventView,educationGraduationView,educationPotentialModel,educationPotentialView} from './precareer-popup.mjs';
+import {educationEventModel,educationEventView,educationGraduationView,educationPotentialModel,educationPotentialView,educationNestedChoiceModel,educationNestedChoiceView} from './precareer-popup.mjs';
 import {educationResultModel} from './education-result-model.mjs';
 import {educationResultView} from './education-result-view.mjs';
 import {aslanRitePopupModel,aslanRitePopupView,mountAslanRiteInformation,riteTagKey} from './aslan-rite-popup.mjs';
@@ -430,9 +430,9 @@ function stageView(state,insideEquipmentDialog=false){
  case 'retirement':return '<p>Your early retirement choice ends further career and education entry. Benefits are resolved; you can now finish this Traveller.</p>'+button('Finish character','finish');
  case 'education-event':if(educationEventModel(state,projection))return educationEventView();return '<p>Your initial education awards are recorded. Roll one pre-career event before graduation.</p>'+button('Roll education event','education-event');
  case 'education-graduation':if(educationEventModel(state,projection))return educationGraduationView(educationEventModel(state,projection),{esc});return '<p>Roll your graduation check. Your initial skills are retained even if you do not graduate.</p>'+button('Roll graduation','education-graduation');
- case 'education-skill':return educationSkillView(state,catalog,esc,button);
+ case 'education-skill':if(educationNestedChoiceModel(state))return educationNestedChoiceView(educationNestedChoiceModel(state),state,{esc});return educationSkillView(state,catalog,esc,button);
  case 'education-service':return '<p>Choose '+(state.pendingChoice.count-state.pendingChoice.picked.length)+' more distinct service skill'+(state.pendingChoice.count-state.pendingChoice.picked.length===1?'':'s')+' to gain at level 1.</p><div class="choice-list">'+state.pendingChoice.options.filter(n=>!state.pendingChoice.picked.includes(n)).map(n=>button(esc(n),'education-service','choice','data-name="'+esc(n)+'"')).join('')+'</div>';
- case 'education-check':return '<p>Choose a skill learned or improved during this education term. Success increases the skill and records the tutor as a Rival.</p><label>Skill<select id="education-check-skill">'+options(state.educationCheckSkills,state.educationCheckSkills[0])+'</select></label>'+button('Roll the study challenge','education-check');
+ case 'education-check':if(educationNestedChoiceModel(state))return educationNestedChoiceView(educationNestedChoiceModel(state),state,{esc});return '<p>Choose a skill learned or improved during this education term. Success increases the skill and records the tutor as a Rival.</p><label>Skill<select id="education-check-skill">'+options(state.educationCheckSkills,state.educationCheckSkills[0])+'</select></label>'+button('Roll the study challenge','education-check');
  case 'preterm-commission':return '<p>Your education allows a commission attempt before this career term. The award and any dice are recorded separately from ordinary advancement.</p><div class="actions">'+button('Attempt education commission','education-commission')+button('Continue without it','skip-education-commission','quiet')+'</div>';
  case 'failed-entry':return fallbackView(state,{esc,button});
  case 'book-step':return state.pending?.kind==='aslan-origin-source'?aslanOriginSourceView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-historical-entry'?aslanHistoricalDecisionView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-outlaw-restoration'?aslanOutlawRestorationView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-restoration'?aslanRestorationView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-officer-status'?aslanOfficerStatusView(state,{esc,button,sourceLabel}):bookView(state);
@@ -487,6 +487,7 @@ function render(){
  backgroundDraft=reconcileBackgroundDraft(backgroundDraft,backgroundDraftKey(session,projection.state),projection.state);
  const lastRollResult=conciseResult(projection.log.at(-1),projection.state,catalog);
  const lastResult=projection.state.stage==='background'||projection.state.stage==='career'&&selectedCareer?'':statisticsRollFeedbackView(projection.log.at(-1),projection.state,{esc})??latestResultView(lastRollResult,{esc,tagline:trainingTagline});
+ const nestedDraft=$('.education-nested-label select')?{kind:$('.education-nested-prompt').dataset.educationChoice,key:$('#workspace').dataset.educationStudyKey,value:$('.education-nested-label select').value}:null;
  const studyDraft=$('.education-result #education-subject')?{key:$('#workspace').dataset.educationStudyKey,subject:$('#education-subject').value,skill:$('#education-skill').value}:null;
  const lawyerPanel=$('#prisoner-lawyer'),lawyerDraft=lawyerPanel?{id:lawyerPanel.dataset.lawyerId,fields:[...lawyerPanel.querySelectorAll('input,select,textarea')].map(input=>({id:input.id,value:input.value,checked:input.checked}))}:null;
  const lifePanel=$('#core-life-decision'),lifeDraft=lifePanel?{id:lifePanel.dataset.lifeEventId,fields:[...lifePanel.querySelectorAll('input,select,textarea')].map(input=>({id:input.id,value:input.value,checked:input.checked}))}:null;
@@ -510,6 +511,7 @@ function render(){
  mountBackgroundLayout(document,state,backgroundDraft?.skills??[],catalog,{esc});
  if(state.stage==='precareer'||educationModel||eventModel)mountPreCareerPopup(document,{state,catalog,projection,session,esc,sourceLabel,generation:operationGeneration,resultModel:educationModel,eventModel});
  const studyKey=JSON.stringify([operationGeneration,session.seed,state.education,state.pendingChoice?.selectionId]);$('#workspace').dataset.educationStudyKey=studyKey;
+ if(nestedDraft?.key===studyKey&&nestedDraft.kind===eventModel?.kind){const select=$('.education-nested-label select');if(select&&[...select.options].some(o=>o.value===nestedDraft.value)){select.value=nestedDraft.value;$('.education-nested-prompt [data-action]').disabled=!select.value;}}
  if(educationModel?.study&&studyDraft?.key===studyKey&&[...$('#education-subject').options].some(o=>o.value===studyDraft.subject)){$('#education-subject').value=studyDraft.subject;syncEducationSubject(state,catalog,document,esc);$('#education-skill').value=studyDraft.skill;syncEducationStudyContinue(state,catalog,document);}
  $('#workspace').dataset.revision=projection.revision;
  mountSpeciesSkillPopup(document);
@@ -602,9 +604,9 @@ document.addEventListener('click',async event=>{
  if(action==='choose-skill')return send(action,{name:$('#award-skill').value});
  if(['education-event','education-graduation'].includes(action)){if(event.detail>1||el.disabled)return;return send(action);}
  if(action==='acknowledge-education-result'){if(event.detail>1||el.disabled)return;return send(action);}
- if(action==='education-skill')return send(action,{name:$('#education-skill').value});
+ if(action==='education-skill'){if(educationNestedChoiceModel(projection.state)&&(event.detail>1||el.disabled))return;return send(action,{name:$('#education-hobby-skill')?.value??$('#education-skill').value});}
  if(action==='education-service')return send(action,{name:el.dataset.name});
- if(action==='education-check')return send(action,{name:$('#education-check-skill').value});
+ if(action==='education-check'){if(educationNestedChoiceModel(projection.state)&&(event.detail>1||el.disabled))return;return send(action,{name:$('#education-check-skill').value});}
  if(action==='education-commission'||action==='skip-education-commission')return send('preterm-commission',{attempt:action==='education-commission'});
  if(action==='training')return send(action,{table:el.dataset.table});
  if(action==='swap-statistics')return send(action,{a:Number($('#swap-a').value),b:Number($('#swap-b').value)});

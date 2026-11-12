@@ -30,7 +30,9 @@ export function educationResultView(model,{esc,button,sourceLabel,studyHtml=''}=
  let panel='';
  if(graduation||!model.study&&(model.benefits??[]).length){
   const benefits=model.benefits??[],retained=model.retained??[],missed=model.missed??[];
-  panel='<section class="education-result-benefits" aria-labelledby="education-benefits-title"><div class="education-result-benefit-art">'+icon('book')+icon(honours?'honours':failed?'failure':'success','education-result-award')+'</div><div><h4 id="education-benefits-title">'+(!graduation?'Initial education awards':failed?'Your '+esc(model.name)+' outcome':'Graduation benefits')+'</h4>'+(benefits.length?rows(benefits,esc):'')+(retained.length?'<h5>You keep</h5>'+rows(retained,esc):'')+(missed.length?'<h5>You miss</h5>'+rows(missed,esc):'')+'</div></section>';
+  const changes=model.actualAwardChanges??[],awardRows=(changes.some(c=>c.path.startsWith('skills.'))?1:0)+changes.filter(c=>!c.path.startsWith('skills.')).length;
+  const benefitRows=honours&&model.id==='core.university'&&awardRows?'<ul>'+benefits.map((line,index)=>'<li'+(index===awardRows?' class="education-honours-rights-start"':'')+'>'+esc(line)+'</li>').join('')+'</ul>':rows(benefits,esc);
+  panel='<section class="education-result-benefits" aria-labelledby="education-benefits-title"><div class="education-result-benefit-art">'+icon('book')+icon(honours?'honours':failed?'failure':'success','education-result-award')+'</div><div><h4 id="education-benefits-title">'+(!graduation?'Initial education awards':failed?'Your '+esc(model.name)+' outcome':'Graduation benefits')+'</h4>'+(benefits.length?benefitRows:'')+(retained.length?'<h5>You keep</h5>'+rows(retained,esc):'')+(missed.length?'<h5>You miss</h5>'+rows(missed,esc):'')+'</div></section>';
  }
  const term=graduation&&Number.isFinite(model.years)&&Number.isInteger(model.terms)?'<p class="education-result-term">'+esc(model.years)+' years completed · '+esc(model.terms)+' education '+(model.terms===1?'term':'terms')+'</p>':'';
  studyHtml=studyHtml.replace(/<select id="education-subject"[\s\S]*?<\/select>/,match=>'<span class="education-study-selector">'+icon('book')+match+'</span>');
