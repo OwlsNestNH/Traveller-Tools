@@ -1,0 +1,80 @@
+// Approved education results only. Event/source/Companion layouts remain unchanged.
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {createServer} from '../server.mjs';
+import {exportSession,project,execute} from '../engine/session.mjs';
+import {coreEducationIds,command,educationSetup,admissionFixture,studyFixture,graduationFixture,eventBlockedFixture,sourceEducationFixture,validateEducationFixtures} from './education-result-fixtures.mjs';
+const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
+const out=new URL('./artifacts/',import.meta.url),key='traveller-character-generator.v1';await mkdir(out,{recursive:true});
+const fixtureChecks=validateEducationFixtures(),fixtures=[];
+for(const id of coreEducationIds){
+ for(const success of [true,false])fixtures.push({name:id.replace('core.','')+'-admission-'+(success?'success':'failure'),result:admissionFixture(id,success)});
+ for(const outcome of ['ordinary','honours','failure',...(id==='core.university'?[]:['failure-high'])])fixtures.push({name:id.replace('core.','')+'-graduation-'+outcome,result:graduationFixture(id,outcome)});
+}
+fixtures.push({name:'university-study-second',result:studyFixture(2)});
+const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
+let browser;const errors=[],checks=[];
+const ready=p=>p.waitForFunction(()=>document.body.dataset.stage&&!document.querySelector('#export').disabled);
+const saved=p=>p.evaluate(k=>localStorage.getItem(k),key);
+const result=p=>p.locator('.education-result');
+async function load(p,r){await p.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(r.session)});await p.reload();await ready(p);}
+async function fit(p){assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);assert.deepEqual(await p.locator('#precareer-dialog[open],#precareer-information[open]').evaluateAll(nodes=>nodes.filter(n=>n.scrollWidth>n.clientWidth+1).map(n=>n.id)),[]);}
+async function shot(p,label,width){await p.evaluate(()=>scrollTo(0,0));await p.mouse.move(0,0);await p.screenshot({path:fileURLToPath(new URL('education-result-'+label+'-'+width+'.png',out)),fullPage:false});if(width<650)await p.locator('#precareer-dialog').screenshot({path:fileURLToPath(new URL('education-result-'+label+'-'+width+'-full-panel.png',out))});}
+async function dismiss(p){await p.locator('#precareer-dismiss').click();await p.locator('#precareer-dialog').waitFor({state:'hidden'});}
+async function resume(p){await p.locator('#precareer-resume').click();await p.locator('#precareer-dialog').waitFor();}
+async function bar(p,id){const d=p.locator('#'+id);if(!await d.evaluate(n=>n.open))await d.locator(':scope > summary').click();await p.waitForFunction(id=>document.getElementById(id).open,id);}
+async function expectView(p,r){
+ const model=r.educationResultView;assert.ok(model);assert.equal(await result(p).getAttribute('data-education-result'),model.kind);assert.equal(await result(p).getAttribute('data-education-outcome'),model.outcome);assert.equal(await p.locator('#step-title').innerText(),'Pre-Career');assert.equal(await p.locator('header h1').innerText(),'CHARACTER BUILDER');
+ const text=await result(p).innerText();assert.ok(text.includes('Total '+model.total));assert.ok(text.includes((model.outcome==='honours'?'Honours '+model.honoursTarget:'Target '+model.target)+'+'));
+ assert.equal(await p.locator('.education-result-equation').getAttribute('aria-label'),model.dice.join(' + ')+' '+(model.modifier<0?'− ':'+ ')+Math.abs(model.modifier)+' = '+model.total);
+ if(model.kind==='graduation')assert.equal(await p.locator('.education-result-benefits').count(),1);
+ for(const line of [...model.benefits,...model.retained,...model.missed])assert.ok(text.includes(line),'Missing recorded consequence '+line);
+ assert.ok(await p.locator(model.study?'.education-study-continue':'[data-action=acknowledge-education-result]').evaluate(el=>el.getBoundingClientRect().height>=44));
+ await fit(p);
+}
+try{
+ browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
+ // Produce review images first so later failures do not hide the actual screens.
+ for(const width of [1499,390,320]){
+  const context=await browser.newContext({viewport:{width,height:1049}}),p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));
+  try{await p.goto(origin);await ready(p);for(const f of fixtures.filter(f=>f.name.startsWith('university-')||f.name==='academy-army-admission-success')){await load(p,f.result);await expectView(p,f.result);await shot(p,f.name,width);}}finally{await context.close();}
+ }
+ for(const transport of ['static','http'])for(const width of [1499,390,320]){
+  const context=await browser.newContext({viewport:{width,height:1049}}),p=await context.newPage(),label=transport+'-'+width,engineRequests=[],requests=[];p.setDefaultTimeout(15000);
+  p.on('pageerror',e=>errors.push(label+': '+e.message));p.on('request',r=>{if(new URL(r.url()).pathname.includes('/engine/'))engineRequests.push(r.url());if(r.url().endsWith('/api/v1')&&r.postDataJSON()?.operation==='command')requests.push(r.postDataJSON());});
+  try{
+   await p.goto(origin+(transport==='http'?'/?api=local':'/'));await ready(p);
+   for(const f of fixtures){
+    await load(p,f.result);await expectView(p,f.result);const before=await saved(p),original=project(f.result.session),count=requests.length;
+    const tagline=await p.locator('.education-result-tagline').innerText();await dismiss(p);assert.equal(await saved(p),before);await resume(p);assert.equal(await p.locator('.education-result-tagline').innerText(),tagline);
+    await p.locator('#precareer-rules-open').click();assert.equal(await p.locator('#precareer-information').evaluate(el=>el.matches(':modal')),true);assert.equal(await p.locator('#precareer-information input,#precareer-information select,#precareer-information [data-action]').count(),0);await p.locator('#precareer-information-close').click();assert.equal(await saved(p),before);
+    await p.locator('#step-title').focus();await p.keyboard.press('Escape');await p.locator('#precareer-dialog').waitFor({state:'hidden'});await resume(p);assert.equal(await saved(p),before);assert.equal(requests.length,count);
+    await p.reload();await ready(p);await expectView(p,f.result);assert.equal(await saved(p),before);assert.equal(await p.locator('.education-result-tagline').innerText(),tagline);
+    if(!f.result.educationResultView.study){
+     await p.locator('[data-action=acknowledge-education-result]').evaluate(el=>{el.click();el.click();});await p.waitForFunction(({key,n})=>JSON.parse(localStorage.getItem(key)).events.length===n+1&&!document.querySelector('#export').disabled,{key,n:f.result.session.events.length});
+     const actual=project(JSON.parse(await saved(p))),expected=execute(f.result.session,{type:'acknowledge-education-result'});assert.deepEqual(actual.state,expected.state);assert.deepEqual(actual.state.character,original.state.character);assert.equal(actual.state.rng,original.state.rng);assert.equal(actual.log.at(-1).rolls.length,0);assert.equal(await result(p).count(),0);
+    }
+   }
+   // Empty selection cannot continue, changing the subject never rolls or saves.
+   const study=studyFixture();await load(p,study);const raw=await saved(p);assert.equal(await p.locator('#education-subject').inputValue(),'');assert.equal(await p.locator('.education-study-continue').isDisabled(),true);
+   await p.locator('#education-subject').selectOption('Science');assert.equal(await p.locator('.education-study-continue').isDisabled(),true);await p.locator('#education-skill').fill('Science (physics)');assert.equal(await p.locator('.education-study-continue').isEnabled(),true);assert.equal(await saved(p),raw);
+   await dismiss(p);await resume(p);assert.equal(await p.locator('#education-skill').inputValue(),'Science (physics)');assert.equal(await saved(p),raw);
+   await p.locator('.education-study-continue').evaluate(el=>{el.click();el.click();});await p.waitForFunction(()=>document.querySelector('.education-result-study')?.textContent.includes('Skill 2 of 2'));await ready(p);
+   const first=JSON.parse(await saved(p));assert.equal(first.events.length,study.session.events.length+1);assert.deepEqual(first.events.at(-1).command,{type:'education-skill',payload:{name:'Science (physics)'}});assert.equal(project(first).state.rng,study.state.rng);assert.equal(await p.locator('#education-subject option[value=Science]').count(),0);assert.equal(await p.locator('.education-study-continue').isDisabled(),true);
+   await p.locator('#education-subject').selectOption('Medic');await p.locator('.education-study-continue').click();await p.locator('body[data-stage=education-event]').waitFor();await ready(p);assert.equal(await result(p).count(),0);assert.equal(await p.locator('[data-action=education-event]').count(),1);assert.equal(project(JSON.parse(await saved(p))).state.rng,study.state.rng);
+   // Notes rerender retains the result and dice; importing the same result is durable.
+   const honours=graduationFixture('core.university','honours');await load(p,honours);const line=await p.locator('.education-result-tagline').innerText();await dismiss(p);await p.locator('#precareer-previous').click();assert.equal(await p.locator('#precareer-information input,#precareer-information select,#precareer-information [data-action]').count(),0);await p.locator('#precareer-information-close').click();assert.equal(await saved(p),exportSession(honours.session));await bar(p,'precareer-notes');await p.locator('#character-notes').fill('Synthetic graduation review note');await p.locator('[data-action=save-notes]').click();await p.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).events.at(-1).command.type==='notes',key);await ready(p);assert.equal(await p.locator('#precareer-dialog').isVisible(),false);await resume(p);assert.equal(await p.locator('.education-result-tagline').innerText(),line);assert.equal(project(JSON.parse(await saved(p))).state.rng,honours.state.rng);
+   await p.locator('#import').setInputFiles({name:'education-review.json',mimeType:'application/json',buffer:Buffer.from(exportSession(honours.session))});await p.waitForFunction(({key,n})=>JSON.parse(localStorage.getItem(key)).events.length===n&&!document.querySelector('#export').disabled,{key,n:honours.session.events.length});await expectView(p,honours);
+   // Replaced dice and a restored branch must show their own recorded outcome.
+   const replaced=command(honours,'gm-replay',{revision:honours.session.events.at(-1).command.payload.revision,rollIndex:0,values:[1,1],reason:'Synthetic changed graduation result'});assert.equal(replaced.educationResultView.outcome,'failure');await load(p,replaced);await expectView(p,replaced);assert.equal(await saved(p),exportSession(replaced.session));
+   const restored=command(replaced,'restore',{revision:honours.revision});assert.equal(restored.educationResultView.outcome,'honours');await load(p,restored);await expectView(p,restored);assert.equal(await saved(p),exportSession(restored.session));
+   // Core source-assisted and event-blocked outcomes cannot masquerade as a failed graduation.
+   for(const r of [sourceEducationFixture('vargr'),sourceEducationFixture('aezorgh'),eventBlockedFixture()]){await load(p,r);assert.equal(await result(p).count(),0);assert.equal(await saved(p),exportSession(r.session));}
+   const companion=command(educationSetup('education-companion-regression'),'precareer',{id:'companion.merchant'});await load(p,companion);assert.equal(await result(p).count(),0);assert.equal(await p.locator('body').getAttribute('data-stage'),'companion-admission');
+   if(transport==='http')assert.deepEqual(engineRequests,[],'HTTP result view must not import engine modules');checks.push(label+' recorded outcomes, no-mutation navigation, durable ack, study choices, notes/import, source and Companion boundaries');
+  }catch(error){await p.screenshot({path:fileURLToPath(new URL('education-result-failure-'+label+'.png',out)),fullPage:true}).catch(()=>{});throw error;}finally{await context.close();}
+ }
+ assert.deepEqual(errors,[]);await writeFile(new URL('education-result-browser.json',out),JSON.stringify({fixtureChecks,checks,errors},null,2));console.log(JSON.stringify({fixtureChecks:fixtureChecks.length,checks,errors},null,2));
+}finally{await browser?.close();await new Promise(r=>server.close(r));}

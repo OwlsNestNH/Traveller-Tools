@@ -111,7 +111,7 @@ test('non-native and Imperial Aslan flows do not gain the bounded native exchang
 });
 
 test('new accounting revision rejects .10 without reconstructing or mutating original history',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-09.29');const old=structuredClone(buildClanSharesFixture().session);old.rulesRevision='character-preview-2026-11-08.10';const bytes=JSON.stringify(old);const r=api({operation:'project',session:old});assert.equal(r.ok,false);assert.match(r.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
+ assert.equal(RULES_REVISION,'character-preview-2026-11-09.30');const old=structuredClone(buildClanSharesFixture().session);old.rulesRevision='character-preview-2026-11-08.10';const bytes=JSON.stringify(old);const r=api({operation:'project',session:old});assert.equal(r.ok,false);assert.match(r.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
 });
 
 

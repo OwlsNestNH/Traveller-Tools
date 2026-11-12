@@ -28,13 +28,13 @@ try{
   try{
    await page.goto('http://127.0.0.1:'+server.address().port+(http?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(r.session)});await page.reload();
-   await page.getByRole('heading',{name:'University skill 1 of 2: level 0'}).waitFor();
+   await page.getByRole('heading',{name:'Choose your first study skill'}).waitFor();
    await page.locator('#education-subject').selectOption('Animals');assert.deepEqual(await page.locator('#education-skills option').evaluateAll(os=>os.map(o=>o.value)),['Animals (training)','Animals (veterinary)']);
    await page.locator('#education-skill').fill('Animals (training)');await page.locator('#education-subject').selectOption('Engineer');assert.equal(await page.locator('#education-skill').inputValue(),'');assert.equal(await page.locator('#education-skills option[value="Animals (training)"]').count(),0);
-   await page.locator('#education-subject').selectOption('Science');await page.locator('#education-skill').fill('Science (physics)');await page.getByRole('button',{name:'Record level 0 and choose level 1'}).click();
-   await page.getByRole('heading',{name:'University skill 2 of 2: level 1'}).waitFor();assert.equal(await page.locator('#education-subject option[value=Science]').count(),0);
-   await page.reload();await page.getByRole('heading',{name:'University skill 2 of 2: level 1'}).waitFor();await page.locator('#education-subject').selectOption('Animals');await page.locator('#education-skill').fill('Animals (veterinary)');
-   await page.getByRole('button',{name:'Record study skill',exact:true}).evaluate(button=>{button.click();button.click();});await page.getByRole('heading',{name:'Your education term'}).waitFor();
+   await page.locator('#education-subject').selectOption('Science');await page.locator('#education-skill').fill('Science (physics)');await page.locator('.education-study-continue').click();
+   await page.getByRole('heading',{name:'Choose your second study skill'}).waitFor();assert.equal(await page.locator('#education-subject option[value=Science]').count(),0);
+   await page.reload();await page.getByRole('heading',{name:'Choose your second study skill'}).waitFor();await page.locator('#education-subject').selectOption('Animals');await page.locator('#education-skill').fill('Animals (veterinary)');
+   await page.locator('.education-study-continue').evaluate(button=>{button.click();button.click();});await page.getByRole('heading',{name:'Your education term'}).waitFor();
    const raw=await page.evaluate(key=>localStorage.getItem(key),key),result=project(JSON.parse(raw));assert.equal(result.state.character.skills.Science,0);assert.equal(result.state.character.skills['Animals (veterinary)'],1);assert.equal(result.revision,r.revision+2);
    await page.reload();await page.getByRole('heading',{name:'Your education term'}).waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
    console.log('University controls passed '+width+' '+(http?'HTTP':'static'));

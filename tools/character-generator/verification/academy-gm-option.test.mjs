@@ -8,6 +8,12 @@ source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(n
 source+='\nexport const educationAudit={queueEffects,apply};\n';
 const {educationAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const run=(r,type,payload={})=>execute(r.session??r,{type,payload});
+function acknowledgeEducation(r,nextStage='career'){
+ assert.equal(r.state.stage,'education-result');assert.equal(r.state.educationResult.nextStage,nextStage);
+ const character=structuredClone(r.state.character),rng=r.state.rng;
+ r=run(r,'acknowledge-education-result');assert.equal(r.state.stage,nextStage);
+ assert.deepEqual(r.state.character,character);assert.equal(r.state.rng,rng);assert.deepEqual(r.log.at(-1).rolls,[]);return r;
+}
 function setup(seed='education'){
  let r=run(createSession(seed),'setup',{name:'Education fixture',species:'human',gender:'female'});
  r=run(r,'roll-statistics');r=run(r,'accept-statistics');r=run(r,'gm-mode',{enabled:true});
@@ -25,7 +31,7 @@ function studies(r,a='Admin',b='Medic'){
 function university(seed='university',event=[2,3],graduation=[5,5]){
  let r=force(setup(seed),'precareer',{id:'core.university'},[3,3]);
  r=studies(r);r=force(r,'education-event',{},event);
- if(r.state.stage==='education-graduation')r=force(r,'education-graduation',{},graduation);
+ if(r.state.stage==='education-graduation')r=acknowledgeEducation(force(r,'education-graduation',{},graduation));
  return r;
 }
 
@@ -34,7 +40,7 @@ function academy(enabled=false, id='core.academy-army', graduate=true){
  if(enabled)r=run(r,'gm-academy-training',{enabled:true});
  r=force(r,'precareer',{id},[5,5]);
  while(r.state.stage==='effect-choice')r=run(r,'choose-effect',{index:0});
- r=force(r,'education-event',{},[2,3]);r=force(r,'education-graduation',{},graduate?[5,6]:[1,2]);
+ r=acknowledgeEducation(r,'education-event');r=force(r,'education-event',{},[2,3]);r=acknowledgeEducation(force(r,'education-graduation',{},graduate?[5,6]:[1,2]));
  return r;
 }
 function enter(r,id='core.army',assignment='support',basicIndex=0){

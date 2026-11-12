@@ -62,7 +62,7 @@ test('invalid same assignment preflights before dice, modifiers or education att
 });
 test('an intervening education term permits historical same-assignment return',()=>{
  let r=benefits(run(buildAssignmentFixture({careerId:'core.agent'}),'leave-career'));rejected(r,'career',{id:'core.agent',assignment:'law'},/immediately/);
- r=run(r,'open-precareer');r=force(r,'precareer',{id:'core.university'},[6,6]);r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});r=force(r,'education-event',{},[1,4]);r=force(r,'education-graduation',{},[6,6]);assert.equal(r.state.character.terms,2);
+ r=run(r,'open-precareer');r=force(r,'precareer',{id:'core.university'},[6,6]);r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});r=force(r,'education-event',{},[1,4]);r=force(r,'education-graduation',{},[6,6]);assert.equal(r.state.stage,'education-result');r=run(r,'acknowledge-education-result');assert.equal(r.state.character.terms,2);
  r=force(r,'career',{id:'core.agent',assignment:'law'},[6,6]);assert.equal(r.state.character.careers.length,2);assert.equal(r.state.character.careerTransitions.at(-1).mode,'return');roundtrip(r);
 });
 test('retained replay, duplicate command IDs and restore preserve the exact boundary',()=>{
@@ -89,7 +89,7 @@ test('missing characteristic continuation does not spend a retained attempt befo
  assert.equal(s.pending.kind,'missing-characteristic-check');assert.equal(s.character.assignmentChanges,undefined);assert.equal(rolls.length,0);a.apply(s,{type:'resolve-book',payload:{confirmed:true,note:'Source-defined substitute qualification',checkNatural:8,checkTotal:8}},rolls);assert.equal(s.stage,'training');assert.equal(s.character.assignmentChanges.length,1);
 });
 test('new rules revision rejects all prior mechanical revisions without modifying history',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-09.29');for(const n of [2,3,4,5,6,7,8]){const old=structuredClone(buildAssignmentFixture().session);old.rulesRevision='character-preview-2026-11-08.'+n;const bytes=JSON.stringify(old);const r=api({operation:'project',session:old});assert.equal(r.ok,false);assert.match(r.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);}
+ assert.equal(RULES_REVISION,'character-preview-2026-11-09.30');for(const n of [2,3,4,5,6,7,8]){const old=structuredClone(buildAssignmentFixture().session);old.rulesRevision='character-preview-2026-11-08.'+n;const bytes=JSON.stringify(old);const r=api({operation:'project',session:old});assert.equal(r.ok,false);assert.match(r.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);}
 });
 
 test('Hard Knocks first-career penalties survive retained switches without first-entry awards',()=>{

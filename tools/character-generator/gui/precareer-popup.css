@@ -1,31 +1,31 @@
 /* Approved Pre-Career screen only. Other stages and print keep their baseline. */
 @media screen {
- body[data-stage="precareer"]{color-scheme:dark;--ink:#f1f5f8;--muted:#bed0dd;--blue:#ffd052;--line:#79a7bb;--paper:#061b29;--wash:#081f2d;--focus:#fff1ae;background:radial-gradient(ellipse at 50% 30%,#092536 0%,#03131f 80%);color:var(--ink)}
- body[data-stage="precareer"] header{padding:8px 0 18px;min-height:0;background:none}
- body[data-stage="precareer"] header>.eyebrow,body[data-stage="precareer"] header .eyebrow{display:none}
- body[data-stage="precareer"] h1{color:#ffd34b;font-size:clamp(30px,3.8vw,52px);font-weight:800;letter-spacing:.01em;margin:0 0 4px;text-shadow:0 3px 10px #0008}
- body[data-stage="precareer"] header .lead{color:#edf4f8;letter-spacing:.3em;font-size:17px;line-height:1.2}
- body[data-stage="precareer"] .status{border-color:#ffd34b;background:#061b29;color:#ffd34b}
- body[data-stage="precareer"] .toolbar{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:stretch;margin-bottom:22px;grid-auto-rows:58px}
- body[data-stage="precareer"] .toolbar>.file-button{margin:0}
- body[data-stage="precareer"] .toolbar>*{height:58px}
- body[data-stage="precareer"] .toolbar>*,body[data-stage="precareer"] .toolbar button{width:100%;min-width:0;font-size:17px;line-height:1.2;padding:9px 8px;min-height:58px}
- body[data-stage="precareer"] .toolbar>.log-switch{display:grid;grid-template-rows:1fr 1fr;padding:0;gap:0}
- body[data-stage="precareer"] .toolbar .log-switch button{height:29px;min-height:29px;padding:3px 8px;border-radius:0}
- body[data-stage="precareer"] .toolbar .log-switch button:first-child{border-radius:9px 9px 0 0}
- body[data-stage="precareer"] .toolbar .log-switch>.opening-info-trigger{width:28px;height:28px;min-height:28px;padding:0;border:1px solid #eac746;border-radius:50%;font-size:18px;color:#ffdd68;background:#071c2a;box-shadow:none}
- body[data-stage="precareer"] .toolbar .log-switch>button:not(.opening-info-trigger){padding-right:34px}
- body[data-stage="precareer"] .toolbar .log-switch>#log-view{border-radius:0 0 9px 9px;border-top:0}
- body[data-stage="precareer"] button,body[data-stage="precareer"] .button{color:#f4f6f8;background:linear-gradient(140deg,#0b2b3c,#061a28);border:1px solid #a4d4e7;box-shadow:inset 0 1px 8px #294353,0 2px 4px #0005;font-weight:750}
- body[data-stage="precareer"] button:hover,body[data-stage="precareer"] .button:hover{background:#183c4d;filter:none}
- body[data-stage="precareer"] button:disabled{opacity:.5}
- body[data-stage="precareer"] .skip-link{background:#061b29;color:#ffdc67}
- body[data-stage="precareer"] :is(input,select,textarea){background:#071c2b;color:#f1f5f8;border-color:#8db1c4}
- body[data-stage="precareer"] :is(#simple-action-log,#full-action-log,#opening-help-dialog,.statistic-editor,#psi-choice-dialog){background:#071b29;color:#f1f5f8}
- body[data-stage="precareer"] .warning{background:#372e15;color:#fff0c4}
- body[data-stage="precareer"] .help,body[data-stage="precareer"] .source{color:#bed0dd}
- body[data-stage="precareer"] a{color:#ffdc67}
- body[data-stage="precareer"] footer{margin-top:40px;color:#b6cad7}
+ body:is([data-stage="precareer"],[data-education-popup="true"]){color-scheme:dark;--ink:#f1f5f8;--muted:#bed0dd;--blue:#ffd052;--line:#79a7bb;--paper:#061b29;--wash:#081f2d;--focus:#fff1ae;background:radial-gradient(ellipse at 50% 30%,#092536 0%,#03131f 80%);color:var(--ink)}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) header{padding:8px 0 18px;min-height:0;background:none}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) header>.eyebrow,body:is([data-stage="precareer"],[data-education-popup="true"]) header .eyebrow{display:none}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) h1{color:#ffd34b;font-size:clamp(30px,3.8vw,52px);font-weight:800;letter-spacing:.01em;margin:0 0 4px;text-shadow:0 3px 10px #0008}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) header .lead{color:#edf4f8;letter-spacing:.3em;font-size:17px;line-height:1.2}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .status{border-color:#ffd34b;background:#061b29;color:#ffd34b}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .toolbar{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:stretch;margin-bottom:22px;grid-auto-rows:58px}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .toolbar>.file-button{margin:0}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .toolbar>*{height:58px}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .toolbar>*,body:is([data-stage="precareer"],[data-education-popup="true"]) .toolbar button{width:100%;min-width:0;font-size:17px;line-height:1.2;padding:9px 8px;min-height:58px}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .toolbar>.log-switch{display:grid;grid-template-rows:1fr 1fr;padding:0;gap:0}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .toolbar .log-switch button{height:29px;min-height:29px;padding:3px 8px;border-radius:0}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .toolbar .log-switch button:first-child{border-radius:9px 9px 0 0}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .toolbar .log-switch>.opening-info-trigger{width:28px;height:28px;min-height:28px;padding:0;border:1px solid #eac746;border-radius:50%;font-size:18px;color:#ffdd68;background:#071c2a;box-shadow:none}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .toolbar .log-switch>button:not(.opening-info-trigger){padding-right:34px}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .toolbar .log-switch>#log-view{border-radius:0 0 9px 9px;border-top:0}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) button,body:is([data-stage="precareer"],[data-education-popup="true"]) .button{color:#f4f6f8;background:linear-gradient(140deg,#0b2b3c,#061a28);border:1px solid #a4d4e7;box-shadow:inset 0 1px 8px #294353,0 2px 4px #0005;font-weight:750}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) button:hover,body:is([data-stage="precareer"],[data-education-popup="true"]) .button:hover{background:#183c4d;filter:none}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) button:disabled{opacity:.5}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .skip-link{background:#061b29;color:#ffdc67}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) :is(input,select,textarea){background:#071c2b;color:#f1f5f8;border-color:#8db1c4}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) :is(#simple-action-log,#full-action-log,#opening-help-dialog,.statistic-editor,#psi-choice-dialog){background:#071b29;color:#f1f5f8}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .warning{background:#372e15;color:#fff0c4}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .help,body:is([data-stage="precareer"],[data-education-popup="true"]) .source{color:#bed0dd}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) a{color:#ffdc67}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) footer{margin-top:40px;color:#b6cad7}
  .layout.precareer-layout{display:grid;grid-template-columns:minmax(0,1fr);position:relative;align-items:start;isolation:isolate;min-height:450px}
  #precareer-context{grid-area:1/1;display:flex;justify-content:space-between;align-items:start;gap:18px}
  .precareer-step-card,#precareer-rail{width:calc((100% - 968px)/2 + 2px);min-width:190px;box-sizing:border-box}
@@ -43,7 +43,7 @@
  #precareer-dialog{display:none;grid-area:1/1;position:relative;inset:auto;z-index:2;box-sizing:border-box;width:min(968px,calc(100% - 40px));max-width:none;max-height:none;margin:-8px auto 0;padding:0;overflow:visible;border:2px solid #9cdbed;border-radius:15px;color:#f5f7fa;background:radial-gradient(ellipse at center,#0a2a3c,#041b2a 85%);box-shadow:0 16px 70px #0006}
  #precareer-dialog[open]{display:block}
  #precareer-dialog:focus,#precareer-dialog #workspace:focus{outline:none}
- body[data-stage="precareer"] #precareer-dialog #workspace{position:relative;min-height:0;padding:24px 32px 20px;border:0;background:transparent;box-shadow:none;color:#f5f7fa}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) #precareer-dialog #workspace{position:relative;min-height:0;padding:24px 32px 20px;border:0;background:transparent;box-shadow:none;color:#f5f7fa}
  #precareer-dialog .step-count{color:#ffcf38;font-size:19px;font-weight:800;letter-spacing:.04em;margin:0 120px 6px 12px}
  #precareer-dialog #step-title{font-size:52px;font-weight:800;line-height:1.15;color:#f5f7fa;margin:0 100px 2px 12px}
  #precareer-dialog #precareer-dismiss{position:absolute;right:32px;top:27px;min-height:44px;padding:8px 23px;font-size:20px}
@@ -78,7 +78,7 @@
  #precareer-information .precareer-readonly{color:#ffdc67}
  #precareer-information .result-panel{background:#102e3e;border-color:#82aaba;color:#edf4f8}
  #precareer-information .result-panel h3{font-size:27px}
- body[data-stage="precareer"] #sheet{position:static;width:auto;padding:0;margin:12px 0 0;border:0;background:transparent;box-shadow:none}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) #sheet{position:static;width:auto;padding:0;margin:12px 0 0;border:0;background:transparent;box-shadow:none}
  #sheet>details[data-precareer-bar]{padding:0;margin:10px 0 0;border:1px solid #496f83;border-radius:9px;background:#071d2a;overflow:hidden}
  #sheet>details[data-precareer-bar]>summary{display:flex;justify-content:space-between;gap:10px;min-height:50px;align-items:center;list-style:none;padding:10px 14px;font-size:16px;color:#d8e8f0}
  #sheet>details[data-precareer-bar]>summary span{color:#ffdc67;font-size:22px}
@@ -93,14 +93,14 @@
 @media screen and (max-width:1100px){
  .precareer-step-card,#precareer-rail{min-width:160px}
  #precareer-dialog{width:calc(100% - 36px)}
- body[data-stage="precareer"] .toolbar{grid-template-columns:repeat(3,minmax(0,1fr))}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .toolbar{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media screen and (max-width:650px){
- body[data-stage="precareer"] header{padding-top:18px}body[data-stage="precareer"] .toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
- body[data-stage="precareer"] .toolbar>*,body[data-stage="precareer"] .toolbar button{font-size:15px}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) header{padding-top:18px}body:is([data-stage="precareer"],[data-education-popup="true"]) .toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) .toolbar>*,body:is([data-stage="precareer"],[data-education-popup="true"]) .toolbar button{font-size:15px}
  #precareer-context{flex-direction:column;gap:16px}.precareer-step-card,#precareer-rail{width:100%;min-width:0}.precareer-step-card{min-height:0;padding:16px}#precareer-overview{min-height:0;padding:20px}
  #precareer-dialog{width:100%;margin:0;border-radius:13px}
- body[data-stage="precareer"] #precareer-dialog #workspace{padding:22px 18px}
+ body:is([data-stage="precareer"],[data-education-popup="true"]) #precareer-dialog #workspace{padding:22px 18px}
  #precareer-dialog #precareer-dismiss{top:15px;right:16px;padding:8px 14px;font-size:18px}
  #precareer-dialog .step-count{font-size:12px;margin:5px 85px 20px 0}
  #precareer-dialog #step-title{font-size:36px;margin:0 0 10px}
@@ -149,4 +149,11 @@
  .admission-numbers{padding:14px 10px}.admission-numbers h4{font-size:28px}.admission-numbers .admission-formula{font-size:clamp(27px,8.2vw,37px);white-space:nowrap}.admission-numbers p{font-size:19px}
  #precareer-dialog #precareer-admission-roll{font-size:27px;gap:8px;padding:12px 8px;min-height:96px}.admission-dice{width:42px;height:50px}.admission-dice:last-child{display:none}
  .admission-warning{font-size:19px}#precareer-dialog #precareer-admission-back{font-size:23px;min-height:60px}
+}
+
+@media screen {
+ #precareer-dialog[data-panel="result"] .step-count{display:none}
+ #precareer-dialog[data-panel="result"] #step-title{font-size:20px;color:#ffd34b;margin:0 120px 8px 12px}
+ #precareer-dialog[data-panel="result"] .precareer-information-rows{margin-top:10px}
+ #precareer-dialog[data-panel="result"] .precareer-information-rows button{min-height:54px;padding-block:12px}
 }

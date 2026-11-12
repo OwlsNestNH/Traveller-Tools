@@ -1,3 +1,4 @@
+import {educationResultProjection} from './education-result-projection.mjs';
 import {familyNarrative} from './aslan-family-narrative.mjs';
 import {restrictedCreditItems,restrictedCreditPurchase} from './finalization-ledgers.mjs';
 import {aslanEventPending,aslanOutcastEntry,aslanOwnedLand} from './aslan-event-outcomes.mjs';
@@ -42,12 +43,13 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-09.29';
+export const RULES_REVISION='character-preview-2026-11-09.30';
+// .30 pauses completed native Core education results for explicit acknowledgment.
 // .29 adds explicit family-result acknowledgement and chosen Aslan gender.
 // .28 remains reserved for the independent Vargr candidate until integration.
 // .27 makes Aezorgh CHA opt-in; .26 is reserved for a separate unpublished candidate.
 // .19 chooses specialties on receipt; .18 retains deferred awards and corrections; .16/.17 retain historical mechanics.
-export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.27','character-preview-2026-11-09.25','character-preview-2026-11-09.24','character-preview-2026-11-09.23','character-preview-2026-11-09.22','character-preview-2026-11-09.21','character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
+export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.29','character-preview-2026-11-09.27','character-preview-2026-11-09.25','character-preview-2026-11-09.24','character-preview-2026-11-09.23','character-preview-2026-11-09.22','character-preview-2026-11-09.21','character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -1102,6 +1104,10 @@ function startCompanionEducation(state,entry,rolls) {
  if(!awards.resolved){companionSource(state,'initial-awards',awards);return;}
  record.initialAwards=copy(awards);queueEffects(state,sourcedEffects(awards.effects,awards.source),'education-event',rolls);
 }
+function pauseEducationResult(state,{kind,id,educationIndex=null,result}){
+ if(!state.educationResultPresentation||!EDUCATION_PACK[id])return;
+ state.educationResult={kind,id,educationIndex,result:copy(result),nextStage:state.stage};state.stage='education-result';
+}
 function completeEducationTerm(state,record,outcome) {
  record.termOutcome=copy(outcome);record.completed=true;
  state.character.age=outcome.ageAfter;state.character.terms+=outcome.termDelta;
@@ -1110,6 +1116,7 @@ function completeEducationTerm(state,record,outcome) {
  state.education=null;state.pendingChoice=null;
  const species=findSpecies(state.character.species);
  if(state.character.age>=(species.agingStart??34))sourceStep(state,'education-ageing','core',49,'Resolve the ageing checkpoint after this education term.','career');else state.stage='career';
+ if(record.graduation.attempted&&Number.isFinite(record.graduation.total)&&!record.graduation.manual)pauseEducationResult(state,{kind:'graduation',id:record.id,educationIndex:state.character.educations.indexOf(record),result:record.graduation});
 }
 function companionChoiceOptions(state,e) {
  const record=educationRecord(state);let names=(e.options??[]).map(o=>o.name);
@@ -1386,6 +1393,7 @@ function completeEffects(state,rolls) {
  if(next==='specialization-command'){const saved=state.specializationContinuation;delete state.specializationContinuation;state.stage=saved.stage;if(saved.pendingChoice!==undefined)state.pendingChoice=saved.pendingChoice;if(saved.effectsQueue!==undefined)state.effectsQueue=saved.effectsQueue;if(saved.effectNext!==undefined)state.effectNext=saved.effectNext;apply(state,saved.command,rolls);return;}
  if(next==='aslan-origin-family'){finishAslanFamily(state);return;}
  if(next==='aslan-origin-complete'){state.character.aslanOrigin.status=state.aslanFamilyPresentation?'pending':'completed';state.character.aslanOrigin.rite.effectsResolved=true;state.stage=state.aslanFamilyPresentation?'aslan-rite-result':'precareer';return;}
+ if(next==='education-event'&&state.educationResultPresentation&&educationRecord(state).id.startsWith('core.academy-')){state.stage=next;const record=educationRecord(state);pauseEducationResult(state,{kind:'admission',id:record.id,educationIndex:state.education,result:record.entry});return;}
  if(next==='education-finish'){educationFinish(state,rolls);return;}
  if(next==='education-graduation'){if(!educationRecord(state).graduationAllowed)educationFinish(state,rolls);else state.stage=next;return;}
  if(next==='end-term'){closeTerm(state);return;}
@@ -1859,6 +1867,7 @@ function apply(state,command,rolls) {
  if(state.pending?.deferredEquipmentId)need(['resolve-book','resolve-artefact-details','resolve-landhold-details','spend-equipment-credit','retain-equipment-credit','cancel-deferred-equipment','notes','gm-mode'].includes(command.type),'Resolve the earlier equipment choice before continuing.');
  if(state.stage==='equipment-finalization')need(['choose-deferred-equipment','close-equipment-finalization','finish','notes','gm-mode'].includes(command.type),'Complete or close the equipment checklist before continuing.');
  if(state.pending?.kind==='prisoner-lawyer')need(['resolve-prisoner-lawyer','notes','gm-mode'].includes(command.type),'Resolve the pending lawyer choice before changing its context. Use restore or replay to revise it.');
+ if(state.stage==='education-result')need(['acknowledge-education-result','notes','gm-mode','gm-override','gm-psi-mode'].includes(command.type),'Continue from the recorded education result before changing its context.');
  if(state.character.aslanOrigin?.status==='pending')need(['acknowledge-aslan-rite','acknowledge-aslan-pride','acknowledge-aslan-family','acknowledge-aslan-birth-order','acknowledge-aslan-clan','roll-aslan-gender','roll-aslan-family','roll-aslan-birth-order','resolve-aslan-estate','roll-aslan-clan','choose-aslan-clan','name-aslan-clan','roll-aslan-pride','roll-aslan-rite','record-aslan-rite-equipment','resolve-aslan-origin-source','background','choose-effect','choose-skill','skill-award-source','retry-skill-choice','resolve-book','notes','gm-mode'].includes(command.type),'Finish the recorded Aslan origin before changing its context. Restore or replay explicitly to revise it.');
  if(state.pending?.kind==='aslan-origin-source')need(['resolve-aslan-origin-source','notes','gm-mode'].includes(command.type),'Resolve this origin question with its typed source fields.');
  if(gamesPending(state))need([...GAMES_COMMANDS,'notes','gm-mode'].includes(command.type),'Complete the reserved Games term before changing the character or career. Restore/replay explicitly to revise its context.');
@@ -2507,7 +2516,7 @@ function apply(state,command,rolls) {
   }
   const roll=dice(state,2,rolls,'Education entry');
   const outcome=educationEntryCheck({id:pre.id,term:state.character.terms+1,stats:state.character.stats,roll});
-  if(!outcome.success){state.stage='career';return 'Education entry failed: '+JSON.stringify(outcome)+'. The current term remains available for a career.';}
+  if(!outcome.success){state.stage='career';pauseEducationResult(state,{kind:'admission',id:pre.id,result:outcome});return 'Education entry failed: '+JSON.stringify(outcome)+'. The current term remains available for a career.';}
   state.character.educations??=[];state.education=state.character.educations.length;
   state.character.educations.push({id:pre.id,term:state.character.terms+1,careersBefore:state.character.careers.length,careerAttempts:0,selections:{},skillsBefore:copy(state.character.skills),graduationAllowed:true,entry:outcome});
   queueEffects(state,outcome.effects,'education-event',rolls);return 'Entered '+pre.name+': roll '+roll+', modified total '+outcome.total+' against '+outcome.target+'.';
@@ -2546,6 +2555,10 @@ function apply(state,command,rolls) {
  }
  case 'companion-choice-source':{
   need(state.stage==='companion-skill'&&state.pendingChoice,'No Companion study choice is due.');companionSource(state,'skill-choice',{reason:'Adjudicate this constrained choice only if the printed award cannot be satisfied. Record the selected skills and all resulting effects.'},{choice:copy(state.pendingChoice)});state.pendingChoice=null;return 'Constrained Companion choice requires a recorded source decision.';
+ }
+ case 'acknowledge-education-result':{
+  need(state.educationResultPresentation&&state.stage==='education-result'&&state.educationResult,'No completed education result awaits acknowledgement.');need(Object.keys(payload).length===0,'Continue takes no inputs.');
+  state.stage=state.educationResult.nextStage;delete state.educationResult;return 'Education result acknowledged. No additional dice or awards.';
  }
  case 'education-event':{
   need(state.stage==='education-event','No education event is due.');
@@ -3207,7 +3220,7 @@ export function project(session) {
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
 
- let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(['character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision))state.aezorghRoundUp=true;if(['character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision))state.optionalImperialCharisma=true;if(['character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision))state.optionalPsiRequiresTesting=true;if(['character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision))state.aezorghBaseSkillChoice=true;if(['character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision))state.optionalAezorghCharisma=true;if(session.rulesRevision===RULES_REVISION)state.aslanFamilyPresentation=true;const snapshots=[copy(state)],log=[];
+ let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(['character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29',RULES_REVISION].includes(session.rulesRevision))state.aezorghRoundUp=true;if(['character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29',RULES_REVISION].includes(session.rulesRevision))state.optionalImperialCharisma=true;if(['character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29',RULES_REVISION].includes(session.rulesRevision))state.optionalPsiRequiresTesting=true;if(['character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29',RULES_REVISION].includes(session.rulesRevision))state.aezorghBaseSkillChoice=true;if(['character-preview-2026-11-09.27','character-preview-2026-11-09.29',RULES_REVISION].includes(session.rulesRevision))state.optionalAezorghCharisma=true;if(['character-preview-2026-11-09.29',RULES_REVISION].includes(session.rulesRevision))state.aslanFamilyPresentation=true;if(session.rulesRevision===RULES_REVISION)state.educationResultPresentation=true;const snapshots=[copy(state)],log=[];
  for(let i=0;i<session.events.length;i++){
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');
@@ -3242,7 +3255,7 @@ export function project(session) {
  // Manual entry remains disclosed even when a GM supersedes that branch.
  // Projection-only: do not rewrite historical snapshots or audit summaries.
  if(log.some(entry=>entry.type==='enter-physical-statistic'))state.character.physicalDiceEntered=true;
- if(['character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision)||Object.hasOwn(state.config,'physicalDice')||state.character.physicalDiceEntered){
+ if(['character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29',RULES_REVISION].includes(session.rulesRevision)||Object.hasOwn(state.config,'physicalDice')||state.character.physicalDiceEntered){
   state.statisticsComplete=statisticsComplete(state);
   state.physicalDiceTargets=physicalDiceTargets(state);
   state.physicalDiceOptions=state.physicalDiceTargets;
@@ -3304,7 +3317,8 @@ export function project(session) {
  for(let i=0;i<log.length;i++){const before=pendingEffects(snapshots[i]),after=pendingEffects(snapshots[i+1]);if(JSON.stringify(before)!==JSON.stringify(after))log[i].pendingEffectChanges={before,after};}
  decorateLifeEventPresentation({state,log,snapshots,events:session.events});
  decorateEventResults({log,snapshots,events:session.events});
- return {state,log,revision:session.events.length,...(state.stage==='precareer'?{educationAdmissionPreviews}:{})};
+ const educationResultView=educationResultProjection({state,log,snapshots,events:session.events});
+ return {state,log,revision:session.events.length,...(state.stage==='precareer'?{educationAdmissionPreviews}:{}),...(educationResultView?{educationResultView}:{})};
 }
 export function execute(session,command,{id,expectedRevision}={}) {
  const before=project(session);

@@ -16,7 +16,7 @@ test('explicit setup selection derives CHA without consuming dice and exposes pe
  const off=build(),on=build(['CHA']);assert.equal(on.state.rng,off.state.rng);assert.equal(on.state.character.stats.CHA,Math.floor(on.state.character.stats.SOC/2));assert.equal(on.log.at(-1).rolls.length,0);assert.deepEqual(selectedOptionalStatistics(on.state,catalog()).map(x=>x.id),['CHA']);
 });
 test('every earlier compatible revision preserves automatic Aezorgh CHA',()=>{
- for(const revision of COMPATIBLE_RULES_REVISIONS.filter(r=>![RULES_REVISION,'character-preview-2026-11-09.27'].includes(r))){const r=build([],revision);assert.equal(r.state.optionalAezorghCharisma,undefined);assert.equal(r.state.character.stats.CHA,Math.floor(r.state.character.stats.SOC/2));assert.equal(exportSession(importSession(exportSession(r.session))),exportSession(r.session));}
+ for(const revision of COMPATIBLE_RULES_REVISIONS.filter(r=>![RULES_REVISION,'character-preview-2026-11-09.29','character-preview-2026-11-09.27'].includes(r))){const r=build([],revision);assert.equal(r.state.optionalAezorghCharisma,undefined);assert.equal(r.state.character.stats.CHA,Math.floor(r.state.character.stats.SOC/2));assert.equal(exportSession(importSession(exportSession(r.session))),exportSession(r.session));}
 });
 test('below-threshold reroll remains optional, not mandatory',()=>{
  let r=run(createSession('physical-below-threshold'),'setup',{species:'aezorgh'});r=run(r,'configure',{aezorghTwoDice:true,minimumReroll:true,physicalDice:true});for(const code of ['STR','DEX','END','INT','EDU','SOC'])r=run(r,'enter-physical-statistic',{code,value:6});assert.equal(r.state.rollTotal,36);assert.equal(r.state.statisticsCanReroll,true);assert.equal(run(r,'accept-statistics').state.stage,'background');

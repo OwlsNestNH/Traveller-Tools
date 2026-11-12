@@ -36,7 +36,7 @@ export function preCareerSourceView(state,catalog,{esc,sourceLabel}){
 }
 
 export function previousStepRecord(projection,session){
- const active=currentActionNumbers(session),administrative=new Set(['acknowledge-aslan-rite','notes','connection','configure','open-precareer','skip-precareer','cancel-education','cancel-career-transfer','restore']);
+ const active=currentActionNumbers(session),administrative=new Set(['acknowledge-education-result','acknowledge-aslan-rite','notes','connection','configure','open-precareer','skip-precareer','cancel-education','cancel-career-transfer','restore']);
  for(const event of [...projection.log].reverse()){
   if(!active.has(event.number))continue;
   let command=session.events[event.number-1]?.command;
@@ -54,10 +54,10 @@ function previousStepView(projection,session,catalog,{esc}){
  return '<p class="precareer-readonly">Read only · Your character stays at Pre-Career.</p>'+(skills?'<h3>Background skills</h3><p>These were the skills you accepted.</p><ul>'+skills.map(name=>'<li>'+esc(name)+' 0</li>').join('')+'</ul>':result?'<h3>'+esc(record.event.type==='gm-replay'&&record.command.type==='roll-aslan-rite'?'Rite of passage':result.title)+'</h3>'+result.details.map(line=>'<p>'+esc(line)+'</p>').join(''):'<p>No previous completed step is recorded.</p>');
 }
 
-export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,sourceLabel,generation=0}){
+export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,sourceLabel,generation=0,resultModel=null}){
  const layout=root.querySelector('.layout'),workspace=root.querySelector('#workspace'),sheet=root.querySelector('#sheet');
  let dialog=root.querySelector('#precareer-dialog'),context=root.querySelector('#precareer-context'),info=root.querySelector('#precareer-information');
- if(state.stage!=='precareer'){
+ if(state.stage!=='precareer'&&!resultModel){
   if(dialog){layout.prepend(workspace);layout.append(sheet);dialog.remove();context.remove();info.remove();}
   layout.classList.remove('precareer-layout');return;
  }
@@ -76,7 +76,7 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  }
  function open(){if(!dialog.open)dialog.show();context.querySelector('#precareer-resume').hidden=true;}
  function dismiss(){dialog.close();context.querySelector('#precareer-resume').hidden=false;context.querySelector('#precareer-resume').focus({preventScroll:true});}
- function openInfo(kind,title,trigger){info._opener=trigger;for(const name of ['result','rules','previous'])info.querySelector('#precareer-information-'+name).hidden=name!==kind;info.querySelector('#precareer-information-title').textContent=title;if(!info.open)info.showModal();info.querySelector('#precareer-information-title').focus();}
+ function openInfo(kind,title,trigger){info._opener=trigger;for(const name of ['result','rules','previous'])info.querySelector('#precareer-information-'+name).hidden=kind==='details'?name==='previous':name!==kind;info.querySelector('#precareer-information-title').textContent=title;if(!info.open)info.showModal();info.querySelector('#precareer-information-title').focus();}
  function closeInfo(){info.close();if(info._opener?.isConnected)info._opener.focus({preventScroll:true});}
  layout.classList.add('precareer-layout');
  const c=state.character,species=catalog.species.find(s=>s.id===c.species)?.name??c.species;
@@ -88,6 +88,8 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  const sessionKey=JSON.stringify([generation,session.seed,session.events[0]?.id]);
  if(dialog._sessionKey!==sessionKey||projection.revision<dialog._revision){dialog.dataset.panel='standard';delete dialog.dataset.admission;}
  dialog._sessionKey=sessionKey;dialog._revision=projection.revision;
+ if(!resultModel){
+ if(dialog.dataset.panel==='result')dialog.dataset.panel='standard';
  const admission=root.createElement('div');admission.id='precareer-admission';workspace.querySelector('.precareer-skip').before(admission);
  const showPanel=panel=>{dialog.dataset.panel=panel;workspace.querySelector('.precareer-skip').hidden=panel!=='standard';const previousResult=workspace.querySelector('#precareer-result-open');if(previousResult)previousResult.hidden=panel==='additional';workspace.querySelector('#precareer-standard').hidden=panel!=='standard';workspace.querySelector('#precareer-extras').hidden=panel!=='additional';admission.hidden=panel!=='admission';title.textContent=panel==='additional'?'Additional Careers':'Pre-Career';dialog.scrollTop=0;if(dialog.open&&dialog.getBoundingClientRect().top<0)dialog.scrollIntoView({block:'start'});};
  function showAdmission(id,focus=true){
@@ -99,12 +101,15 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  dialog._openAdmission=showAdmission;
  workspace.querySelector('#precareer-additional').addEventListener('click',()=>{showPanel('additional');title.focus({preventScroll:true});});
  workspace.querySelector('#precareer-options-back').addEventListener('click',()=>{showPanel('standard');title.focus({preventScroll:true});});
+ dialog._refreshPreCareerPanel=()=>{if(dialog.dataset.panel==='admission'&&!showAdmission(dialog.dataset.admission,false)){delete dialog.dataset.admission;showPanel('standard');}else showPanel(dialog.dataset.panel);};
+ }else{dialog.dataset.panel='result';delete dialog.dataset.admission;dialog._openAdmission=null;dialog._refreshPreCareerPanel=null;}
  const result=workspace.querySelector('#last-action-result');info.querySelector('#precareer-information-result').replaceChildren(...(result?[result]:[]));
  info.querySelector('#precareer-information-rules').innerHTML=preCareerSourceView(state,catalog,{esc,sourceLabel});
  info.querySelector('#precareer-information-previous').innerHTML=previousStepView(projection,session,catalog,{esc});
  workspace.insertAdjacentHTML('beforeend','<div class="precareer-information-rows"><button type="button" id="precareer-result-open"'+(result?'':' disabled')+'><span class="precareer-info-icon" aria-hidden="true">i</span><span><strong>Previous result</strong><small>Your most recent completed result appears here.</small></span></button><button type="button" id="precareer-rules-open"><span class="precareer-info-icon" aria-hidden="true">i</span><span><strong>Education rules and sources</strong><small>Rules and source references for the available options.</small></span></button></div>');
  workspace.querySelector('#precareer-result-open').addEventListener('click',event=>openInfo('result','Previous result',event.currentTarget));
- workspace.querySelector('#precareer-rules-open').addEventListener('click',event=>openInfo('rules','Education rules and sources',event.currentTarget));
+ workspace.querySelector('#precareer-rules-open').addEventListener('click',event=>openInfo(resultModel?'details':'rules',resultModel?'Result details and sources':'Education rules and sources',event.currentTarget));
+ if(resultModel){info.querySelector('#precareer-information-result').innerHTML='<h3>'+esc(resultModel.name)+' '+esc(resultModel.kind)+'</h3><p>'+resultModel.dice.map(esc).join(' + ')+' '+(resultModel.modifier<0?'− ':'+ ')+Math.abs(resultModel.modifier)+' = '+esc(resultModel.total)+' · Target '+esc(resultModel.target)+'+</p><ul>'+[...(resultModel.details??[]),...(resultModel.benefits??[]),...(resultModel.retained??[]),...(resultModel.missed??[])].map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul>';workspace.querySelector('#precareer-result-open').remove();workspace.querySelector('#precareer-rules-open strong').textContent='Result details and sources';workspace.querySelector('#precareer-rules-open small').remove();}
  // Move existing record nodes, never clone editors or their IDs. Each top-level
  // bar is part of one exclusive group, with a fallback for older browsers.
  const rail=context.querySelector('#precareer-rail'),previousBar=rail.dataset.openBar;
@@ -115,5 +120,5 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
   if(id==='precareer-notes')notes.open=bar.open;
   bar.addEventListener('toggle',()=>{if(!bar.isConnected)return;if(id==='precareer-notes')notes.open=bar.open;if(bar.open){rail.dataset.openBar=id;for(const other of sheet.querySelectorAll(':scope > details'))if(other!==bar)other.open=false;}else if(rail.dataset.openBar===id)delete rail.dataset.openBar;});
  }
- if(dialog.dataset.panel==='admission'&&!showAdmission(dialog.dataset.admission,false)){delete dialog.dataset.admission;showPanel('standard');}else showPanel(dialog.dataset.panel);if(newlyCreated)open();
+ dialog._refreshPreCareerPanel?.();if(newlyCreated)open();
 }

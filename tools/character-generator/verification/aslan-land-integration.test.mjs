@@ -76,5 +76,5 @@ test('audited restore preserves old claim history while returning its unspent so
 });
 
 test('new revision rejects .12 without mutating or reconstructing original saves',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-09.29');const old=structuredClone(beforeClaim().session);old.rulesRevision='character-preview-2026-11-08.12';const bytes=JSON.stringify(old),r=api({operation:'project',session:old});assert.equal(r.ok,false);assert.match(r.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
+ assert.equal(RULES_REVISION,'character-preview-2026-11-09.30');const old=structuredClone(beforeClaim().session);old.rulesRevision='character-preview-2026-11-08.12';const bytes=JSON.stringify(old),r=api({operation:'project',session:old});assert.equal(r.ok,false);assert.match(r.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
 });

@@ -1,3 +1,5 @@
+import {educationResultModel} from './education-result-model.mjs';
+import {educationResultView} from './education-result-view.mjs';
 import {aslanRitePopupModel,aslanRitePopupView,mountAslanRiteInformation,riteTagKey} from './aslan-rite-popup.mjs';
 import {hasAslanBackgroundPopup,mountAslanBackgroundInformation} from './aslan-background-popup.mjs';
 import {aslanPridePopupModel,aslanPridePopupView,mountAslanPrideInformation} from './aslan-pride-popup.mjs';
@@ -28,7 +30,7 @@ import {equipmentCatalogueView,syncEquipmentCatalogue} from './equipment-catalog
 let aslanManualReviewKey=null;
 import {aslanEventOutcomesView,aslanEventOutcomesSheet} from './aslan-event-outcomes-view.mjs';
 import {skillAwardView,syncAwardBase,deferredAwardsView} from './skill-award-view.mjs';
-import {educationSkillTitle,educationSkillView,syncEducationSubject,companionSkillSuggestions} from './education-skill-view.mjs';
+import {educationSkillTitle,educationSkillView,syncEducationSubject,syncEducationStudyContinue,companionSkillSuggestions} from './education-skill-view.mjs';
 import {createLogViewer} from './log-viewer.mjs';
 import {prisonerEscapeTitle,prisonerEscapeView} from './prisoner-escape-view.mjs';
 import {extraCharacteristicsView,gmControlsView,syncCorrectionField,syncReplacementDice,syncCorrectionTask,correctionPayload,replacementPayload} from './character-controls.mjs';
@@ -393,6 +395,8 @@ function bookView(state){
 }
 function equipmentDetailsView(state){const p=state.pending;if(['landhold-details','equipment-credit-details'].includes(p.kind))return ledgerDetailsView(p,{esc,button,sourceLabel});if(p.kind==='artefact-details')return '<p>'+esc(sourceLabel(p.source,p.page))+'</p><p>This artefact is already yours. A placeholder, your own description, or leaving it unknown is fine. No value or powers are assumed.</p><label>Name or placeholder (optional)<input id="artefact-name" maxlength="120" placeholder="'+esc(p.benefitName)+'"></label><label>Description (optional)<textarea id="artefact-description" rows="4" maxlength="2000"></textarea></label><div class="actions">'+button('Save details','resolve-artefact-details')+button('Cancel','cancel-deferred-equipment','quiet')+'</div>';return '<p>'+esc(sourceLabel(p.source,p.page))+'</p>'+benefitDecisionView(state)+'<label>Source or referee note<textarea id="book-note" rows="2" maxlength="500"></textarea></label><label class="check"><input id="book-confirm" type="checkbox"><span>I checked this selection and its restrictions.</span></label><div class="actions">'+button('Record outcome and continue','resolve-book')+button('Cancel','cancel-deferred-equipment','quiet')+'</div>';}
 function stageView(state,insideEquipmentDialog=false){
+ const educationModel=educationResultModel(projection);
+ if(educationModel)return educationResultView(educationModel,{esc,button,sourceLabel,studyHtml:educationModel.study?educationSkillView(state,catalog,esc,button,{result:true}):''});
  const riteModel=aslanRitePopupModel(state);if(riteModel&&!(riteModel.equipment&&aslanManualReviewKey===JSON.stringify([projection.revision,state.pending])))return '<p>Your Rite of Passage</p>'+aslanRitePopupView({...riteModel,tagline:originTagline(riteTagKey(riteModel.rite),projection.log.findLast(event=>event.type==='roll-aslan-rite')?.id)},{esc});
  const prideModel=aslanPridePopupModel(state);if(prideModel)return '<p>Your pride</p>'+aslanPridePopupView({...prideModel,tagline:prideModel.pride?originTagline('pride:'+prideModel.pride.id,projection.log.findLast(event=>event.type==='roll-aslan-pride')?.id):''},{esc});
  const clanModel=aslanClanPopupModel(state);if(clanModel)return '<p>Your clan</p>'+aslanClanPopupView({...clanModel,tagline:clanModel.clan?originTagline('clan:'+clanModel.clan.type,projection.log.findLast(event=>event.type==='roll-aslan-clan')?.id):''},{esc});
@@ -482,12 +486,13 @@ function render(){
  backgroundDraft=reconcileBackgroundDraft(backgroundDraft,backgroundDraftKey(session,projection.state),projection.state);
  const lastRollResult=conciseResult(projection.log.at(-1),projection.state,catalog);
  const lastResult=projection.state.stage==='background'||projection.state.stage==='career'&&selectedCareer?'':statisticsRollFeedbackView(projection.log.at(-1),projection.state,{esc})??latestResultView(lastRollResult,{esc,tagline:trainingTagline});
+ const studyDraft=$('.education-result #education-subject')?{key:$('#workspace').dataset.educationStudyKey,subject:$('#education-subject').value,skill:$('#education-skill').value}:null;
  const lawyerPanel=$('#prisoner-lawyer'),lawyerDraft=lawyerPanel?{id:lawyerPanel.dataset.lawyerId,fields:[...lawyerPanel.querySelectorAll('input,select,textarea')].map(input=>({id:input.id,value:input.value,checked:input.checked}))}:null;
  const lifePanel=$('#core-life-decision'),lifeDraft=lifePanel?{id:lifePanel.dataset.lifeEventId,fields:[...lifePanel.querySelectorAll('input,select,textarea')].map(input=>({id:input.id,value:input.value,checked:input.checked}))}:null;
  const accessOpen=$('#aslan-access-panel')?.open;
  const landOpen=$('#land-claim-panel')?.open;
  const shareDraft={open:$('#clan-share-panel')?.open,kind:$('#clan-share-kind')?.value,lot:$('#clan-share-lot')?.value};
- const state=projection.state;document.body.dataset.stage=state.stage;document.body.dataset.familyPopup=String(!!(aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state)));$('header h1').textContent=(['identity','statistics','background','precareer'].includes(state.stage)||aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state))?'CHARACTER BUILDER':'A life among the stars';$('header .lead').textContent=(['identity','statistics','background','precareer'].includes(state.stage)||aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state))?'TRAVELLER RPG':'Build your Traveller one decision at a time.';const detailKey=d=>d.id||d.querySelector(':scope > summary')?.textContent;const previousDetails=new Map([...document.querySelectorAll('#sheet details, #statistics-gm-controls details')].map(d=>[detailKey(d),d.open]));
+ const state=projection.state,educationModel=educationResultModel(projection);document.body.dataset.educationPopup=String(!!educationModel);document.body.dataset.stage=state.stage;document.body.dataset.familyPopup=String(!!(aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state)));$('header h1').textContent=(['identity','statistics','background','precareer'].includes(state.stage)||educationModel||aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state))?'CHARACTER BUILDER':'A life among the stars';$('header .lead').textContent=(['identity','statistics','background','precareer'].includes(state.stage)||educationModel||aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state))?'TRAVELLER RPG':'Build your Traveller one decision at a time.';const detailKey=d=>d.id||d.querySelector(':scope > summary')?.textContent;const previousDetails=new Map([...document.querySelectorAll('#sheet details, #statistics-gm-controls details')].map(d=>[detailKey(d),d.open]));
  const gmDraft={task:$('#gm-task')?.value,field:$('#gm-field')?.value,roll:$('#gm-roll-choice')?.value,restore:$('#gm-restore-choice')?.value};
  $('#workspace').innerHTML='<p class="step-count">COMPLETED TERMS: '+state.character.terms+' · '+esc(state.stage.toUpperCase().replaceAll('-',' '))+'</p><h2 id="step-title" tabindex="-1">'+esc(educationSkillTitle(state)??trainingContext(state)?.title??(state.prisonerEscape?prisonerEscapeTitle:null)??(isBasicTrainingChoice(state)?'Choose a basic-training skill':stageNames[state.stage]??state.stage))+'</h2>'+lastResult+aslanAccessView(state,{esc,button})+clanShareView(state,{esc,button,sourceLabel})+landClaimView(state,{esc,button,sourceLabel})+aslanAccessConflictView(state,{esc,button,sourceLabel})+stageView(state)+(['career','retirement','benefits'].includes(state.stage)&&(state.character.deferredEquipment??[]).some(e=>e.status==='pending')?button('Review assets & benefits','review-equipment','quiet'):'')+deferredAwardsView(state,{esc,button});
  if(state.stage==='statistics'){const heading=$('#step-title'),wrap=document.createElement('div');wrap.className='statistics-heading';heading.before(wrap);wrap.append(heading);wrap.insertAdjacentHTML('beforeend',openingInfoButton('generation'));}
@@ -499,10 +504,12 @@ function render(){
  for(const [selector,value] of [['#gm-task',gmDraft.task],['#gm-field',gmDraft.field],['#gm-roll-choice',gmDraft.roll],['#gm-restore-choice',gmDraft.restore]]){const select=$(selector);if(select&&[...select.options].some(option=>option.value===value&&!option.disabled))select.value=value;}
  if(state.stage==='statistics')syncCharacterPortrait(state.character.species,(state.character.identityGender??state.character.gender)==='female'?'female':'male');
  syncCorrectionField(state,$);syncReplacementDice(projection.log,$,esc);syncCorrectionTask($);if(state.stage==='identity')syncRerollOptions($('#setup-form'));
- if(state.stage!=='precareer')cancelCharacter.placeButton();
- if(state.stage!=='precareer')mountPreCareerPopup(document,{state});
+ if(state.stage!=='precareer'&&!educationModel)cancelCharacter.placeButton();
+ if(state.stage!=='precareer'&&!educationModel)mountPreCareerPopup(document,{state});
  mountBackgroundLayout(document,state,backgroundDraft?.skills??[],catalog,{esc});
- if(state.stage==='precareer')mountPreCareerPopup(document,{state,catalog,projection,session,esc,sourceLabel,generation:operationGeneration});
+ if(state.stage==='precareer'||educationModel)mountPreCareerPopup(document,{state,catalog,projection,session,esc,sourceLabel,generation:operationGeneration,resultModel:educationModel});
+ const studyKey=JSON.stringify([operationGeneration,session.seed,state.education,state.pendingChoice?.selectionId]);$('#workspace').dataset.educationStudyKey=studyKey;
+ if(educationModel?.study&&studyDraft?.key===studyKey&&[...$('#education-subject').options].some(o=>o.value===studyDraft.subject)){$('#education-subject').value=studyDraft.subject;syncEducationSubject(state,catalog,document,esc);$('#education-skill').value=studyDraft.skill;syncEducationStudyContinue(state,catalog,document);}
  $('#workspace').dataset.revision=projection.revision;
  mountSpeciesSkillPopup(document);
  mountAslanFamilyPopup(document,{onRoll:async()=>{if(!await send(aslanRitePopupModel(projection.state)?'roll-aslan-rite':aslanPridePopupModel(projection.state)?'roll-aslan-pride':aslanClanPopupModel(projection.state)?'roll-aslan-clan':aslanBirthPopupModel(projection.state)?'roll-aslan-birth-order':'roll-aslan-family'))throw new Error($('#message').textContent||'The family roll could not be recorded.');},onContinue:async(index)=>{
@@ -592,6 +599,7 @@ document.addEventListener('click',async event=>{
   if(action==='choose-effect')return send(action,{index:Number(el.dataset.index)});
  if(action==='allocate-specializations')return send(action);
  if(action==='choose-skill')return send(action,{name:$('#award-skill').value});
+ if(action==='acknowledge-education-result'){if(event.detail>1||el.disabled)return;return send(action);}
  if(action==='education-skill')return send(action,{name:$('#education-skill').value});
  if(action==='education-service')return send(action,{name:el.dataset.name});
  if(action==='education-check')return send(action,{name:$('#education-check-skill').value});
@@ -761,10 +769,12 @@ document.addEventListener('change',event=>{if(event.target.id==='aslan-access-de
 
 document.addEventListener('change',event=>{if(['life-outcome','life-funding'].includes(event.target.id))syncCoreLifeEventControls($);});
 
-document.addEventListener('change',event=>{if(event.target.id==='education-subject')syncEducationSubject(projection.state,catalog,document,esc);});
+document.addEventListener('change',event=>{if(event.target.id==='education-subject'){syncEducationSubject(projection.state,catalog,document,esc);syncEducationStudyContinue(projection.state,catalog,document);}});
 
 document.addEventListener('change',event=>{if(event.target.id==='award-base')syncAwardBase(projection.state,catalog,document,esc);if(event.target.id==='award-speciality')$('#award-skill').value=event.target.value;});
 
 document.addEventListener('change',event=>{if(event.target.id==='benefit-item-id')syncEquipmentCatalogue(projection.state.pending,document);});
 
 document.addEventListener('change',event=>{if(['credit-category','credit-item'].includes(event.target.id))syncCreditSelection(projection.state.pending,document,event.target.id==='credit-category');});
+
+document.addEventListener('input',event=>{if(event.target.id==='education-skill')syncEducationStudyContinue(projection.state,catalog,document);});

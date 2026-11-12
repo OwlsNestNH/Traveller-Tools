@@ -37,7 +37,7 @@ export function completedTermsView(state,catalog){
 
 // Setup, corrections and navigation belong in the downloadable audit, not the
 // character's life story. Their resulting values remain on the character sheet.
-const auditOnly=new Set(['setup','configure','enter-physical-statistic','gm-physical-dice','gm-mode','roll-statistics','swap-statistics','accept-statistics','background','notes','connection','restore','gm-override','skip-precareer','open-precareer','cancel-education','cancel-career-transfer','continue-career','retry-skill-choice']);
+const auditOnly=new Set(['acknowledge-education-result','setup','configure','enter-physical-statistic','gm-physical-dice','gm-mode','roll-statistics','swap-statistics','accept-statistics','background','notes','connection','restore','gm-override','skip-precareer','open-precareer','cancel-education','cancel-career-transfer','continue-career','retry-skill-choice']);
 const finite=value=>typeof value==='number'&&Number.isFinite(value);
 const equal=(a,b)=>JSON.stringify(a??null)===JSON.stringify(b??null);
 const words=value=>String(value??'').replace(/[._-]+/g,' ');
