@@ -1,4 +1,4 @@
-import {careerTemplateModel,mountCareerTemplate,armyResultTagline} from './career-template.mjs';
+import {careerTemplateModel,mountCareerTemplate,armyResultTagline,syncCareerSpecialty} from './career-template.mjs';
 import {mountRewindConfirmation,createNavigationDrafts} from './recovery-actions.mjs';
 import {mountCrowIntroduction} from './crow-assistance.mjs';
 import {mountRequiredActions,clearRequiredActions} from './required-action.mjs';
@@ -520,6 +520,7 @@ function render(){
  const landOpen=$('#land-claim-panel')?.open;
  const shareDraft={open:$('#clan-share-panel')?.open,kind:$('#clan-share-kind')?.value,lot:$('#clan-share-lot')?.value};
  const state=projection.state,educationModel=educationResultModel(projection),eventModel=educationEventModel(state,projection);document.body.dataset.educationPopup=String(!!(educationModel||eventModel));document.body.dataset.stage=state.stage;document.body.dataset.familyPopup=String(!!(aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state)));$('header h1').textContent=(['identity','statistics','background','precareer'].includes(state.stage)||educationModel||eventModel||aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state))?'CHARACTER BUILDER':'A life among the stars';$('header .lead').textContent=(['identity','statistics','background','precareer'].includes(state.stage)||educationModel||eventModel||aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state))?'TRAVELLER RPG':'Build your Traveller one decision at a time.';const detailKey=d=>d.id||d.querySelector(':scope > summary')?.textContent;const previousDetails=new Map([...document.querySelectorAll('#sheet details, #statistics-gm-controls details')].map(d=>[detailKey(d),d.open]));
+ document.body.dataset.careerTemplate=careerTemplateModel(state,catalog,selectedCareer)||!selectedCareer&&armyResultTagline(projection.log.at(-1),lastRollResult,state)?'core.army':'';
  const gmDraft={task:$('#gm-task')?.value,field:$('#gm-field')?.value,roll:$('#gm-roll-choice')?.value,restore:$('#gm-restore-choice')?.value};
  $('#workspace').innerHTML='<p class="step-count">COMPLETED TERMS: '+state.character.terms+' · '+esc(state.stage.toUpperCase().replaceAll('-',' '))+'</p><h2 id="step-title" tabindex="-1">'+esc(educationSkillTitle(state)??trainingContext(state)?.title??(state.prisonerEscape?prisonerEscapeTitle:null)??(isBasicTrainingChoice(state)?'Choose a basic-training skill':stageNames[state.stage]??state.stage))+'</h2>'+lastResult+aslanAccessView(state,{esc,button})+clanShareView(state,{esc,button,sourceLabel})+landClaimView(state,{esc,button,sourceLabel})+aslanAccessConflictView(state,{esc,button,sourceLabel})+stageView(state)+(['career','retirement','benefits'].includes(state.stage)&&(state.character.deferredEquipment??[]).some(e=>e.status==='pending')?button('Review assets & benefits','review-equipment','quiet'):'')+deferredAwardsView(state,{esc,button});
  if(state.stage==='statistics'){const heading=$('#step-title'),wrap=document.createElement('div');wrap.className='statistics-heading';heading.before(wrap);wrap.append(heading);wrap.insertAdjacentHTML('beforeend',openingInfoButton('generation'));}
@@ -532,7 +533,6 @@ function render(){
  if(state.stage==='statistics')syncCharacterPortrait(state.character.species,(state.character.identityGender??state.character.gender)==='female'?'female':'male');
  syncCorrectionField(state,$);syncReplacementDice(projection.log,$,esc);syncCorrectionTask($);if(state.stage==='identity')syncRerollOptions($('#setup-form'));
  if(state.stage!=='precareer'&&!educationModel&&!eventModel)cancelCharacter.placeButton();
- mountCareerTemplate(document,careerTemplateModel(state,catalog,selectedCareer),{esc,event:projection.log.at(-1),showDice:!!armyResultTagline(projection.log.at(-1),lastRollResult,state)});
  if(state.stage!=='precareer'&&!educationModel&&!eventModel)mountPreCareerPopup(document,{state});
  mountBackgroundLayout(document,state,backgroundDraft?.skills??[],catalog,{esc});
  if(state.stage==='precareer'||educationModel||eventModel)mountPreCareerPopup(document,{state,catalog,projection,session,esc,sourceLabel,generation:operationGeneration,resultModel:educationModel,eventModel});
@@ -543,6 +543,7 @@ function render(){
  if(educationModel?.study&&studyDraft?.key===studyKey&&[...$('#education-subject').options].some(o=>o.value===studyDraft.subject)){$('#education-subject').value=studyDraft.subject;syncEducationSubject(state,catalog,document,esc);$('#education-skill').value=studyDraft.skill;syncEducationStudyContinue(state,catalog,document);}
  $('#workspace').dataset.revision=projection.revision;
  if(state.stage==='identity')mountCrowIntroduction(document);
+ mountCareerTemplate(document,careerTemplateModel(state,catalog,selectedCareer),{esc,event:projection.log.at(-1),showDice:!!armyResultTagline(projection.log.at(-1),lastRollResult,state),state,sessionKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id])});
  mountSpeciesSkillPopup(document);
  mountAslanFamilyPopup(document,{onRoll:async()=>{if(!await send(aslanRitePopupModel(projection.state)?'roll-aslan-rite':aslanPridePopupModel(projection.state)?'roll-aslan-pride':aslanClanPopupModel(projection.state)?'roll-aslan-clan':aslanBirthPopupModel(projection.state)?'roll-aslan-birth-order':'roll-aslan-family'))throw new Error($('#message').textContent||'The family roll could not be recorded.');},onContinue:async(index)=>{
   const rite=aslanRitePopupModel(projection.state);if(rite){if(!await send(rite.equipment?'record-aslan-rite-equipment':'acknowledge-aslan-rite'))throw new Error($('#message').textContent||'Rite continuation could not be recorded.');return;}
@@ -557,6 +558,7 @@ function render(){
  mountAslanClanInformation(document);mountAslanPrideInformation(document);mountAslanBackgroundInformation(document);mountAslanRiteInformation(document,{resultKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id,projection.log.findLast(event=>event.type==='roll-aslan-rite')?.id,state.currentAslanOrigin?.rite?.dice,state.currentAslanOrigin?.rite?.statsBefore,state.currentAslanOrigin?.rite?.modifier,state.currentAslanOrigin?.rite?.additionalRolls])});
  mountEquipmentDialog(document,()=>send('cancel-deferred-equipment'));
  recoveryDrafts.restore($('#workspace'),recoveryKey());
+ syncCareerSpecialty(document,careerTemplateModel(state,catalog,selectedCareer));
 }
 function renderEffects(){
  const list=$('#effect-list');clearRequiredActions(list.closest('dialog[open]')??$('#workspace'));
@@ -586,7 +588,7 @@ document.addEventListener('click',async event=>{
  if(action==='resolve-relationship-event'){if(event.detail>1)return;return send('resolve-relationship-event-step',relationshipEventPayload(projection.state,$));}
  if(['redeem-clan-shares','verify-clan-share-lot','verify-clan-contact','resolve-land-claim','activate-aslan-access','resolve-aslan-access-conflict'].includes(action)&&event.detail>1)return;
  if(action==='select-career'){selectedCareer=el.dataset.id;clearActionNotice();render();$('#step-title')?.focus();return;}
- if(action==='career-list'){selectedCareer='';clearActionNotice();render();$('#step-title')?.focus();return;}
+ if(action==='career-list'){recoveryDrafts.capture($('#workspace'),recoveryKey());selectedCareer='';clearActionNotice();render();$('#step-title')?.focus();return;}
  if(action==='add-effect'){effects=readEffects();effects.push({kind:projection.state.stage==='psionic-games-decisions'?'stat':'skill',name:'',value:1,mode:'increase',role:'Contact'});renderEffects();return;}
  if(action==='remove-effect'){effects=readEffects();effects.splice(Number(el.dataset.index),1);renderEffects();return;}
  if(action==='clan-add-weapon'){const items=readClanWeaponItems();if(items.length<projection.state.clanShareOptions.assetRules.maxItems){renderClanWeaponItems([...items,{quantity:1}]);document.querySelectorAll('[data-weapon-row]')[items.length]?.querySelector('input')?.focus();}return;}
@@ -732,7 +734,7 @@ $('#log-view').onclick=()=>{if(!busy&&projection?.ok)logViewer.open();};
 $('#log-download').onclick=()=>download('traveller-action-log.txt',fullActionLog(projection.log),'text/plain');
 let printDetails=null;
 window.addEventListener('beforeprint',()=>{
- if(printDetails)return;printDetails=[...document.querySelectorAll('#final-sheet-content details')].map(element=>({element,open:element.open}));printDetails.forEach(item=>item.element.open=true);
+ if(printDetails)return;printDetails=[...document.querySelectorAll('#final-sheet-content details,#sheet details.army-record-section')].map(element=>({element,open:element.open}));printDetails.forEach(item=>item.element.open=true);
 });
 window.addEventListener('afterprint',()=>{for(const item of printDetails??[])item.element.open=item.open;printDetails=null;});
 $('#print').onclick=async()=>{

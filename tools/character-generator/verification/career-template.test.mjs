@@ -46,3 +46,5 @@ test('all three Army specialties complete native training, rank rewards, commiss
   const benefits=run(run(promoted,'leave-career'),'benefit',{cash:true});assert.equal(benefits.state.cashRolls,1);assert.ok(benefits.state.character.cash>0);assert.equal(api({operation:'import',raw:exportSession(benefits.session)}).ok,true);
  }
 });
+
+test('check dice show recorded modifiers, target and outcome without inferring from faces',()=>{const esc=String;const event={type:'survival-check',summary:'Survival: {"natural":8,"total":10,"target":6,"success":true}.',rolls:[{label:'Survival',values:[5,3],total:8}]};const html=armyRecordedDice(event,{esc});assert.match(html,/\+ 2 = 10/);assert.match(html,/Total 10 · Target 6\+ · Success/);assert.doesNotMatch(armyRecordedDice({...event,summary:'Survival: {"natural":7,"total":10,"target":6,"success":true}.'},{esc}),/army-dice-equation/);});
