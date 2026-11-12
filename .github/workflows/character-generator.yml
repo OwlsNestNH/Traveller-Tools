@@ -29,6 +29,7 @@ jobs:
           node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install --with-deps chromium
       - name: Verify replaceable current and finished sheets
         run: |
+          node tools/character-generator/verification/clan-share-contrast-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/current-sheet-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/final-sheet-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - name: Upload sheet review
@@ -37,6 +38,7 @@ jobs:
         with:
           name: current-character-sheet-review-${{ github.event.pull_request.head.sha }}
           path: |
+            tools/character-generator/verification/artifacts/clan-share-contrast-*
             tools/character-generator/verification/artifacts/current-sheet-*
             tools/character-generator/verification/artifacts/final-sheet-*
           if-no-files-found: warn
