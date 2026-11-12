@@ -1,3 +1,4 @@
+import {careerTemplateModel,mountCareerTemplate,armyTagline} from './career-template.mjs';
 import {mountRewindConfirmation,createNavigationDrafts} from './recovery-actions.mjs';
 import {mountCrowIntroduction} from './crow-assistance.mjs';
 import {mountRequiredActions,clearRequiredActions} from './required-action.mjs';
@@ -510,7 +511,7 @@ function sheetView(state){
 function render(){
  backgroundDraft=reconcileBackgroundDraft(backgroundDraft,backgroundDraftKey(session,projection.state),projection.state);
  const lastRollResult=conciseResult(projection.log.at(-1),projection.state,catalog);
- const lastResult=projection.state.stage==='background'||projection.state.stage==='career'&&selectedCareer?'':statisticsRollFeedbackView(projection.log.at(-1),projection.state,{esc})??latestResultView(lastRollResult,{esc,tagline:trainingTagline});
+ const lastResult=projection.state.stage==='background'||projection.state.stage==='career'&&selectedCareer?'':statisticsRollFeedbackView(projection.log.at(-1),projection.state,{esc})??latestResultView(lastRollResult,{esc,tagline:careerTemplateModel(projection.state,catalog,selectedCareer)?armyTagline(projection.log.at(-1),lastRollResult):trainingTagline});
  const nestedDraft=$('.education-nested-label select')?{kind:$('.education-nested-prompt').dataset.educationChoice,key:$('#workspace').dataset.educationStudyKey,value:$('.education-nested-label select').value}:null;
  const studyDraft=$('.education-result #education-subject')?{key:$('#workspace').dataset.educationStudyKey,subject:$('#education-subject').value,skill:$('#education-skill').value}:null;
  const lawyerPanel=$('#prisoner-lawyer'),lawyerDraft=lawyerPanel?{id:lawyerPanel.dataset.lawyerId,fields:[...lawyerPanel.querySelectorAll('input,select,textarea')].map(input=>({id:input.id,value:input.value,checked:input.checked}))}:null;
@@ -554,6 +555,7 @@ function render(){
  },onNameClan:async name=>{if(!await send('name-aslan-clan',{name}))throw new Error($('#message').textContent||'Clan name could not be recorded.');},onChooseClan:async payload=>{if(!await send('choose-aslan-clan',payload))throw new Error($('#message').textContent||'Clan could not be recorded.');},onToggleGM:async enabled=>{if(!await send('gm-mode',{enabled}))throw new Error($('#message').textContent||'GM setting could not be recorded.');const detail=$('#aslan-clan-record')?.closest('details');if(detail)detail.open=true;if(enabled)$('#aslan-clan-name')?.focus();}});
  mountAslanClanInformation(document);mountAslanPrideInformation(document);mountAslanBackgroundInformation(document);mountAslanRiteInformation(document,{resultKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id,projection.log.findLast(event=>event.type==='roll-aslan-rite')?.id,state.currentAslanOrigin?.rite?.dice,state.currentAslanOrigin?.rite?.statsBefore,state.currentAslanOrigin?.rite?.modifier,state.currentAslanOrigin?.rite?.additionalRolls])});
  mountEquipmentDialog(document,()=>send('cancel-deferred-equipment'));
+ mountCareerTemplate(document,careerTemplateModel(state,catalog,selectedCareer),{esc});
  recoveryDrafts.restore($('#workspace'),recoveryKey());
 }
 function renderEffects(){

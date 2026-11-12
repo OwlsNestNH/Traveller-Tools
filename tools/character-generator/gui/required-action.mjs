@@ -85,8 +85,8 @@ export function showRequiredAction(root,{control,type='generic',detail,key='',ac
  const scope=control.closest('dialog[open]')??root.querySelector('#workspace')??root.body;
  let warning=scope.querySelector(':scope > .required-action-warning');
  if(!warning){warning=root.createElement('div');warning.id='required-action-warning-'+(++serial);warning.className='required-action-warning';warning.dataset.crowEssential='true';warning.setAttribute('role','alert');warning.setAttribute('aria-atomic','true');scope.prepend(warning);}
- const introduction=scope.querySelector(':scope > #crow-introduction');if(introduction)introduction.hidden=true;
- const assistance=crowAssistanceView(root,{type,informationDialog:introduction?'crow-introduction-dialog':null});assistance.help.id=warning.id+'-crow-help';if(!introduction)assistance.button.setAttribute('aria-controls',assistance.help.id);
+ const introduction=scope.querySelector(':scope > #crow-introduction,.career-pilot-guidance');if(introduction)introduction.hidden=true;
+ const assistance=crowAssistanceView(root,{type,informationDialog:introduction?.id==='crow-introduction'?'crow-introduction-dialog':null});assistance.help.id=warning.id+'-crow-help';if(introduction?.id!=='crow-introduction')assistance.button.setAttribute('aria-controls',assistance.help.id);
  const title=root.createElement('strong'),instruction=root.createElement('p');title.textContent=requiredHeadline(type,key);instruction.textContent=detail;
  const speech=root.createElement('div');speech.className='crow-speech';speech.append(title,instruction);
  const recovery=root.createElement('div');recovery.className='crow-recovery-actions';const dismiss=()=>{warning.hidden=true;if(introduction)introduction.hidden=false;if(control.isConnected){control.focus();control.scrollIntoView?.({block:'nearest'});}};recovery.append(recoveryButton(root,{id:'continue',label:'Continue',ariaLabel:'Continue to the missing field',run:dismiss}));for(const action of actions)recovery.append(recoveryButton(root,action));warning.replaceChildren(assistance.row,speech,assistance.help,recovery);warning.hidden=false;
@@ -169,7 +169,7 @@ export function mountRequiredActions({document:root,getState,isBusy,backgroundSe
 export function clearRequiredActions(scope){
  if(!scope)return;
  for(const warning of scope.querySelectorAll('.required-action-warning'))warning.hidden=true;
- const introduction=scope.querySelector('#crow-introduction');if(introduction)introduction.hidden=false;
+ const introduction=scope.querySelector('#crow-introduction,.career-pilot-guidance');if(introduction)introduction.hidden=false;
  for(const control of scope.querySelectorAll('[aria-describedby]')){
   const ids=(control.getAttribute('aria-describedby')??'').split(/\s+/),remaining=ids.filter(id=>id&&!id.startsWith('required-action-warning-'));
   if(remaining.length===ids.length)continue;
