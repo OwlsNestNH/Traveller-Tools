@@ -314,12 +314,17 @@
  .precareer-layout #precareer-dialog:not(:modal){grid-row:2;width:100%;margin:18px 0 0}
 }
 /* Keep the full PSI story and choices visible without shrinking the dice.
-   Only wide screens place the explanation beside the pending roll. */
+   Only wide screens place PSI/challenge explanation beside the pending roll. */
 @media screen and (min-width:1101px){
- .education-potential-prompt:has(>.education-pending-dice){display:grid;grid-template-columns:minmax(0,1fr) 316px;column-gap:20px;align-items:center}
- .education-potential-prompt:has(>.education-pending-dice)>*{grid-column:1 / -1}
- .education-potential-prompt:has(>.education-pending-dice)>.education-event-content{grid-column:1;grid-row:2}
- .education-potential-prompt:has(>.education-pending-dice)>.education-pending-dice{grid-column:2;grid-row:2}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice){display:grid;grid-template-columns:minmax(0,1fr) 316px;column-gap:20px;align-items:center}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>*{grid-column:1 / -1}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>.education-event-content{grid-column:1;grid-row:2}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>.education-pending-dice{grid-column:2;grid-row:2}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>.education-event-heading{grid-row:1}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>.education-nested-label{grid-row:3}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>.education-event-roll{grid-row:4}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>.education-potential-decline{grid-row:5}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>.education-event-agency{grid-row:6}
 }
 
 /* Reserve desktop result-footer clearance below the persistent toolbar. */

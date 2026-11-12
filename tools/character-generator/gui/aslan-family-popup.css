@@ -447,3 +447,10 @@ body[data-family-popup="true"] #workspace,body[data-family-popup="true"] #sheet,
 /* Match recorded Rite dice; programmatic heading focus is not a control. */
 #aslan-rite-doubles-dialog .rite-dice{color:#ffd34b}
 #aslan-rite-doubles-dialog #aslan-rite-doubles-title:focus{outline:none}
+
+/* Doubles outcomes lead; the source story supports the recorded consequence. */
+#aslan-rite-doubles-dialog .rite-doubles-effect{border-width:3px}
+#aslan-rite-doubles-dialog .rite-doubles-status{font-size:16px;font-weight:750;letter-spacing:.03em;margin:0 0 8px;color:#c4d8e7}
+#aslan-rite-doubles-dialog #rite-doubles-outcome{font-size:40px;line-height:1.15;font-weight:850;color:#ffd34b;margin:0 0 14px;overflow-wrap:anywhere}
+#aslan-rite-doubles-dialog .aslan-family-narrative{font-size:20px;line-height:1.4;font-weight:500;color:#c4d8e7;margin:16px 0}
+@media(max-width:650px){#aslan-rite-doubles-dialog #rite-doubles-outcome{font-size:30px}#aslan-rite-doubles-dialog .aslan-family-narrative{font-size:18px}}

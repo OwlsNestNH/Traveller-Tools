@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {api,exportSession} from '../engine/session.mjs';
 import {buildAslanOriginFixture as build,run,force,rejected} from './aslan-origin-fixtures.mjs';
-import {aslanRitePopupModel,aslanRitePopupView,riteEventSummary,aslanRiteDoublesView} from '../gui/aslan-rite-popup.mjs';
+import {aslanRitePopupModel,aslanRitePopupView,riteEventSummary,aslanRiteDoublesView,riteDoublesHeadline} from '../gui/aslan-rite-popup.mjs';
 const round=r=>{const x=api({operation:'import',raw:exportSession(r.session)});assert.equal(x.ok,true,x.error?.message);assert.deepEqual(x.state,r.state);assert.deepEqual(x.log,r.log);};
 test('all36 Rite rolls preserve strict comparison and resolve doubles exactly once',()=>{
  for(const gender of ['male','female'])for(let a=1;a<=6;a++)for(let b=1;b<=6;b++){
@@ -42,4 +42,15 @@ test('doubles event is read-only, named and narrative-rich with no tagline for a
 });
 test('doubles popup does not claim standard credit after a source ruling',()=>{
  let r=force(build({stage:'aslan-rite'}),'roll-aslan-rite',{},[2,2]);r=run(r,'resolve-book',{confirmed:true,note:'Explicit referee source fixture.',effects:[{kind:'relationship',role:'Contact',name:'Source contact'}]});const html=aslanRiteDoublesView(aslanRitePopupModel(r.state),{esc:String});assert.match(html,/recorded referee ruling/);assert.doesNotMatch(html,/credit recorded|cash awarded|Decision still required/);
+});
+
+test('doubles consequence leads the story with accurate recorded or pending headline',()=>{
+ for(const gender of ['male','female'])for(let die=1;die<=6;die++){
+  const r=force(build({stage:'aslan-rite',gender}),'roll-aslan-rite',{},[die,die]),model=aslanRitePopupModel(r.state),html=aslanRiteDoublesView(model,{esc:String});
+  assert.ok(html.indexOf('id="rite-doubles-outcome"')<html.indexOf('class="aslan-family-narrative"'));assert.ok(html.includes('<h3 id="rite-doubles-outcome">'+riteDoublesHeadline(model)+'</h3>'));
+  if(die===1)assert.ok(riteDoublesHeadline(model).startsWith(model.rite.additionalRolls[0].total+' Clan Share'));
+  if(die===2&&gender==='male'){assert.match(riteDoublesHeadline(model),/pending/);assert.doesNotMatch(html,/Recorded outcome/);}else assert.match(html,/Recorded outcome/);
+  if(die===6)assert.equal(riteDoublesHeadline(model),'END +1');
+  const main=aslanRitePopupView(model,{esc:String}).split('</dialog>')[0];assert.doesNotMatch(main,/rite-doubles-outcome|rite-doubles-status/);
+ }
 });

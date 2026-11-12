@@ -110,11 +110,11 @@
  .education-mobile-bonus-row p{font-size:18px;line-height:1.3;margin:5px 0 0;color:#f5f7fa}
 }
 
-.university-study-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.university-skill-box{min-width:0;border:2px solid #8de1e9;border-radius:16px;padding:14px}
+.university-study-pair{display:grid;grid-template-columns:1fr;gap:16px}
+.university-skill-box{min-width:0;border:0;padding:0}
 .education-result .university-skill-box h5{font-size:24px;line-height:1.2;margin:0 0 8px;color:#ffda36}
 .education-result .university-skill-level{font-size:20px;margin:0 0 12px}
 .university-skill-box select,.university-skill-box input{width:100%;min-height:48px}
-.university-skill-retained{color:#f5f7fa;border-left:4px solid #ffda36;padding-left:12px}
+.university-skill-retained{color:#f5f7fa}
 .university-skill-retained span{display:block;font-size:18px;margin-top:8px;color:#c6dbe8}
-@media(max-width:650px){.university-study-pair{grid-template-columns:1fr;gap:12px}.university-skill-box{padding:12px}.education-result .university-skill-box h5{font-size:23px}}
+@media(max-width:650px){.university-study-pair{grid-template-columns:1fr;gap:12px}.university-skill-box{padding:0}.education-result .university-skill-box h5{font-size:23px}}
