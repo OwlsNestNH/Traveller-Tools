@@ -118,3 +118,6 @@
 .university-skill-retained{color:#f5f7fa}
 .university-skill-retained span:not(.education-study-selector){display:block;font-size:18px;margin-top:8px;color:#c6dbe8}
 @media(max-width:650px){.university-study-pair{grid-template-columns:1fr;gap:12px}.university-skill-box{padding:0}.education-result .university-skill-box h5{font-size:23px}}
+
+/* Leave outer-panel clearance while retaining full-size stacked study controls. */
+@media screen and (min-width:1101px){.university-study-pair{gap:4px}}

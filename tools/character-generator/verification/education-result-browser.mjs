@@ -43,10 +43,10 @@ async function shot(p,label,width){
  await p.screenshot({path:fileURLToPath(new URL('education-result-'+label+'-'+width+'.png',out)),fullPage:false});
  if(width<650)await p.locator('#precareer-dialog').screenshot({path:fileURLToPath(new URL('education-result-'+label+'-'+width+'-full-panel.png',out))});
  if(width===1499){
-  const panelFits=await p.locator('#precareer-dialog').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;});
-  const footerFits=await p.locator('#precareer-rules-open').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;});
-  layoutCheck(fixture+' panel',()=>assert.ok(panelFits,'The complete desktop education panel must fit the 1499×1049 review viewport'));
-  layoutCheck(fixture+' footer',()=>assert.ok(footerFits,'Result details and sources footer must be visible in the desktop review viewport'));
+  const panelRect=await p.locator('#precareer-dialog').evaluate(el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:r.height,viewport:innerHeight};});
+  const footerRect=await p.locator('#precareer-rules-open').evaluate(el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:r.height,viewport:innerHeight};});
+  layoutCheck(fixture+' panel',()=>assert.ok(panelRect.top>=0&&panelRect.bottom<=panelRect.viewport,'The complete desktop education panel must fit the 1499×1049 review viewport: '+JSON.stringify(panelRect)));
+  layoutCheck(fixture+' footer',()=>assert.ok(footerRect.top>=0&&footerRect.bottom<=footerRect.viewport,'Result details and sources footer must be visible in the desktop review viewport: '+JSON.stringify(footerRect)));
  }
 }
 async function dismiss(p){await p.locator('#precareer-dismiss').click();await p.locator('#precareer-dialog').waitFor({state:'hidden'});}
