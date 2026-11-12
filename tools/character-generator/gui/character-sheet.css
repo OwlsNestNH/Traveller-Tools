@@ -63,3 +63,18 @@
 @media print{#final-sheet-content .career-rank-summary{background:#fff;color:#111}}
 /* Keep desktop event controls above the fold; share the existing utility row. */
 @media(min-width:761px){#precareer-dialog:modal>.popup-character-sheet-button{position:absolute;right:140px;top:27px;margin:0;min-height:44px;padding:8px 12px;z-index:2}}
+
+/* Navigation stays within this read-only modal and never changes creation state. */
+.traveller-sheet-jumps{display:flex;gap:8px;position:sticky;top:0;z-index:2;background:#062332;padding:6px 0;margin-bottom:10px}
+#final-sheet-content .traveller-sheet-jumps a{display:flex;align-items:center;justify-content:center;min-height:44px;flex:1;border:1px solid var(--sheet-cyan);border-radius:7px;font-size:16px;font-weight:750;color:var(--sheet-ink);background:#123c50;text-decoration:none}
+#traveller-sheet-current,#traveller-sheet-history{scroll-margin-top:66px}
+#final-character-sheet .final-sheet-export{background:transparent;border:0;margin:0;padding:0;color:var(--sheet-ink)}
+#final-character-sheet .final-sheet-export>summary{min-height:44px;display:list-item;align-content:center;color:var(--sheet-cyan);font-size:16px;font-weight:700;cursor:pointer}
+@media(max-width:760px){
+ #final-character-sheet .final-sheet-heading{display:flex;gap:8px;margin-bottom:4px}
+ #final-character-sheet .final-sheet-heading>button{width:auto;min-height:44px;flex:none;margin:0 0 6px;padding:8px}
+ #final-character-sheet .final-sheet-heading h2{font-size:24px;margin-bottom:6px}
+ #final-character-sheet .final-sheet-heading .eyebrow{display:none}
+ #final-character-sheet .final-sheet-boundary{margin:4px 0 6px}
+}
+@media print{.traveller-sheet-jumps,#final-character-sheet .final-sheet-export{display:none!important}}

@@ -28,6 +28,17 @@ try{
    assert.equal(await dialog.locator('#final-sheet-content input, #final-sheet-content button, #final-sheet-content select, #final-sheet-content textarea').count(),0);
    assert.ok(await dialog.evaluate(el=>el.scrollWidth<=el.clientWidth+1));
    assert.deepEqual(await page.locator('[id]').evaluateAll(nodes=>nodes.map(n=>n.id).filter((id,i,ids)=>ids.indexOf(id)!==i)),[]);
+   assert.equal(await dialog.locator('.final-sheet-export').getAttribute('open'),null);
+   await dialog.getByRole('link',{name:'History',exact:true}).click();
+   assert.equal(await page.evaluate(()=>document.activeElement.id),'traveller-sheet-history');
+   assert.ok(await dialog.locator('.traveller-sheet-history').evaluate(el=>{const r=el.getBoundingClientRect(),d=el.closest('dialog').getBoundingClientRect();return r.top>=d.top&&r.top<d.bottom;}));
+   await dialog.screenshot({path:fileURLToPath(new URL('current-sheet-'+label+'-history.png',out))});
+   await dialog.getByRole('link',{name:'Current',exact:true}).click();
+   assert.equal(await page.evaluate(()=>document.activeElement.id),'traveller-sheet-current');
+   await dialog.locator('.final-sheet-export summary').click();
+   assert.ok(await dialog.locator('[data-final-save]').isVisible());
+   await dialog.locator('.final-sheet-export summary').click();
+   await dialog.evaluate(el=>el.scrollTop=0);
    await page.screenshot({path:fileURLToPath(new URL('current-sheet-'+label+'.png',out)),fullPage:true});
    await dialog.screenshot({path:fileURLToPath(new URL('current-sheet-'+label+'-dialog.png',out))});
    for(const key of ['Tab','Shift+Tab'])for(let i=0;i<8;i++){await page.keyboard.press(key);assert.ok(await page.evaluate(()=>document.activeElement.closest('#final-character-sheet')!==null));}

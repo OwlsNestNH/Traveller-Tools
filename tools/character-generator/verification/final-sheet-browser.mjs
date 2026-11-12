@@ -50,6 +50,7 @@ try{
    await open.dblclick();await dialog.waitFor();assert.equal(await page.locator('dialog[open]').count(),1);
    await content.evaluate(el=>{const details=document.createElement('details');details.id='synthetic-print-disclosure';details.innerHTML='<summary>Synthetic read-only details</summary><p>Recorded source decision</p>';el.append(details);});
    await page.evaluate(()=>{window.__sheetPrints=0;window.print=()=>{window.__sheetPrints++;window.dispatchEvent(new Event('beforeprint'));window.__detailsPrinted=document.getElementById('synthetic-print-disclosure').open;window.dispatchEvent(new Event('afterprint'));};});
+   await dialog.locator('.final-sheet-export summary').click();
    await dialog.getByRole('button',{name:'Print this sheet',exact:true}).click();assert.equal(await page.evaluate(()=>window.__sheetPrints),1);
    assert.equal(await page.evaluate(()=>window.__detailsPrinted),true);assert.equal(await page.locator('#synthetic-print-disclosure').getAttribute('open'),null);await page.locator('#synthetic-print-disclosure').evaluate(el=>el.remove());
    assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),saved);
