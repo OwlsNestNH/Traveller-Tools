@@ -431,3 +431,4 @@ body[data-stage="background"] #message{max-width:var(--tool-content-width);margi
 .crow-error-heading{display:flex;align-items:center;gap:.75rem}.crow-error-heading>div{min-width:0}.crow-error-heading h2{margin:.3rem 0}.crow-error-dialog img{object-fit:contain;flex:0 0 64px;width:64px;height:80px}.crow-error-heading .eyebrow{margin:0}
 .crow-error-dialog h2{color:#ff7b85}.crow-error-dialog .eyebrow{color:#d8b76a}
 .crow-error-dialog p{line-height:1.55}.crow-error-dialog button{clear:both}
+#crow-error-dialog button{background:#185876;border-color:#78bbdc;color:#fff;min-height:48px}

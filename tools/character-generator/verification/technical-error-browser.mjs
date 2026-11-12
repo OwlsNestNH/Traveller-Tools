@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {contrastRatio} from './crow-contrast.mjs';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import {createServer} from '../server.mjs';
@@ -10,7 +11,7 @@ const browser=await chromium.launch({headless:true});
 const base='http://127.0.0.1:'+server.address().port+'/',key='traveller-character-generator.v1';
 const raw=exportSession(createSession('technical-error-private-free-fixture'));
 const out=new URL('./artifacts/',import.meta.url);await mkdir(out,{recursive:true});let checks=0;
-async function popup(p,detail){const dialog=p.locator('#crow-error-dialog[open]');await dialog.waitFor();assert.match(await dialog.innerText(),detail);assert.equal(await p.locator('#crow-error-title').evaluate(n=>n===document.activeElement),true);assert.equal(await dialog.getAttribute('aria-labelledby'),'crow-error-title');assert.equal(await dialog.locator('[role=alert]').count(),1);assert.doesNotMatch(await dialog.innerText(),/DUMMY|SPACE HORSES|NOT SO FAST/);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);return dialog;}
+async function popup(p,detail){const dialog=p.locator('#crow-error-dialog[open]');await dialog.waitFor();assert.match(await dialog.innerText(),detail);assert.equal(await p.locator('#crow-error-title').evaluate(n=>n===document.activeElement),true);assert.equal(await dialog.getAttribute('aria-labelledby'),'crow-error-title');assert.equal(await dialog.locator('[role=alert]').count(),1);const colors=await dialog.locator('button').evaluate(n=>({text:getComputedStyle(n).color,background:getComputedStyle(n).backgroundColor}));assert.ok(contrastRatio(colors.text,colors.background)>=4.5,'Close button contrast');await dialog.locator('img').evaluate(n=>n.decode().catch(()=>{}));assert.doesNotMatch(await dialog.innerText(),/DUMMY|SPACE HORSES|NOT SO FAST/);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);return dialog;}
 try{
  for(const width of [1440,390]){
   for(const target of ['engine/session.mjs','gui/app.mjs']){
