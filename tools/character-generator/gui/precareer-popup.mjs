@@ -24,11 +24,17 @@ export function preCareerChoicesView(state,catalog,{esc,button}){
 const signed=value=>value>=0?'+'+value:String(value);
 const diceArt='<svg class="admission-dice" viewBox="0 0 80 80" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><path d="M12 30 49 17 68 43 32 58Z M12 30l6 32 24 12 26-31 M32 58l10 16 M49 17l7 31 M5 18l-3-7 M67 18l7-8 M72 62l6 3"/><path d="M25 32h1 M42 28h1 M38 42h1 M24 49h1 M27 60h1 M50 60h1 M59 50h1" stroke-width="6"/></g></svg>';
 // This prompt changes presentation only; the existing command owns all event effects.
-export function educationEventModel(state){
+export function educationEventModel(state,projection){
+ if(projection?.educationGraduationPreview)return {name:'University',kind:'graduation',preview:projection.educationGraduationPreview};
  return state?.stage==='education-event'&&state.character.educations?.[state.education]?.id==='core.university'?{name:'University'}:null;
 }
 export function educationEventView(){
  return '<section class="education-event-prompt"><div class="education-event-heading">'+icon('core.university')+'<div><h3>University education event</h3><p>Your initial study skills and EDU gain are recorded.</p></div></div><section class="education-event-content"><h4>What happened during your studies?</h4><p>Roll 2D for one education event.</p><p>Resolve its outcome and any choices before graduation.</p></section><button type="button" data-action="education-event" class="education-event-roll">'+diceArt+'<span>Roll education event</span>'+diceArt+'</button><p class="education-event-agency">You choose when to roll. Nothing has been rolled yet.</p></section>';
+}
+
+export function educationGraduationView(model,{esc}){
+ const p=model.preview,info=(kind,label)=>'<button type="button" class="education-prompt-info" data-education-info="'+kind+'" aria-label="'+label+'">i</button>';
+ return '<section class="education-event-prompt education-graduation-prompt"><div class="education-event-heading">'+icon('core.university')+'<h3>University graduation</h3>'+info('graduation','What graduation changes')+'</div><section class="education-event-content"><h4>Graduation '+esc(p.target)+'+ · Honours '+esc(p.honoursTarget)+'+</h4><p class="graduation-formula">Roll 2D '+(p.modifier<0?'− '+Math.abs(p.modifier):'+ '+p.modifier)+'</p><p>'+esc(p.stat)+' '+esc(p.score)+' · Modifier '+esc(signed(p.modifier))+' '+info('calculation','How the graduation roll is calculated')+'</p></section><button type="button" data-action="education-graduation" class="education-event-roll">'+diceArt+'<span>Roll for graduation</span>'+diceArt+'</button><p class="education-event-agency">You choose when to roll.</p></section>';
 }
 
 export function admissionPreviewView(state,catalog,id,{esc,sourceLabel}){
@@ -85,7 +91,7 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  function open(){if(!dialog.open){if(dialog.dataset.panel==='event')dialog.showModal();else dialog.show();}context.querySelector('#precareer-resume').hidden=true;}
  function dismiss(){dialog.close();context.querySelector('#precareer-resume').hidden=false;context.querySelector('#precareer-resume').focus({preventScroll:true});}
  function openInfo(kind,title,trigger){info._opener=trigger;for(const name of ['result','rules','previous'])info.querySelector('#precareer-information-'+name).hidden=kind==='details'?name==='previous':name!==kind;info.querySelector('#precareer-information-title').textContent=title;if(!info.open)info.showModal();info.querySelector('#precareer-information-title').focus();}
- function closeInfo(){info.close();if(info._opener?.isConnected)info._opener.focus({preventScroll:true});}
+ function closeInfo(){info.close();if(info._restoreResult!==undefined){info.querySelector('#precareer-information-result').innerHTML=info._restoreResult;delete info._restoreResult;}if(info._opener?.isConnected)info._opener.focus({preventScroll:true});}
  layout.classList.add('precareer-layout');
  const c=state.character,species=catalog.species.find(s=>s.id===c.species)?.name??c.species;
  const overview=context.querySelector('#precareer-overview');overview.innerHTML='<p class="precareer-eyebrow">YOUR TRAVELLER</p><h2>'+esc(c.name||'Your Traveller')+'</h2><p>'+esc(species)+' · Age '+esc(c.age)+'</p><p>'+esc(c.terms)+' completed terms</p>';
@@ -128,7 +134,14 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
   if(id==='precareer-notes')notes.open=bar.open;
   bar.addEventListener('toggle',()=>{if(!bar.isConnected)return;if(id==='precareer-notes')notes.open=bar.open;if(bar.open){rail.dataset.openBar=id;for(const other of sheet.querySelectorAll(':scope > details'))if(other!==bar)other.open=false;}else if(rail.dataset.openBar===id)delete rail.dataset.openBar;});
  }
+ if(eventModel?.kind==='graduation')for(const trigger of workspace.querySelectorAll('[data-education-info]'))trigger.addEventListener('click',()=>{
+ const calculation=trigger.dataset.educationInfo==='calculation',p=eventModel.preview;
+ info._restoreResult=info.querySelector('#precareer-information-result').innerHTML;
+ info.querySelector('#precareer-information-result').innerHTML=calculation?'<p>Roll two dice and add your current '+esc(p.stat)+' characteristic modifier ('+esc(signed(p.modifier))+'). Graduation requires '+esc(p.target)+'+; honours requires '+esc(p.honoursTarget)+'+.</p>':'<p>Your initial awards and education event are already recorded. Successful graduation adds the existing study-skill and EDU awards, plus the applicable graduate career benefits. Honours improves the applicable career benefits.</p><p>If you do not graduate, your initial awards and resolved event gains are not removed by this result.</p>';
+ openInfo('result',calculation?'How graduation is calculated':'What graduation changes',trigger);
+ });
  if(resultModel||eventModel)workspace.querySelector('#precareer-dismiss').textContent='Close';
  if(eventModel){for(const small of workspace.querySelectorAll('.precareer-information-rows small'))small.remove();if(dialog.open&&!dialog.matches(':modal')){dialog.close();open();}}
+ if(!eventModel&&dialog.open&&dialog.matches(':modal')){dialog.close();open();}
  dialog._refreshPreCareerPanel?.();if(newlyCreated)open();
 }

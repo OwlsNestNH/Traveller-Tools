@@ -1,4 +1,4 @@
-import {educationResultProjection} from './education-result-projection.mjs';
+import {educationResultProjection,educationGraduationPreviewProjection} from './education-result-projection.mjs';
 import {familyNarrative} from './aslan-family-narrative.mjs';
 import {restrictedCreditItems,restrictedCreditPurchase} from './finalization-ledgers.mjs';
 import {aslanEventPending,aslanOutcastEntry,aslanOwnedLand} from './aslan-event-outcomes.mjs';
@@ -3318,7 +3318,8 @@ export function project(session) {
  decorateLifeEventPresentation({state,log,snapshots,events:session.events});
  decorateEventResults({log,snapshots,events:session.events});
  const educationResultView=educationResultProjection({state,log,snapshots,events:session.events});
- return {state,log,revision:session.events.length,...(state.stage==='precareer'?{educationAdmissionPreviews}:{}),...(educationResultView?{educationResultView}:{})};
+ const educationGraduationPreview=educationGraduationPreviewProjection(state);
+ return {state,log,revision:session.events.length,...(state.stage==='precareer'?{educationAdmissionPreviews}:{}),...(educationResultView?{educationResultView}:{}),...(educationGraduationPreview?{educationGraduationPreview}:{})};
 }
 export function execute(session,command,{id,expectedRevision}={}) {
  const before=project(session);

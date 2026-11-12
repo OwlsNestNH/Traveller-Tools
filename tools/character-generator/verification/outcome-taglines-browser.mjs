@@ -21,23 +21,25 @@ async function changed(page,before){await page.waitForFunction(({key,before})=>J
 async function load(page,session){await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(session)});await page.reload();await ready(page);await page.locator('body[data-stage="statistics"]').waitFor();}
 async function screenshot(page,name){await page.screenshot({path:fileURLToPath(new URL('outcome-taglines-'+name+'.png',out)),fullPage:true});}
 
-function fixture(species,config,outcome){
+function fixture(species,config,outcome,total=null){
  for(let index=0;index<2000;index++){
   let session=createSession('tagline-review-'+species+'-'+JSON.stringify(config)+'-'+index);
   session=execute(session,{type:'configure',payload:config}).session;
   session=execute(session,{type:'setup',payload:{species,...(species==='aslan'?{gender:'male'}:{}),name:'Review Traveller'}}).session;
   const result=execute(session,{type:'roll-statistics'});
-  if(statisticsTotalOutcome(result.log.at(-1),result.state)===outcome)return {before:session,after:result.session};
+  if(statisticsTotalOutcome(result.log.at(-1),result.state)===outcome&&(total===null||result.state.rollTotal===total))return {before:session,after:result.session};
  }
  throw Error('No fixture for '+species+' '+outcome);
 }
 const cases=[
+ ['human-35-low','human',{},'statistics.low',35],['human-36-ordinary','human',{},null,36],['human-49-ordinary','human',{},null,49],['human-50-high','human',{},'statistics.high',50],
+ ['aezorgh-22-low','aezorgh',{},'statistics.low',22],['aezorgh-23-ordinary','aezorgh',{},null,23],['aezorgh-34-ordinary','aezorgh',{},null,34],['aezorgh-35-high','aezorgh',{},'statistics.high',35],
  ['human-low','human',{},'statistics.low'],['human-high','human',{},'statistics.high'],['human-ordinary','human',{},null],
  ['boon-low','human',{boons:6},'statistics.low'],['boon-high','human',{boons:6},'statistics.high'],
  ['aslan-high','aslan',{},'statistics.high'],['vargr-low','vargr',{},'statistics.low'],
  ['aezorgh-low','aezorgh',{},'statistics.low'],['aezorgh-high','aezorgh',{},'statistics.high'],
  ['aezorgh-boon-low','aezorgh',{boons:3},'statistics.low'],['aezorgh-two-dice-high','aezorgh',{aezorghTwoDice:true,boons:2},'statistics.high'],
-].map(([name,species,config,outcome])=>({name,species,config,outcome,...fixture(species,config,outcome)}));
+].map(([name,species,config,outcome,total=null])=>({name,species,config,outcome,total,...fixture(species,config,outcome,total)}));
 try{
  for(const transport of ['static','http'])for(const width of [1440,390,320])for(const item of cases){
   const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage(),requests=[];
@@ -50,7 +52,7 @@ try{
    await page.locator('[data-action="roll-statistics"]').evaluate(button=>{button.click();button.click();});await changed(page,beforeCount);
    const raw=await saved(page),current=await snapshot(page),event=current.log.at(-1);
    assert.equal(JSON.parse(raw).events.length,beforeCount+1);
-   assert.equal(statisticsTotalOutcome(event,current.state),item.outcome);
+   assert.equal(statisticsTotalOutcome(event,current.state),item.outcome);if(item.total!==null)assert.equal(current.state.rollTotal,item.total);
    const text=statisticsTagline(event,current.state),tag=page.locator('.outcome-tagline');
    assert.equal(await tag.count(),text?1:0);if(text){assert.equal(await tag.innerText(),text);assert.ok(outcomeTaglines[item.outcome].includes(text));}
    assert.match(await page.locator('#last-action-result').innerText(),/Six characteristics rolled\./);
@@ -77,7 +79,7 @@ try{
    assert.equal(await saved(page),raw);assert.equal(await downloadedActionLog(page),fullLog);if(text)assert.equal(await tag.innerText(),text);
    await page.reload();await ready(page);if(text)assert.equal(await tag.innerText(),text);else assert.equal(await tag.count(),0);
    assert.equal(await saved(page),raw,'reload does not add a presentation field');
-   if(transport==='static'&&['human-low','human-high','aezorgh-low'].includes(item.name))await screenshot(page,item.name+'-'+width);
+   if(transport==='static'&&['human-35-low','human-50-high','aezorgh-22-low'].includes(item.name))await screenshot(page,item.name+'-'+width);
    // Swapping is a separate factual action: it must not select another joke.
    if(item.species==='aezorgh'&&!item.config.aezorghTwoDice)await page.locator('#swap-b').selectOption('2');
    await page.locator('[data-action="swap-statistics"]').click();await changed(page,beforeCount+1);assert.equal(await tag.count(),0);

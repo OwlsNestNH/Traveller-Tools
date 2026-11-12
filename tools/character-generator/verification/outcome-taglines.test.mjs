@@ -24,18 +24,39 @@ function referenceDistribution(methods){
  return totals;
 }
 
-for(const counts of [normal,mixed])for(let boons=0;boons<=6;boons++)test('exact 5% tail boundaries: '+counts+'/'+boons+' boons',()=>{
- const methods=profiles(counts,boons),bounds=statisticsTailBounds(methods),reference=referenceDistribution(methods);
- const weight=[...reference.values()].reduce((a,b)=>a+b,0n);
- const low=[...reference].filter(([score])=>score<=bounds.low).reduce((a,[,b])=>a+b,0n);
- const high=[...reference].filter(([score])=>score>=bounds.high).reduce((a,[,b])=>a+b,0n);
- assert.ok(low>0n&&low*20n<=weight);
- assert.ok((low+reference.get(bounds.low+1))*20n>weight);
- assert.ok(high>0n&&high*20n<=weight);
- assert.ok((high+reference.get(bounds.high-1))*20n>weight);
+const sumWeights=entries=>[...entries].reduce((sum,[,weight])=>sum+weight,0n);
+const referenceBaseline=referenceDistribution(profiles(normal));
+const baselineWeight=sumWeights(referenceBaseline);
+const baselineLow=sumWeights([...referenceBaseline].filter(([score])=>score<=35));
+const baselineHigh=sumWeights([...referenceBaseline].filter(([score])=>score>=50));
+function assertMatchedTails(methods){
+ const bounds=statisticsTailBounds(methods),reference=referenceDistribution(methods),weight=sumWeights(reference);
+ const low=sumWeights([...reference].filter(([score])=>score<=bounds.low));
+ const high=sumWeights([...reference].filter(([score])=>score>=bounds.high));
+ assert.ok(low>0n&&low*baselineWeight<=baselineLow*weight);
+ assert.ok((low+reference.get(bounds.low+1))*baselineWeight>baselineLow*weight);
+ assert.ok(high>0n&&high*baselineWeight<=baselineHigh*weight);
+ assert.ok((high+reference.get(bounds.high-1))*baselineWeight>baselineHigh*weight);
+ assert.ok(bounds.low<bounds.high);
  assert.deepEqual(statisticsTailBounds([...methods].reverse()),bounds);
- if(counts===normal)assert.deepEqual(bounds,[{low:31,high:53},{low:33,high:54},{low:34,high:55},{low:36,high:57},{low:37,high:58},{low:39,high:59},{low:41,high:60}][boons]);
- if(counts===mixed&&boons===0)assert.deepEqual(bounds,{low:19,high:37});
+ return bounds;
+}
+test('requested standard cutoffs are inclusive 35 and 50 with separately verified tail probabilities',()=>{
+ assert.deepEqual([baselineLow,baselineHigh,baselineWeight],[299576368n,225571216n,2176782336n]);
+ assert.deepEqual(statisticsTailBounds(profiles(normal)),{low:35,high:50});
+});
+for(const counts of [normal,mixed])for(let boons=0;boons<=6;boons++)test('exact baseline-matched tail boundaries: '+counts+'/'+boons+' boons',()=>{
+ const bounds=assertMatchedTails(profiles(counts,boons));
+ const expected=counts===normal?[[35,50],[36,52],[38,53],[39,55],[41,56],[42,57],[44,59]]:[[22,35],[23,36],[24,37],[25,38],[27,39],[28,40],[29,41]];
+ assert.deepEqual(bounds,{low:expected[boons][0],high:expected[boons][1]});
+});
+test('all 84 valid dice/boon profile compositions retain exact inclusive probability bounds',()=>{
+ const types=[{count:1,boon:false},{count:1,boon:true},{count:2,boon:false},{count:2,boon:true}];let checked=0;
+ for(let a=0;a<=6;a++)for(let b=0;b<=6-a;b++)for(let c=0;c<=6-a-b;c++){
+  const counts=[a,b,c,6-a-b-c],methods=types.flatMap((type,i)=>Array.from({length:counts[i]},()=>({...type})));
+  assertMatchedTails(methods);checked++;
+ }
+ assert.equal(checked,84);
 });
 
 test('unsupported dice profiles fail closed',()=>{

@@ -183,3 +183,13 @@
  .education-event-agency{font-size:18px}
  #precareer-dialog[data-panel="event"] .precareer-information-rows{display:block}
 }
+/* Graduation keeps supporting explanation behind explicit information controls. */
+#precareer-dialog .education-prompt-info{display:inline-flex;align-items:center;justify-content:center;flex:none;width:46px;height:46px;min-height:46px;padding:0;border:2px solid #ffd34b;border-radius:50%;color:#ffd34b;background:transparent;font:700 29px Georgia,serif;vertical-align:middle}
+.education-graduation-prompt .education-event-heading h3{flex:1;min-width:0}
+.education-graduation-prompt .graduation-formula{font-size:48px;font-weight:800;line-height:1.15;margin:12px 0;white-space:nowrap}
+@media(max-width:650px){
+ .education-graduation-prompt .education-event-heading{flex-wrap:wrap;gap:8px}
+ .education-graduation-prompt .education-event-heading h3{flex-basis:calc(100% - 58px)}
+ .education-graduation-prompt .education-event-heading>.education-prompt-info{margin-left:56px}
+ .education-graduation-prompt .graduation-formula{font-size:clamp(27px,8vw,36px)}
+}

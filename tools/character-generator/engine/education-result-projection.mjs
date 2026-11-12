@@ -119,3 +119,14 @@ export function educationResultProjection({state,log,snapshots,events}){
  }
  return model;
 }
+
+/** Preview existing University rules without rolling or recording an outcome. */
+export function educationGraduationPreviewProjection(state){
+ if(state.stage!=='education-graduation'||state.pending)return null;
+ const record=state.character.educations?.[state.education];
+ if(record?.id!=='core.university'||record.completed||record.graduation||record.graduationAllowed!==true||record.entry?.success!==true||record.entry.manual||record.entry.needsAdjudication||!Number.isFinite(record.entry.total)||!Number.isInteger(record.entry.roll))return null;
+ // A fixed input evaluates the shared numeric rule only. It never consumes RNG,
+ // and neither that input nor a hypothetical outcome is exposed to the player.
+ const numbers=educationGraduationCheck({id:record.id,stats:state.character.stats,roll:2,graduationAllowed:true});
+ return {id:record.id,name:PRECAREERS.find(p=>p.id===record.id)?.name??EDUCATION_PACK[record.id].name,stat:numbers.stat,score:state.character.stats[numbers.stat],characteristicDM:numbers.characteristicDM,thresholdModifier:numbers.thresholdModifier,modifier:numbers.characteristicDM+numbers.thresholdModifier,target:numbers.target,honoursTarget:numbers.honoursTarget,source:structuredClone(numbers.source)};
+}
