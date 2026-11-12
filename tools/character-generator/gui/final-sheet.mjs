@@ -1,4 +1,4 @@
-import {completedTermsView,finalEventsView} from './final-sheet-history.mjs';
+import {renderCharacterSheet} from './character-sheet-view.mjs';
 
 // Reuse the live record's read-only sections so benefits, effects, source
 // rulings and species-specific ledgers cannot drift between the two sheets.
@@ -25,7 +25,8 @@ export function compactRecord(document,source){
  return record;
 }
 
-export function createFinalSheet({document,onSave,onPrint,onLog}){
+export function createFinalSheet({document,onSave,onPrint,onLog,getRecord,renderSheet=renderCharacterSheet}){
+ let opener=null;
  const dialog=document.getElementById('final-character-sheet'),content=document.getElementById('final-sheet-content');
  const close=()=>{dialog.close();finishClose();};
  dialog.querySelector('[data-final-close]').addEventListener('click',close);
@@ -48,17 +49,16 @@ export function createFinalSheet({document,onSave,onPrint,onLog}){
   // queued close event from a dialog that has already been reopened.
   if(dialog.open||!document.body.classList.contains('final-sheet-open'))return;
   document.body.classList.remove('final-sheet-open');
-  const target=document.querySelector('[data-action="open-character-sheet"]');
+  const target=opener?.isConnected?opener:document.querySelector('[data-action="open-current-character-sheet"], [data-action="open-character-sheet"]');
   if(target){if(!target.hasAttribute('tabindex')&&target.tagName!=='BUTTON')target.tabIndex=-1;target.focus();}
  }
  dialog.addEventListener('close',finishClose);
  return {
   open(projection,session,catalog){
-   if(dialog.open||projection.state.stage!=='finish')return;
-   const record=compactRecord(document,document.getElementById('sheet'));
-   const history=document.createElement('div');history.className='final-history';
-   history.innerHTML=completedTermsView(projection.state,catalog)+finalEventsView(projection,session,catalog);
-   content.replaceChildren(record,history);
+   if(dialog.open)return;
+   opener=document.activeElement;
+   const record=compactRecord(document,getRecord?.(projection.state)??document.getElementById('sheet'));
+   content.replaceChildren(renderSheet({document,projection,session,catalog,record}));
    document.body.classList.add('final-sheet-open');dialog.showModal();dialog.scrollTop=0;
    document.getElementById('final-sheet-title').focus();
   }
