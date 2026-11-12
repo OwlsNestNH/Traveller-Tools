@@ -52,7 +52,8 @@ try{
    await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});
    assert.ok(['open-current-character-sheet','open-current-character-sheet-popup'].includes(await page.evaluate(()=>document.activeElement.dataset.action)));
    assert.equal(await page.locator('#step-title').textContent(),stage);assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),before);
-   await opener.dblclick();await dialog.waitFor();await dialog.getByRole('button',{name:'Close sheet',exact:true}).click();
+   // Activate the opener twice, not the Close button that can occupy its old coordinates.
+   await opener.evaluate(el=>{el.click();el.click();});await dialog.waitFor();await dialog.getByRole('button',{name:'Close sheet',exact:true}).click();
    assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),before);
    await page.reload();await opener.waitFor();assert.equal(await dialog.isVisible(),false);
    checks.push(label+' current data, chronology, modal focus, read-only, repeat, close, reload');
