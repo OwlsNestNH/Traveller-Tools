@@ -313,3 +313,11 @@
  .precareer-layout:has(>#precareer-dialog:not(:modal)) #precareer-context{grid-row:1}
  .precareer-layout #precareer-dialog:not(:modal){grid-row:2;width:100%;margin:18px 0 0}
 }
+/* Keep the full PSI story and choices visible without shrinking the dice.
+   Only wide screens place the explanation beside the pending roll. */
+@media screen and (min-width:1101px){
+ .education-potential-prompt:has(>.education-pending-dice){display:grid;grid-template-columns:minmax(0,1fr) 316px;column-gap:20px;align-items:center}
+ .education-potential-prompt:has(>.education-pending-dice)>*{grid-column:1 / -1}
+ .education-potential-prompt:has(>.education-pending-dice)>.education-event-content{grid-column:1;grid-row:2}
+ .education-potential-prompt:has(>.education-pending-dice)>.education-pending-dice{grid-column:2;grid-row:2}
+}
