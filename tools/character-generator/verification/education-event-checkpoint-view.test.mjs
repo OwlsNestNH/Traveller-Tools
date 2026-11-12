@@ -67,3 +67,8 @@ test('a pending equipment-description task is not presented as ownership; cash a
 test('relationship conversion, narrative and removed modifiers are not new awards',()=>{
  const lines=educationAppliedLines([{changes:[{path:'relationships.0',before:{name:'Friend',role:'Ally'},after:{name:'Friend',role:'Enemy'}},{path:'lifeEvents.0',before:{decision:null},after:{decision:{kind:'narrative',outcome:'birth'}}}]}],[{changes:[{path:'modifiers.0',before:{target:'qualification',value:2},after:null}]}]).join(' ');assert.match(lines,/Friend: Ally → Enemy/);assert.match(lines,/A birth was recorded/);assert.match(lines,/modifier removed/);
 });
+
+test('empty audit disclosure is absent while nonempty recorded evidence remains available',()=>{
+ for(const row of [2,4,6,7,10]){const model=educationCheckpointModel(eventFixture(row));assert.equal(model.childRolls.length,0);assert.equal(model.appliedChanges.length,0);assert.doesNotMatch(educationCheckpointView(model,helpers),/education-checkpoint-details/);}
+ const model=educationCheckpointModel(eventStep(eventFixture(6),[5]));assert.match(educationCheckpointView(model,helpers),/education-checkpoint-details/);
+});

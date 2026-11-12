@@ -61,7 +61,8 @@ export function educationCheckpointView(model,{esc,sourceLabel,choiceHtml='',car
  const destination=model.mode==='result'&&model.forcedCareer?'<p class="education-checkpoint-destination">Required next career: '+esc(careerLabel(typeof model.forcedCareer==='string'?model.forcedCareer:model.forcedCareer.id))+'.</p>':'';
  const latest=children.length?children.at(-1):initial;
  const earlier=children.length?initial+children.slice(0,-1).join(''):'';
- const detail='<details class="education-checkpoint-details"><summary>Earlier rolls and recorded changes</summary>'+earlier+'<pre>'+esc(JSON.stringify({character:model.appliedChanges??[],state:model.appliedStateChanges??[]},null,2))+'</pre></details>';
+ const hasDetail=!!earlier||[...(model.appliedChanges??[]),...(model.appliedStateChanges??[])].some(group=>group.changes?.length);
+ const detail=hasDetail?'<details class="education-checkpoint-details"><summary>Earlier rolls and recorded changes</summary>'+earlier+'<pre>'+esc(JSON.stringify({character:model.appliedChanges??[],state:model.appliedStateChanges??[]},null,2))+'</pre></details>':'';
  const independence=model.roll?.kind==='education-hobby-independence'||model.childRolls?.some(r=>r.check?.comparison==='greater-than');
  const check=model.childRolls?.findLast(r=>r.check?.comparison==='greater-than')?.check;
  const selection=independence?'<p>Selected hobby: Independence.</p>'+(check?.success===false?'<p>No Independence skill was gained from this check.</p>':''):'';
