@@ -92,6 +92,7 @@ try{
    await coreChoice(p).focus();await p.keyboard.press('Enter');await admission(p).waitFor();
    assert.equal(await saved(p),previewBefore);assert.equal(await p.locator('#step-title').textContent(),'Pre-Career');
    assert.match(await admission(p).innerText(),/Admission target: 6\+/);assert.match(await admission(p).innerText(),/EDU 8/);
+   assert.equal(await p.locator('#precareer-admission .aslan-family-mystery').count(),2);assert.equal(await p.locator('#precareer-admission-roll svg').count(),0);
    for(const selector of ['#precareer-admission-roll','#precareer-admission-back','#precareer-dismiss']){
     assert.ok((await p.locator(selector).boundingBox()).height>=44,selector+' must retain a 44px target');
    }
@@ -137,7 +138,7 @@ try{
     await load(p,session);const old=await saved(p);await openAdmission(p);assert.equal(await saved(p),old);
     if(kind!=='physical-dice'){
      assert.match(await admission(p).innerText(),/source.assisted/i);
-     assert.doesNotMatch(await p.locator('#precareer-admission-roll').innerText(),/Roll for Admission/i);
+     assert.doesNotMatch(await p.locator('#precareer-admission-roll').innerText(),/Roll for Admission/i);assert.equal(await p.locator('#precareer-admission .aslan-family-mystery').count(),0);
     }
     await p.locator('#precareer-admission-back').click();assert.equal(await saved(p),old);await openAdmission(p);
     await p.locator('#precareer-admission-roll').evaluate(el=>{el.click();el.click();});

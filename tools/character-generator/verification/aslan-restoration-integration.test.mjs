@@ -1,3 +1,4 @@
+import {acknowledgeEducationEvent} from './education-event-scenario.mjs';
 import {buildFailedAslanRestorationEntryFixture} from './aslan-restoration-browser-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -61,7 +62,7 @@ for(const gender of ['male','female'])test('p43 '+gender+' starts at a typed sou
  rejected(r,'resolve-book',{confirmed:true,note:'Do not accept a SOC-only completion',effects:[{kind:'stat',name:'SOC',value:6}]});rejected(r,'resolve-aslan-restoration',decision);assert.equal(exportSession(r.session),before);roundtrip(r);
 });
 test('next-term education consumes the window rather than silently preserving it',()=>{
- let r=ready('on-restoration');r=run(r,'open-precareer');r=force(r,'precareer',{id:'core.university'},[6,6]);r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});r=force(r,'education-event',{},[1,4]);r=force(r,'education-graduation',{},[6,6]);assert.equal(r.state.character.terms,2);assert.equal(restoration(r).status,'expired');assert.equal(restoration(r).expiry.reason,'next-term-window-ended');roundtrip(r);
+ let r=ready('on-restoration');r=run(r,'open-precareer');r=force(r,'precareer',{id:'core.university'},[6,6]);r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});r=force(r,'education-event',{},[1,4]);r=acknowledgeEducationEvent(r);r=force(r,'education-graduation',{},[6,6]);assert.equal(r.state.character.terms,2);assert.equal(restoration(r).status,'expired');assert.equal(restoration(r).expiry.reason,'next-term-window-ended');roundtrip(r);
 });
 
 

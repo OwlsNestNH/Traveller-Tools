@@ -1,0 +1,124 @@
+// Approved education results and explicit University event prompt. Source/Companion layouts remain unchanged.
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {createServer} from '../server.mjs';
+import {exportSession,project,execute} from '../engine/session.mjs';
+import {coreEducationIds,command,forceEducation,educationReady,educationSetup,admissionFixture,studyFixture,graduationFixture,eventBlockedFixture,sourceEducationFixture,validateEducationFixtures} from './education-result-fixtures.mjs';
+const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
+const out=new URL('./artifacts/',import.meta.url),key='traveller-character-generator.v1';await mkdir(out,{recursive:true});
+const fixtureChecks=validateEducationFixtures(),fixtures=[];
+for(const id of coreEducationIds){
+ for(const success of [true,false])fixtures.push({name:id.replace('core.','')+'-admission-'+(success?'success':'failure'),result:admissionFixture(id,success)});
+ for(const outcome of ['ordinary','honours','failure',...(id==='core.university'?[]:['failure-high'])])fixtures.push({name:id.replace('core.','')+'-graduation-'+outcome,result:graduationFixture(id,outcome)});
+}
+fixtures.push({name:'university-study-second',result:studyFixture(2)});
+const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
+let browser;const errors=[],checks=[];
+const ready=p=>p.waitForFunction(()=>document.body.dataset.stage&&!document.querySelector('#export').disabled);
+const saved=p=>p.evaluate(k=>localStorage.getItem(k),key);
+const result=p=>p.locator('.education-result');
+async function load(p,r){await p.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(r.session)});await p.reload();await ready(p);}
+async function fit(p){assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);assert.deepEqual(await p.locator('#precareer-dialog[open],#precareer-information[open]').evaluateAll(nodes=>nodes.filter(n=>n.scrollWidth>n.clientWidth+1).map(n=>n.id)),[]);}
+async function shot(p,label,width){
+ const unknown=p.locator('.education-pending-dice .aslan-family-mystery');if(await unknown.count()){assert.equal(await unknown.count(),2);assert.equal(await p.locator('.education-event-roll .admission-dice,.education-event-roll .graduation-dice-art').count(),0);assert.ok(await unknown.first().evaluate((el,width)=>el.getBoundingClientRect().width>=(width<650?108:150),width));}
+ await p.evaluate(()=>scrollTo(0,0));await p.mouse.move(0,0);await p.screenshot({path:fileURLToPath(new URL('education-result-'+label+'-'+width+'.png',out)),fullPage:false});if(width<650)await p.locator('#precareer-dialog').screenshot({path:fileURLToPath(new URL('education-result-'+label+'-'+width+'-full-panel.png',out))});if(width===1499){assert.ok(await p.locator('#precareer-dialog').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;}),'The complete desktop education panel must fit the 1499×1049 review viewport');assert.ok(await p.locator('#precareer-rules-open').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;}),'Result details and sources footer must be visible in the desktop review viewport');}}
+async function dismiss(p){await p.locator('#precareer-dismiss').click();await p.locator('#precareer-dialog').waitFor({state:'hidden'});}
+async function resume(p){await p.locator('#precareer-resume').click();await p.locator('#precareer-dialog').waitFor();}
+async function bar(p,id){const d=p.locator('#'+id);if(!await d.evaluate(n=>n.open))await d.locator(':scope > summary').click();await p.waitForFunction(id=>document.getElementById(id).open,id);}
+async function expectView(p,r){
+ const model=r.educationResultView;assert.ok(model);assert.equal(await result(p).getAttribute('data-education-result'),model.kind);assert.equal(await result(p).getAttribute('data-education-outcome'),model.outcome);assert.equal(await p.locator('#step-title').innerText(),'Pre-Career');assert.equal(await p.locator('header h1').innerText(),'CHARACTER BUILDER');
+ const text=await result(p).innerText();assert.ok(text.includes('Total '+model.total));assert.ok(text.includes((model.outcome==='honours'?'Honours '+model.honoursTarget:'Target '+model.target)+'+'));
+ assert.equal(await p.locator('.education-result-equation').getAttribute('aria-label'),model.dice.join(' + ')+' '+(model.modifier<0?'− ':'+ ')+Math.abs(model.modifier)+' = '+model.total);
+ if(model.kind==='graduation')assert.equal(await p.locator('.education-result-benefits').count(),1);
+ const canonical=[...model.benefits,...model.retained,...model.missed];
+ if(model.honoursBonuses?.length&&p.viewportSize().width<=650){
+  const mobile=p.locator('.education-mobile-honours');assert.equal(await mobile.isVisible(),true);assert.match(await mobile.innerText(),/Honours bonuses/);
+  for(const bonus of model.honoursBonuses){assert.equal(await mobile.locator('.education-bonus-'+bonus.kind).count(),1);const words=await mobile.innerText();if(bonus.kind==='qualification'){assert.ok(words.includes('Qualification DM '+(bonus.modifier>=0?'+':'')+bonus.modifier));assert.ok(words.includes('Eligible careers'));}else{assert.ok(words.includes(bonus.automatic?'Automatic':'Roll required'));assert.ok(words.includes('First career'));assert.ok(words.includes('Before term '+bonus.beforeTerm));}}
+  await p.locator('#precareer-rules-open').click();const complete=await p.locator('#precareer-information-result').innerText();for(const line of canonical)assert.ok(complete.includes(line),'Missing canonical consequence from visible details '+line);await p.locator('#precareer-information-close').click();
+ }else for(const line of canonical)assert.ok(text.includes(line),'Missing recorded consequence '+line);
+ assert.ok(await p.locator(model.study?'.education-study-continue':'[data-action=acknowledge-education-result]').evaluate(el=>el.getBoundingClientRect().height>=44));
+ await fit(p);
+}
+try{
+ browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
+ // Produce review images first so later failures do not hide the actual screens.
+ for(const width of [1499,390,320]){
+  const context=await browser.newContext({viewport:{width,height:1049}}),p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));
+  try{await p.goto(origin);await ready(p);for(const f of fixtures.filter(f=>f.name.startsWith('university-')||f.name==='academy-army-admission-success')){await load(p,f.result);await expectView(p,f.result);await shot(p,f.name,width);}}finally{await context.close();}
+ }
+ for(const transport of ['static','http'])for(const width of [1499,390,320]){
+  const context=await browser.newContext({viewport:{width,height:1049}}),p=await context.newPage(),label=transport+'-'+width,engineRequests=[],requests=[];p.setDefaultTimeout(15000);
+  p.on('pageerror',e=>errors.push(label+': '+e.message));p.on('request',r=>{if(new URL(r.url()).pathname.includes('/engine/'))engineRequests.push(r.url());if(r.url().endsWith('/api/v1')&&r.postDataJSON()?.operation==='command')requests.push(r.postDataJSON());});
+  try{
+   await p.goto(origin+(transport==='http'?'/?api=local':'/'));await ready(p);
+   const admissionReady=educationSetup('education-mystery-admission');await load(p,admissionReady);const admissionRaw=await saved(p);await p.locator('[data-action=precareer][data-id="core.university"]').click();await p.locator('#precareer-admission').waitFor();assert.equal(await p.locator('#precareer-admission .aslan-family-mystery').count(),2);assert.equal(await p.locator('#precareer-admission-roll svg').count(),0);assert.equal(await saved(p),admissionRaw);await fit(p);await shot(p,'university-admission-preview-'+transport,width);await p.locator('#precareer-admission-back').click();assert.equal(await saved(p),admissionRaw);
+   for(const f of fixtures){
+    await load(p,f.result);await expectView(p,f.result);const before=await saved(p),original=project(f.result.session),count=requests.length;
+    const tagline=await p.locator('.education-result-tagline').innerText();await dismiss(p);assert.equal(await saved(p),before);await resume(p);assert.equal(await p.locator('.education-result-tagline').innerText(),tagline);
+    await p.locator('#precareer-rules-open').click();assert.equal(await p.locator('#precareer-information').evaluate(el=>el.matches(':modal')),true);assert.equal(await p.locator('#precareer-information input,#precareer-information select,#precareer-information [data-action]').count(),0);await p.locator('#precareer-information-close').click();assert.equal(await saved(p),before);
+    await p.locator('#step-title').focus();await p.keyboard.press('Escape');await p.locator('#precareer-dialog').waitFor({state:'hidden'});await resume(p);assert.equal(await saved(p),before);assert.equal(requests.length,count);
+    await p.reload();await ready(p);await expectView(p,f.result);assert.equal(await saved(p),before);assert.equal(await p.locator('.education-result-tagline').innerText(),tagline);
+    if(!f.result.educationResultView.study){
+     await p.locator('[data-action=acknowledge-education-result]').evaluate(el=>{el.click();el.click();});await p.waitForFunction(({key,n})=>JSON.parse(localStorage.getItem(key)).events.length===n+1&&!document.querySelector('#export').disabled,{key,n:f.result.session.events.length});
+     const actual=project(JSON.parse(await saved(p))),expected=execute(f.result.session,{type:'acknowledge-education-result'});assert.deepEqual(actual.state,expected.state);assert.deepEqual(actual.state.character,original.state.character);assert.equal(actual.state.rng,original.state.rng);assert.equal(actual.log.at(-1).rolls.length,0);assert.equal(await result(p).count(),0);
+    }
+   }
+   // Empty selection cannot continue, changing the subject never rolls or saves.
+   const study=studyFixture();await load(p,study);const raw=await saved(p);assert.equal(await p.locator('#education-subject').inputValue(),'');assert.equal(await p.locator('.education-study-continue').isDisabled(),true);
+   await p.locator('#education-subject').selectOption('Science');assert.equal(await p.locator('.education-study-continue').isDisabled(),true);await p.locator('#education-skill').fill('Science (physics)');assert.equal(await p.locator('.education-study-continue').isEnabled(),true);assert.equal(await saved(p),raw);
+   await dismiss(p);await resume(p);assert.equal(await p.locator('#education-skill').inputValue(),'Science (physics)');assert.equal(await saved(p),raw);
+   await p.locator('.education-study-continue').evaluate(el=>{el.click();el.click();});await p.waitForFunction(()=>document.querySelector('.education-result-study')?.textContent.includes('Skill 2 of 2'));await ready(p);
+   const first=JSON.parse(await saved(p));assert.equal(first.events.length,study.session.events.length+1);assert.deepEqual(first.events.at(-1).command,{type:'education-skill',payload:{name:'Science (physics)'}});assert.equal(project(first).state.rng,study.state.rng);assert.equal(await p.locator('#education-subject option[value=Science]').count(),0);assert.equal(await p.locator('.education-study-continue').isDisabled(),true);
+   await p.locator('#education-subject').selectOption('Medic');await p.locator('.education-study-continue').click();await p.locator('body[data-stage=education-event]').waitFor();await ready(p);assert.equal(await result(p).count(),0);assert.equal(await p.locator('[data-action=education-event]').count(),1);assert.equal(project(JSON.parse(await saved(p))).state.rng,study.state.rng);
+   await p.locator('.education-event-prompt').waitFor();const beforeEvent=await saved(p),eventSession=JSON.parse(beforeEvent),eventRng=project(eventSession).state.rng,eventRequestCount=requests.length;
+   assert.ok(await p.locator('[data-action=education-event]').evaluate(el=>el.getBoundingClientRect().height>=44));await dismiss(p);assert.equal(await saved(p),beforeEvent);await resume(p);assert.equal(await saved(p),beforeEvent);assert.equal(project(JSON.parse(await saved(p))).state.rng,eventRng);
+   await p.reload();await ready(p);await p.locator('.education-event-prompt').waitFor();assert.equal(await saved(p),beforeEvent);assert.equal(project(JSON.parse(await saved(p))).state.rng,eventRng);assert.equal(requests.length,eventRequestCount);await fit(p);await shot(p,'university-event-'+transport,width);assert.equal(await saved(p),beforeEvent,'Showing the event prompt must not roll or change history');
+   await p.locator('[data-action=education-event]').evaluate(el=>{el.click();el.click();});await p.waitForFunction(({key,n})=>JSON.parse(localStorage.getItem(key)).events.length===n+1&&!document.querySelector('#export').disabled,{key,n:eventSession.events.length});
+   const afterEventRaw=await saved(p),afterEvent=JSON.parse(afterEventRaw),eventCommand={type:'education-event',payload:{}};assert.equal(afterEvent.events.length,eventSession.events.length+1);assert.deepEqual(afterEvent.events.at(-1).command,eventCommand);
+   const expectedEvent=execute(eventSession,eventCommand,{id:afterEvent.events.at(-1).id,expectedRevision:eventSession.events.length});assert.equal(afterEventRaw,exportSession(expectedEvent.session),'Explicit Roll must preserve the complete existing event command, including secondary mechanics, without duplicate rolls or awards');if(transport==='http')assert.equal(requests.length,eventRequestCount+1);
+
+   // Approved Event 2 choice: explicit test or recorded PSI, never automatic training.
+   for(const recorded of [false,true]){
+    let potential=forceEducation(educationReady(),'education-event',{},[1,1]);if(recorded)potential=command(potential,'gm-override',{field:'stat.PSI',value:8,reason:'Synthetic recorded PSI'});
+    for(const index of [0,1]){await load(p,potential);await p.locator('.education-potential-prompt').waitFor();const potentialRaw=await saved(p);assert.match(await p.locator('.education-potential-prompt').innerText(),recorded?/Use recorded PSI/:/Test potential · Roll 2D/);assert.equal(await p.locator('.education-pending-dice .aslan-family-mystery').count(),recorded?0:2);
+     await p.locator('[data-education-info=potential]').click();await p.locator('#precareer-information-close').click();await dismiss(p);await resume(p);await p.reload();await ready(p);await p.locator('.education-potential-prompt').waitFor();assert.equal(await saved(p),potentialRaw);await fit(p);if(index===0)await shot(p,'university-potential-'+(recorded?'recorded':'test')+'-'+transport,width);
+     await p.locator('.education-potential-prompt [data-index="'+index+'"]').evaluate(el=>{el.click();el.click();});await p.waitForFunction(({key,n})=>JSON.parse(localStorage.getItem(key)).events.length===n+1&&!document.querySelector('#export').disabled,{key,n:potential.session.events.length});
+     const afterRaw=await saved(p),after=JSON.parse(afterRaw),choiceCommand={type:'choose-effect',payload:{index}};assert.deepEqual(after.events.at(-1).command,choiceCommand);assert.equal(afterRaw,exportSession(execute(potential.session,choiceCommand,{id:after.events.at(-1).id,expectedRevision:potential.session.events.length}).session));if(recorded||index===1)assert.equal(project(after).state.rng,potential.state.rng);
+    }
+   }
+
+   // Shared Event 9/10 decisions retain the original award and explicit check.
+   for(const event of [9,10]){
+    const nested=forceEducation(educationReady(),'education-event',{},event===9?[4,5]:[5,5]);await load(p,nested);await p.locator('.education-nested-prompt').waitFor();assert.equal(await p.locator('.education-pending-dice .aslan-family-mystery').count(),event===9?0:2);const nestedRaw=await saved(p),select=p.locator('.education-nested-label select'),action=p.locator('.education-nested-prompt [data-action]');assert.equal(await select.inputValue(),'');assert.equal(await action.isDisabled(),true);
+    await p.locator('[data-education-info=nested]').click();await p.locator('#precareer-information-close').click();await dismiss(p);await resume(p);await p.reload();await ready(p);await p.locator('.education-nested-prompt').waitFor();assert.equal(await saved(p),nestedRaw);await fit(p);await shot(p,'university-event-'+event+'-'+transport,width);
+    const name=event===9?'Science':'Medic';await select.selectOption(name);assert.equal(await action.isEnabled(),true);await dismiss(p);await resume(p);assert.equal(await select.inputValue(),name);assert.equal(await saved(p),nestedRaw);
+    await action.evaluate(el=>{el.click();el.click();});await p.waitForFunction(({key,n})=>JSON.parse(localStorage.getItem(key)).events.length===n+1&&!document.querySelector('#export').disabled,{key,n:nested.session.events.length});const afterRaw=await saved(p),after=JSON.parse(afterRaw),cmd={type:event===9?'education-skill':'education-check',payload:{name}};assert.deepEqual(after.events.at(-1).command,cmd);assert.equal(afterRaw,exportSession(execute(nested.session,cmd,{id:after.events.at(-1).id,expectedRevision:nested.session.events.length}).session));if(event===9)assert.equal(project(after).state.rng,nested.state.rng);
+   }
+
+   // Graduation preview is current evidence, never a roll or award on navigation.
+   let graduation=forceEducation(educationReady(),'education-event',{},[2,3]);graduation=command(graduation,'acknowledge-education-event',{pendingId:graduation.state.educationEventResult.id});graduation=command(graduation,'gm-override',{field:'stat.INT',value:8,reason:'Synthetic preview INT'});await load(p,graduation);await p.locator('.education-graduation-prompt').waitFor();const graduationRaw=await saved(p);
+   assert.match(await p.locator('.graduation-formula').innerText(),/Roll 2D \+ 0/);assert.match(await p.locator('.education-graduation-prompt').innerText(),/INT 8/);
+   for(const kind of ['graduation','calculation']){await p.locator('[data-education-info='+kind+']').click();await p.locator('#precareer-information').waitFor();assert.equal(await p.locator('#precareer-information [data-action]').count(),0);await p.locator('#precareer-information-close').click();assert.equal(await saved(p),graduationRaw);}
+   await dismiss(p);await resume(p);await p.reload();await ready(p);await p.locator('.education-graduation-prompt').waitFor();assert.equal(await saved(p),graduationRaw);await fit(p);
+   const fidelity=await p.locator('.education-graduation-prompt').evaluate(el=>{const heading=el.querySelector('.education-event-heading h3'),info=el.querySelector('[data-education-info=graduation]'),formula=el.querySelector('.graduation-formula'),button=el.querySelector('[data-action=education-graduation]'),panel=el.querySelector('.education-event-content'),h=heading.getBoundingClientRect(),i=info.getBoundingClientRect();return {headingFont:parseFloat(getComputedStyle(heading).fontSize),formulaFont:parseFloat(getComputedStyle(formula).fontSize),buttonFont:parseFloat(getComputedStyle(button).fontSize),frame:parseFloat(getComputedStyle(panel).borderTopWidth),sameRow:i.top+i.height/2>=h.top&&i.top+i.height/2<=h.bottom,infoSize:Math.min(i.width,i.height),buttonSize:button.getBoundingClientRect().height,cap:!!el.querySelector('.graduation-cap-art'),dice:el.querySelectorAll('.education-pending-dice .aslan-family-mystery').length};});assert.equal(fidelity.cap,true);assert.equal(fidelity.dice,2);assert.ok(fidelity.infoSize>=44&&fidelity.buttonSize>=44);assert.ok(fidelity.frame>=3);if(width===1499){assert.ok(fidelity.headingFont>=46&&fidelity.formulaFont>=62&&fidelity.buttonFont>=46,'Desktop graduation must retain the approved heavy visual scale');}else assert.equal(fidelity.sameRow,true,'Graduation information must stay beside the mobile heading, not on an orphan row');await shot(p,'university-graduation-preview-'+transport,width);
+   const edited=command(graduation,'gm-override',{field:'stat.INT',value:12,reason:'Synthetic changed preview INT'});await load(p,edited);assert.match(await p.locator('.graduation-formula').innerText(),/Roll 2D \+ 2/);assert.match(await p.locator('.education-graduation-prompt').innerText(),/INT 12/);
+   const beforeGraduation=JSON.parse(await saved(p));await p.locator('[data-action=education-graduation]').evaluate(el=>{el.click();el.click();});await p.waitForFunction(({key,n})=>JSON.parse(localStorage.getItem(key)).events.length===n+1&&!document.querySelector('#export').disabled,{key,n:beforeGraduation.events.length});
+   const afterGraduationRaw=await saved(p),afterGraduation=JSON.parse(afterGraduationRaw),graduationCommand={type:'education-graduation',payload:{}};assert.deepEqual(afterGraduation.events.at(-1).command,graduationCommand);assert.equal(afterGraduationRaw,exportSession(execute(beforeGraduation,graduationCommand,{id:afterGraduation.events.at(-1).id,expectedRevision:beforeGraduation.events.length}).session));
+
+   // Notes rerender retains the result and dice; importing the same result is durable.
+   const honours=graduationFixture('core.university','honours');await load(p,honours);const line=await p.locator('.education-result-tagline').innerText();await dismiss(p);await p.locator('#precareer-previous').click();assert.equal(await p.locator('#precareer-information input,#precareer-information select,#precareer-information [data-action]').count(),0);await p.locator('#precareer-information-close').click();assert.equal(await saved(p),exportSession(honours.session));await bar(p,'precareer-notes');await p.locator('#character-notes').fill('Synthetic graduation review note');await p.locator('[data-action=save-notes]').click();await p.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).events.at(-1).command.type==='notes',key);await ready(p);assert.equal(await p.locator('#precareer-dialog').isVisible(),false);await resume(p);assert.equal(await p.locator('.education-result-tagline').innerText(),line);assert.equal(project(JSON.parse(await saved(p))).state.rng,honours.state.rng);
+   const importConfirmation=p.waitForEvent('dialog').then(async dialog=>{assert.equal(dialog.type(),'confirm');assert.equal(dialog.message(),'Load this character in place of the current browser draft? Save your current character first.');await dialog.accept();});
+   await Promise.all([importConfirmation,p.locator('#import').setInputFiles({name:'education-review.json',mimeType:'application/json',buffer:Buffer.from(exportSession(honours.session))})]);await p.waitForFunction(({key,n})=>JSON.parse(localStorage.getItem(key)).events.length===n&&!document.querySelector('#export').disabled,{key,n:honours.session.events.length});await expectView(p,honours);
+   // Replaced dice and a restored branch must show their own recorded outcome.
+   const replaced=command(honours,'gm-replay',{revision:honours.session.events.at(-1).command.payload.revision,rollIndex:0,values:[1,1],reason:'Synthetic changed graduation result'});assert.equal(replaced.educationResultView.outcome,'failure');await load(p,replaced);await expectView(p,replaced);assert.equal(await saved(p),exportSession(replaced.session));
+   const restored=command(replaced,'restore',{revision:honours.revision});assert.equal(restored.educationResultView.outcome,'honours');await load(p,restored);await expectView(p,restored);assert.equal(await saved(p),exportSession(restored.session));
+   // Core source-assisted and event-blocked outcomes cannot masquerade as a failed graduation.
+   for(const r of [sourceEducationFixture('vargr'),sourceEducationFixture('aezorgh'),eventBlockedFixture()]){await load(p,r);assert.equal(await result(p).count(),0);assert.equal(await saved(p),exportSession(r.session));}
+   const companion=command(educationSetup('education-companion-regression'),'precareer',{id:'companion.merchant'});await load(p,companion);assert.equal(await result(p).count(),0);assert.equal(await p.locator('body').getAttribute('data-stage'),'companion-admission');
+   if(transport==='http')assert.deepEqual(engineRequests,[],'HTTP result view must not import engine modules');checks.push(label+' recorded outcomes, no-mutation navigation, durable ack, study choices, notes/import, source and Companion boundaries');
+  }catch(error){await p.screenshot({path:fileURLToPath(new URL('education-result-failure-'+label+'.png',out)),fullPage:true}).catch(()=>{});throw error;}finally{await context.close();}
+ }
+ assert.deepEqual(errors,[]);await writeFile(new URL('education-result-browser.json',out),JSON.stringify({fixtureChecks,checks,errors},null,2));console.log(JSON.stringify({fixtureChecks:fixtureChecks.length,checks,errors},null,2));
+}finally{await browser?.close();await new Promise(r=>server.close(r));}

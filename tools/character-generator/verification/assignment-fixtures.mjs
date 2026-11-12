@@ -1,3 +1,4 @@
+import {acknowledgeEducationEvent} from './education-event-scenario.mjs';
 
 import assert from 'node:assert/strict';
 import {api} from '../engine/session.mjs';
@@ -33,7 +34,7 @@ export function buildAssignmentFixture({careerId='core.army',officer=false,force
  const key=JSON.stringify({careerId,officer,forcedStay,forcedExit,university});if(cache.has(key))return structuredClone(cache.get(key));
  let r=assignmentSetup('assignment-'+careerId,careerId==='core.noble'?10:8);
  if(university){
-  r=forcedIfRoll(r,'precareer',{id:'core.university'},[6,6]);r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});r=force(r,'education-event',{},[1,4]);r=force(r,'education-graduation',{},[6,6]);
+  r=forcedIfRoll(r,'precareer',{id:'core.university'},[6,6]);r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});r=force(r,'education-event',{},[1,4]);r=acknowledgeEducationEvent(r);r=force(r,'education-graduation',{},[6,6]);assert.equal(r.state.stage,'education-result');r=run(r,'acknowledge-education-result');
  }else r=run(r,'skip-precareer');
  r=forcedIfRoll(r,'career',{id:careerId,assignment:entries[careerId]},[6,6]);if(r.state.stage==='preterm-commission')r=run(r,'preterm-commission',{attempt:false});r=settle(r);
  r=settle(survived(r,careerId==='core.scout'?5:careerId==='core.merchant'?6:careerId==='core.noble'?5:careerId==='core.rogue'?5:9));

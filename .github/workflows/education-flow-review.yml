@@ -1,0 +1,110 @@
+name: Pre-Career education GUI review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'tools/character-generator/**'
+      - '.github/workflows/education-flow-review.yml'
+permissions:
+  contents: read
+jobs:
+  education-results:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - name: Verify education results, rules and replay
+        run: node --test tools/character-generator/verification/education-*.test.mjs tools/character-generator/verification/academy-gm-option.test.mjs tools/character-generator/verification/companion-education*.test.mjs
+      - name: Install pinned Chromium runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/character-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
+          node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install chromium
+      - name: Verify visible education event history and full log
+        run: node tools/character-generator/verification/event-results-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+      - name: Capture explicit education event checkpoints
+        run: node tools/character-generator/verification/education-event-checkpoint-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+      - name: Capture actual desktop and mobile education screens
+        run: node tools/character-generator/verification/education-result-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+      - name: Upload education result review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: education-result-review-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/character-generator/verification/artifacts/education-result-*
+            tools/character-generator/verification/artifacts/event-result*
+            !tools/character-generator/verification/artifacts/education-result-*-preview-*
+            !tools/character-generator/verification/artifacts/education-result-university-event-*
+            !tools/character-generator/verification/artifacts/education-result-university-potential-*
+          if-no-files-found: warn
+      - name: Upload education prompt review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: education-prompt-review-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/character-generator/verification/artifacts/education-result-*-preview-*
+            tools/character-generator/verification/artifacts/education-result-university-event-*
+            tools/character-generator/verification/artifacts/education-result-university-potential-*
+            tools/character-generator/verification/artifacts/education-result-browser.json
+          if-no-files-found: warn
+      - name: Upload education checkpoint static 1499 review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: education-checkpoint-static-1499-review-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/character-generator/verification/artifacts/education-checkpoint-*-static-1499*.png
+            tools/character-generator/verification/artifacts/education-checkpoint-browser.json
+          if-no-files-found: warn
+      - name: Upload education checkpoint static 390 review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: education-checkpoint-static-390-review-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/character-generator/verification/artifacts/education-checkpoint-*-static-390*.png
+            tools/character-generator/verification/artifacts/education-checkpoint-browser.json
+          if-no-files-found: warn
+      - name: Upload education checkpoint static 320 review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: education-checkpoint-static-320-review-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/character-generator/verification/artifacts/education-checkpoint-*-static-320*.png
+            tools/character-generator/verification/artifacts/education-checkpoint-browser.json
+          if-no-files-found: warn
+      - name: Upload education checkpoint http 1499 review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: education-checkpoint-http-1499-review-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/character-generator/verification/artifacts/education-checkpoint-*-http-1499*.png
+            tools/character-generator/verification/artifacts/education-checkpoint-browser.json
+          if-no-files-found: warn
+      - name: Upload education checkpoint http 390 review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: education-checkpoint-http-390-review-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/character-generator/verification/artifacts/education-checkpoint-*-http-390*.png
+            tools/character-generator/verification/artifacts/education-checkpoint-browser.json
+          if-no-files-found: warn
+      - name: Upload education checkpoint http 320 review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: education-checkpoint-http-320-review-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/character-generator/verification/artifacts/education-checkpoint-*-http-320*.png
+            tools/character-generator/verification/artifacts/education-checkpoint-browser.json
+          if-no-files-found: warn

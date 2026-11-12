@@ -40,7 +40,7 @@ test('choice continuation retains parent event and shows actual choice result',(
  r=run(r,'advancement');assert.equal(r.log.at(-1).eventResults,undefined);
 });
 test('nested life event retains both rolls; unresolved choices remain distinct from awards',()=>{
- const r=force(educationFixture('nested-education'),'education-event',{},[3,4]);const e=r.log.at(-1);assert.ok(e.eventResults.length>=2);assert.equal(e.eventResults[0].table,'core.pre-career-events');assert.equal(e.eventResults[1].table,'core.life-events');assert.ok(rollResult(e,r.state).text.includes(e.eventResults[1].summary));
+ let r=force(educationFixture('nested-education'),'education-event',{},[3,4]);assert.equal(r.log.at(-1).rolls.length,1);assert.equal(r.state.stage,'education-event-roll');r=force(r,'roll-education-event-step',{pendingId:r.state.pendingEducationEventRoll.id},[1,2]);assert.equal(r.log.at(-1).rolls.length,1);const e=r.log.at(-1);assert.ok(e.eventResults.length>=2);assert.equal(e.eventResults[0].table,'core.pre-career-events');assert.equal(e.eventResults[1].table,'core.life-events');assert.ok(rollResult(e,r.state).text.includes(e.eventResults[1].summary));
 });
 test('compact asset results retain table story and outcomes',()=>{
  const event={...fake('Pre-career event',5),changes:[{path:'assets.0',after:{name:'Test ship'}}]};assert.match(conciseResult(event,{}).text,/Carouse/);assert.match(conciseResult(event,{}).text,/part/i);
