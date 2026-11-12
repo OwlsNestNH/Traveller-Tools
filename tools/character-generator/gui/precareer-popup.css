@@ -242,6 +242,8 @@
 .education-pending-dice .aslan-family-mystery{display:block;width:150px;height:150px;margin:0;flex:none;color:#ffd34b}
 #precareer-dialog .education-pending-dice+.education-event-roll{margin-top:8px}
 .admission-numbers:has(.education-pending-dice){display:grid;grid-template-columns:minmax(0,1fr) 316px;align-items:center;gap:14px}
+#precareer-dialog[data-panel="admission"] .precareer-information-rows small{display:none}
+#precareer-dialog[data-panel="admission"] .precareer-information-rows button{min-height:58px;padding-block:12px}
 @media(max-width:650px){
  .education-pending-dice{gap:12px;margin:12px 0}
  .education-pending-dice .aslan-family-mystery{width:108px;height:108px}
