@@ -9,7 +9,7 @@ function portrait(document,asset){
  if(asset.kind==='sprite'){
   const image=document.createElement('span');image.className='crow-assistance-image crow-assistance-sprite';image.setAttribute('role','img');image.setAttribute('aria-label','Crow, your character-building assistant');image.style.backgroundImage='url("'+asset.src+'")';return image;
  }
- const image=document.createElement('img');image.className='crow-assistance-image';image.src=typeof asset==='string'?asset:asset.src;image.alt='Crow, your character-building assistant';image.width=56;image.height=56;return image;
+ const image=document.createElement('img');image.className='crow-assistance-image';image.src=typeof asset==='string'?asset:asset.src;image.alt='Crow, your character-building assistant';image.width=112;image.height=128;image.addEventListener('error',()=>{image.hidden=true;});return image;
 }
 export function crowAssistanceView(document,{type='generic',informationDialog=null}={}){
  const row=document.createElement('div');row.className='crow-assistance';row.dataset.crowVariant=crowVariant(type);
