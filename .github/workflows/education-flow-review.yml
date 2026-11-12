@@ -25,12 +25,30 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/character-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
           node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install chromium
+      - name: Verify visible education event history and full log
+        run: node tools/character-generator/verification/event-results-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - name: Capture actual desktop and mobile education screens
         run: node tools/character-generator/verification/education-result-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
-      - name: Upload education review
+      - name: Upload education result review
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: education-result-review-${{ github.event.pull_request.head.sha }}
-          path: tools/character-generator/verification/artifacts/education-result-*
+          path: |
+            tools/character-generator/verification/artifacts/education-result-*
+            tools/character-generator/verification/artifacts/event-result*
+            !tools/character-generator/verification/artifacts/education-result-*-preview-*
+            !tools/character-generator/verification/artifacts/education-result-university-event-*
+            !tools/character-generator/verification/artifacts/education-result-university-potential-*
+          if-no-files-found: warn
+      - name: Upload education prompt review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: education-prompt-review-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/character-generator/verification/artifacts/education-result-*-preview-*
+            tools/character-generator/verification/artifacts/education-result-university-event-*
+            tools/character-generator/verification/artifacts/education-result-university-potential-*
+            tools/character-generator/verification/artifacts/education-result-browser.json
           if-no-files-found: warn

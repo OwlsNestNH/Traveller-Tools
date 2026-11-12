@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {graduationFixture} from './education-result-fixtures.mjs';
 import {createSession,execute,project,exportSession,importSession} from '../engine/session.mjs';
 import {educationResultProjection} from '../engine/education-result-projection.mjs';
 import {educationResultModel} from '../gui/education-result-model.mjs';
@@ -64,4 +65,11 @@ test('failed result distinguishes verified initial EDU from later changes and cu
  let r=force(setup('retained-edu'),'precareer',{id:'core.university'},[6,6]);r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});
  r=run(r,'gm-override',{field:'stat.EDU',value:3,reason:'Later correction is not an initial education award'});r=force(r,'education-event',{},[2,3]);r=force(r,'education-graduation',{},[1,2]);
  assert.equal(r.state.character.stats.EDU,3);assert.ok(r.educationResultView.retained.includes('Initial EDU +1 is not removed by this result.'));assert.ok(!r.educationResultView.retained.some(x=>x.includes('EDU 8')||x.includes('EDU +4')));
+});
+test('honours mobile metadata preserves canonical rights and remains projection-only',()=>{
+ const r=graduationFixture('core.university','honours'),model=r.educationResultView;
+ assert.deepEqual(model.honoursBonuses.map(b=>b.kind),['qualification','commission']);
+ for(const bonus of model.honoursBonuses)assert.ok(model.benefits.includes(bonus.text));
+ assert.equal(model.honoursBonuses[0].modifier,2);assert.equal(model.honoursBonuses[1].modifier,2);assert.equal(model.honoursBonuses[1].automatic,false);assert.equal(model.honoursBonuses[1].firstCareer,true);assert.equal(model.honoursBonuses[1].beforeTerm,1);
+ assert.equal(r.state.honoursBonuses,undefined);assert.equal(graduationFixture().educationResultView.honoursBonuses,undefined);
 });

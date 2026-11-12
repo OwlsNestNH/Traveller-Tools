@@ -1,6 +1,8 @@
 // Pure presentation. The caller supplies verified recorded results and benefits.
 // No rule imports, random selection, state transitions, or fabricated dice.
 const outlines={
+ bonusStar:'<path d="m40 10 9 19 21 3-15 15 4 21-19-10-19 10 4-21-15-15 21-3Z M7 13l8 6 M3 36h11 M67 17l8-7 M68 37h10"/>',
+ militaryCap:'<path d="M12 44C-2 26 21 13 40 12c19 1 42 14 28 32l-8 7H20Z M20 45c13-5 27-5 40 0v17c-12 8-28 8-40 0Z M20 53c14-4 26-4 40 0"/><path d="m40 21 4 7 8 1-6 5 1 8-7-4-7 4 1-8-6-5 8-1Z"/>',
  cap:'<path d="M7 25 40 11 73 25 40 40Z M20 33v19c10 10 30 10 40 0V33 M69 29v27 M66 56h6l2 9H64Z"/>',
  book:'<path d="M8 20c12-7 22-7 32 1 10-8 20-8 32-1v43c-12-7-22-7-32 1-10-8-20-8-32-1Z M40 21v43 M17 29c5-2 10-2 15 1 M17 38c5-2 10-2 15 1 M17 47c5-2 10-2 15 1 M48 30c5-3 10-3 15-1 M48 39c5-3 10-3 15-1 M48 48c5-3 10-3 15-1 M14 11l-4-6 M31 8V2 M60 10l5-6"/>',
  success:'<rect x="14" y="14" width="52" height="52" rx="15"/><path d="m25 40 10 11 22-26 M8 22l-6-3 M8 40H1 M10 58l-7 4 M72 22l6-3 M72 40h7 M70 58l7 4"/>',
@@ -31,8 +33,11 @@ export function educationResultView(model,{esc,button,sourceLabel,studyHtml=''}=
  if(graduation||!model.study&&(model.benefits??[]).length){
   const benefits=model.benefits??[],retained=model.retained??[],missed=model.missed??[];
   const changes=model.actualAwardChanges??[],awardRows=(changes.some(c=>c.path.startsWith('skills.'))?1:0)+changes.filter(c=>!c.path.startsWith('skills.')).length;
-  const benefitRows=honours&&model.id==='core.university'&&awardRows?'<ul>'+benefits.map((line,index)=>'<li'+(index===awardRows?' class="education-honours-rights-start"':'')+'>'+esc(line)+'</li>').join('')+'</ul>':rows(benefits,esc);
-  panel='<section class="education-result-benefits" aria-labelledby="education-benefits-title"><div class="education-result-benefit-art">'+icon('book')+icon(honours?'honours':failed?'failure':'success','education-result-award')+'</div><div><h4 id="education-benefits-title">'+(!graduation?'Initial education awards':failed?'Your '+esc(model.name)+' outcome':'Graduation benefits')+'</h4>'+(benefits.length?benefitRows:'')+(retained.length?'<h5>You keep</h5>'+rows(retained,esc):'')+(missed.length?'<h5>You miss</h5>'+rows(missed,esc):'')+'</div></section>';
+  const bonuses=honours&&model.id==='core.university'&&Array.isArray(model.honoursBonuses)?model.honoursBonuses:[];
+  const structured=bonuses.length>0&&bonuses.every(b=>['qualification','commission'].includes(b.kind)&&benefits.includes(b.text));
+  const benefitRows=honours&&model.id==='core.university'&&(awardRows||structured)?'<ul>'+benefits.map((line,index)=>'<li'+(structured&&bonuses.some(b=>b.text===line)?' class="education-honours-canonical-bonus"':index===awardRows?' class="education-honours-rights-start"':'')+'>'+esc(line)+'</li>').join('')+'</ul>':rows(benefits,esc);
+  const mobileBonuses=structured?'<section class="education-mobile-honours" aria-label="Honours bonuses"><h5>Honours bonuses</h5>'+bonuses.map(b=>'<div class="education-mobile-bonus-row">'+icon(b.kind==='qualification'?'bonusStar':'militaryCap','education-bonus-'+b.kind)+'<div><strong>'+(b.kind==='qualification'?'Qualification DM '+esc((b.modifier>=0?'+':'')+b.modifier):esc((b.modifier?(b.modifier>=0?'+':'')+b.modifier+' ':'')+b.scope+' commission'))+'</strong><p>'+(b.kind==='qualification'?'Eligible careers':(b.automatic?'Automatic':'Roll required')+' · First career')+'</p>'+(b.kind==='commission'?'<p>Before term '+esc(b.beforeTerm)+'</p>':'')+'</div></div>').join('')+'</section>':'';
+  panel='<section class="education-result-benefits" aria-labelledby="education-benefits-title"><div class="education-result-benefit-art">'+icon('book')+icon(honours?'honours':failed?'failure':'success','education-result-award')+'</div><div><h4 id="education-benefits-title">'+(!graduation?'Initial education awards':failed?'Your '+esc(model.name)+' outcome':'Graduation benefits')+'</h4>'+(benefits.length?benefitRows:'')+mobileBonuses+(retained.length?'<h5>You keep</h5>'+rows(retained,esc):'')+(missed.length?'<h5>You miss</h5>'+rows(missed,esc):'')+'</div></section>';
  }
  const term=graduation&&Number.isFinite(model.years)&&Number.isInteger(model.terms)?'<p class="education-result-term">'+esc(model.years)+' years completed · '+esc(model.terms)+' education '+(model.terms===1?'term':'terms')+'</p>':'';
  studyHtml=studyHtml.replace(/<select id="education-subject"[\s\S]*?<\/select>/,match=>'<span class="education-study-selector">'+icon('book')+match+'</span>');

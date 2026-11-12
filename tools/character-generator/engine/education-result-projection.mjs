@@ -52,12 +52,12 @@ function sourcedGains({found,endIndex,branch,events,snapshots,kind}){
  });
 }
 const careerName=id=>CAREERS.find(c=>c.id===id)?.name??id;
-function futureBenefits(state,record,result){
+function futureBenefits(state,record,result,presentation=[]){
  const pack=EDUCATION_PACK[record.id],rules=pack.careerRules,out=[];
  const check=(careerId,assignment)=>educationCareerBenefits({id:record.id,graduation:result,careerId,assignment,firstCareerAfterEducation:state.character.careers.length===record.careersBefore,firstCareerAttempt:(record.careerAttempts??0)===0,serviceAwardUsed:!!record.serviceAwardUsed,enteringCareer:true,forcedNextCareer:state.forcedCareer??null,resolvedEducationRulings:!!state.deferredSpecializations});
  if(rules.qualification){
   const values=rules.qualification.careers.map(r=>check(r.career,r.assignment).qualificationModifier??0),modifier=Math.max(...values);
-  if(modifier)out.push('Qualification DM '+signed(modifier)+' in eligible careers.');
+  if(modifier){const text='Qualification DM '+signed(modifier)+' in eligible careers.';out.push(text);presentation.push({kind:'qualification',modifier,text});}
  }
  const serviceCareer=rules.automaticEntry?.career??rules.failedGraduation?.career;
  if(serviceCareer){
@@ -69,7 +69,7 @@ function futureBenefits(state,record,result){
  const commissions=rules.commission.careers.map(id=>({id,result:check(id).commission})).filter(r=>r.result?.allowed);
  if(commissions.length){
   const commission=commissions[0].result,scope=state.forcedCareer?careerName(state.forcedCareer):'military';
-  out.push(commission.automatic?'Automatic commission: first-career '+scope+', before term 1.':'First-career '+scope+' commission'+(commission.modifier?' '+signed(commission.modifier):' opportunity')+'; roll required before term 1.');
+  const text=commission.automatic?'Automatic commission: first-career '+scope+', before term 1.':'First-career '+scope+' commission'+(commission.modifier?' '+signed(commission.modifier):' opportunity')+'; roll required before term 1.';out.push(text);presentation.push({kind:'commission',modifier:commission.modifier??0,scope,automatic:!!commission.automatic,firstCareer:true,beforeTerm:1,text});
  }
  return out;
 }
@@ -100,7 +100,9 @@ export function educationResultProjection({state,log,snapshots,events}){
  }
  model.years=completed.character.age-found.before.character.age;model.terms=completed.character.terms-found.before.character.terms;
  const skillGains=changes.filter(c=>c.path.startsWith('skills.')).map(c=>c.text);
- model.benefits=[...(skillGains.length?[skillGains.join(' · ')]:[]),...changes.filter(c=>!c.path.startsWith('skills.')).map(c=>c.text),...futureBenefits(completed,record,result)];
+ const bonusPresentation=[];
+ model.benefits=[...(skillGains.length?[skillGains.join(' · ')]:[]),...changes.filter(c=>!c.path.startsWith('skills.')).map(c=>c.text),...futureBenefits(completed,record,result,bonusPresentation)];
+ if(id==='core.university'&&result.honours)model.honoursBonuses=bonusPresentation;
  if(completed.forcedCareer)model.details.push('Required next career: '+careerName(completed.forcedCareer)+'. It takes precedence over other education entry benefits.');
  if(!result.graduated){
   model.retained=['Earlier skills and resolved event gains are not removed.'];

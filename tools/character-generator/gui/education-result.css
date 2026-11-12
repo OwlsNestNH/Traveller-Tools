@@ -97,3 +97,15 @@
 @media(max-width:650px){
  .education-result[data-education-outcome="honours"] .education-result-benefits .education-honours-rights-start{border-top:2px solid #f4cd37;padding-top:12px;margin-top:12px}
 }
+/* Structured mobile honours rows retain full canonical details and desktop copy. */
+.education-mobile-honours{display:none}
+@media(max-width:650px){
+ .education-result .education-honours-canonical-bonus{display:none}
+ .education-result .education-mobile-honours{display:block;grid-column:1/-1;margin-top:4px}
+ .education-result .education-mobile-honours h5{display:flex;align-items:center;gap:8px;margin:4px 0 14px;font-size:21px;text-align:center;white-space:nowrap}
+ .education-result .education-mobile-honours h5::before,.education-result .education-mobile-honours h5::after{content:"";height:2px;flex:1;background:#ffd636}
+ .education-mobile-bonus-row{display:grid;grid-template-columns:48px minmax(0,1fr);gap:10px;align-items:start;margin:14px 0}
+ .education-result .education-mobile-bonus-row .education-result-art{width:48px;height:54px;color:#f4f8fa}
+ .education-mobile-bonus-row strong{display:block;color:#ffda36;font-size:20px;line-height:1.2;font-weight:800}
+ .education-mobile-bonus-row p{font-size:18px;line-height:1.3;margin:5px 0 0;color:#f5f7fa}
+}

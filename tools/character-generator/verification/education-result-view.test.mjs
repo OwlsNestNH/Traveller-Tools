@@ -35,3 +35,8 @@ test('study selector retains its native accessible control beside decorative car
  const view=educationResultView({...base,kind:'admission',study:true,studyStep:1},{...helpers,studyHtml:'<label>Study subject<select id="education-subject"><option value="">Choose</option></select></label>'});
  assert.match(view,/class="education-study-selector"/);assert.match(view,/<select id="education-subject">/);assert.match(view,/Study subject/);assert.equal((view.match(/id="education-subject"/g)??[]).length,1);
 });
+test('mobile honours groups illustrated bonuses while retaining canonical desktop and detail wording',()=>{
+ const qualification='Qualification DM +2 in eligible careers.',commission='First-career military commission +2; roll required before term 1.';
+ const model={...base,outcome:'honours',dice:[6,6],total:12,benefits:['Admin 0 → 1',qualification,commission],actualAwardChanges:[{path:'skills.Admin'}],honoursBonuses:[{kind:'qualification',modifier:2,text:qualification},{kind:'commission',modifier:2,scope:'military',automatic:false,firstCareer:true,beforeTerm:1,text:commission}]};
+ const html=educationResultView(model,helpers);assert.match(html,/Honours bonuses/);assert.match(html,/education-bonus-qualification/);assert.match(html,/education-bonus-commission/);assert.match(html,/Roll required · First career/);assert.match(html,/Before term 1/);assert.ok(html.includes(qualification));assert.ok(html.includes(commission));assert.equal((html.match(/class="education-result-benefits"/g)||[]).length,1);
+});

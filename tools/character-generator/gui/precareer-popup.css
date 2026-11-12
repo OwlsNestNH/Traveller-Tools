@@ -237,3 +237,13 @@
  .education-graduation-prompt .education-event-agency{font-size:20px}
  #precareer-dialog[data-education-kind="graduation"] .precareer-information-rows button{font-size:20px}
 }
+/* Two conspicuous unrolled dice, matching the released origin-roll pattern. */
+.education-pending-dice{display:flex;justify-content:center;align-items:center;gap:16px;margin:10px 0;color:#ffd34b}
+.education-pending-dice .aslan-family-mystery{display:block;width:150px;height:150px;margin:0;flex:none;color:#ffd34b}
+#precareer-dialog .education-pending-dice+.education-event-roll{margin-top:8px}
+.admission-numbers:has(.education-pending-dice){display:grid;grid-template-columns:minmax(0,1fr) 316px;align-items:center;gap:14px}
+@media(max-width:650px){
+ .education-pending-dice{gap:12px;margin:12px 0}
+ .education-pending-dice .aslan-family-mystery{width:108px;height:108px}
+ .admission-numbers:has(.education-pending-dice){display:block}
+}
