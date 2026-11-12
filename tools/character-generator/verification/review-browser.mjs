@@ -56,7 +56,7 @@ try {
  await check('unreadable stored draft survives new edits and can be downloaded intact',async page=>{
   const raw='{"format":"unknown-old-format","important":"original data"}';
   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.reload();
-  await page.locator('#recovery-save').waitFor();await begin(page,'Recovery candidate');
+  await page.locator('#recovery-save').waitFor();await dismissTechnicalError(page);await begin(page,'Recovery candidate');await dismissTechnicalError(page);
   assert.equal(await stored(page),raw);
   const downloadPromise=page.waitForEvent('download');await page.locator('#recovery-save').click();
   const download=await downloadPromise;assert.equal(await readFile(await download.path(),'utf8'),raw);

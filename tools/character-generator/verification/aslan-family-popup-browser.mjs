@@ -47,7 +47,7 @@ try{
   const original=await saved(failure.page);
   await failure.page.route('**/api/v1',route=>{const body=route.request().postDataJSON();if(body.operation==='command'&&body.command.type==='roll-aslan-family')return route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({ok:false,error:{message:'Test: family roll not recorded.'}})});return route.continue();});
   await failure.page.locator('#aslan-family-roll').click();await ready(failure.page);await failure.page.locator('#aslan-family-error').filter({hasText:'Test: family roll not recorded.'}).waitFor();assert.equal((await saved(failure.page)).revision,original.revision);
-  await dismissTechnicalError(failure.page);await failure.page.unroute('**/api/v1');await failure.page.locator('#aslan-family-roll').click();await ready(failure.page);assert.equal((await saved(failure.page)).revision,original.revision+1);checks.push({errorRecovery:true,pass:true});
+  await dismissTechnicalError(failure.page);assert.equal(await failure.page.locator('#aslan-family-roll').evaluate(n=>n===document.activeElement),true);await failure.page.unroute('**/api/v1');await failure.page.locator('#aslan-family-roll').click();await ready(failure.page);assert.equal((await saved(failure.page)).revision,original.revision+1);checks.push({errorRecovery:true,pass:true});
  }finally{await failure.context.close();}
 
  const ackFailure=await open(force(build({familySOC:3}),'roll-aslan-family',{},[1]),390);try{
