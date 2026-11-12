@@ -151,7 +151,21 @@ Normal automated paths and typed decisions retain their source, checks and manda
 
 ### Exceptional starting-total taglines
 
-The existing statistics roll feedback adds one light-hearted line for a raw six-score total in either extreme tail (at most 5% per tail). Each outcome has six alternatives in the presentation-only `gui/outcome-taglines.mjs` catalogue. Ordinary totals retain factual feedback only. The classifier enumerates the actual recorded 1D/2D and boon dice, excluding species adjustments, optional characteristics, placement/halving and the configurable reroll threshold. Unmodified six-2D totals trigger at 31 or lower / 53 or higher; standard mixed-dice Aezorgh at 19 or lower / 37 or higher. Boons adjust those thresholds automatically.
+The existing statistics roll feedback adds one light-hearted line when the raw six-score total is **35 or lower / 50 or higher** for six ordinary unbooned 2D rolls, as requested November 12, 2026. Each outcome retains six alternatives in the presentation-only `gui/outcome-taglines.mjs` catalogue. Human, standard Aslan and Vargr pools use these raw thresholds; species modifiers do not count. Aezorgh's optional six-2D method uses the same thresholds before placement and halving.
+
+Other recorded dice use probability-matched cutoffs, not the same raw numbers. Exact enumeration of 12D gives P(total ≤35) = 299,576,368 / 2,176,782,336 (13.76235%) and P(total ≥50) = 225,571,216 / 2,176,782,336 (10.36260%). For each tail separately, use the widest inclusive integer tail whose probability does not exceed that baseline. Discrete dice cannot generally match it exactly. Exact distribution weights and BigInt cross-products avoid rounding the boundary.
+
+| Boon rolls | Six 2D: low / high | Standard mixed Aezorgh: low / high |
+| --- | --- | --- |
+| 0 | ≤35 / ≥50 | ≤22 / ≥35 |
+| 1 | ≤36 / ≥52 | ≤23 / ≥36 |
+| 2 | ≤38 / ≥53 | ≤24 / ≥37 |
+| 3 | ≤39 / ≥55 | ≤25 / ≥38 |
+| 4 | ≤41 / ≥56 | ≤27 / ≥39 |
+| 5 | ≤42 / ≥57 | ≤28 / ≥40 |
+| 6 | ≤44 / ≥59 | ≤29 / ≥41 |
+
+The mixed Aezorgh profile is 1D, 2D, 1D, 2D, 1D, 1D in recorded pool order. The table applies boons to the first N rolls, as the engine does; classification always reads the actual recorded profile rather than current settings. Tests independently enumerate all 84 valid six-roll 1D/2D/boon profile compositions and verify both the included boundary and the excluded neighboring score. Optional characteristics, species adjustments, placement/halving and the configurable reroll threshold remain excluded.
 
 The existing independently random action UUID selects the line without consuming rules RNG or adding saved data. The same action retains its line after rerender, reload or import. Only the latest original computer roll/reroll can show a tagline: swaps, physical entries, GM corrections, restored results and unsupported dice records remain factual-only. No popup, screen redesign, engine changes or audit-log changes are included. Run `node tools/character-generator/verification/outcome-taglines-browser.mjs /path/to/playwright` for static/HTTP desktop and narrow-screen checks and actual review screenshots.
 
