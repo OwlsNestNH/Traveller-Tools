@@ -15,15 +15,34 @@ for(const id of coreEducationIds){
 }
 fixtures.push({name:'university-study-second',result:studyFixture(2)});
 const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
-let browser;const errors=[],checks=[];
+let browser;const errors=[],checks=[],layoutFailures=[];
+function layoutCheck(label,check){try{check();}catch(error){layoutFailures.push({label,message:error.message});}}
 const ready=p=>p.waitForFunction(()=>document.body.dataset.stage&&!document.querySelector('#export').disabled);
 const saved=p=>p.evaluate(k=>localStorage.getItem(k),key);
 const result=p=>p.locator('.education-result');
 async function load(p,r){await p.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(r.session)});await p.reload();await ready(p);}
-async function fit(p){assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);assert.deepEqual(await p.locator('#precareer-dialog[open],#precareer-information[open]').evaluateAll(nodes=>nodes.filter(n=>n.scrollWidth>n.clientWidth+1).map(n=>n.id)),[]);}
+async function fit(p){
+ const label='overflow '+p.viewportSize().width+'px '+await p.locator('body').getAttribute('data-stage')+' revision '+await p.locator('#workspace').getAttribute('data-revision');
+ const pageFits=await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),overflow=await p.locator('#precareer-dialog[open],#precareer-information[open]').evaluateAll(nodes=>nodes.filter(n=>n.scrollWidth>n.clientWidth+1).map(n=>n.id));
+ layoutCheck(label+' page',()=>assert.equal(pageFits,true));layoutCheck(label+' dialog',()=>assert.deepEqual(overflow,[]));
+}
 async function shot(p,label,width){
- const unknown=p.locator('.education-pending-dice .aslan-family-mystery');if(await unknown.count()){assert.equal(await unknown.count(),2);assert.equal(await p.locator('.education-event-roll .admission-dice,.education-event-roll .graduation-dice-art').count(),0);assert.ok(await unknown.first().evaluate((el,width)=>el.getBoundingClientRect().width>=(width<650?108:150),width));}
- await p.evaluate(()=>scrollTo(0,0));await p.mouse.move(0,0);await p.screenshot({path:fileURLToPath(new URL('education-result-'+label+'-'+width+'.png',out)),fullPage:false});if(width<650)await p.locator('#precareer-dialog').screenshot({path:fileURLToPath(new URL('education-result-'+label+'-'+width+'-full-panel.png',out))});if(width===1499){assert.ok(await p.locator('#precareer-dialog').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;}),'The complete desktop education panel must fit the 1499×1049 review viewport');assert.ok(await p.locator('#precareer-rules-open').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;}),'Result details and sources footer must be visible in the desktop review viewport');}}
+ const fixture=label+' '+width+'px',unknown=p.locator('.education-pending-dice .aslan-family-mystery');
+ if(await unknown.count()){
+  assert.equal(await unknown.count(),2);assert.equal(await p.locator('.education-event-roll .admission-dice,.education-event-roll .graduation-dice-art').count(),0);
+  const diceFits=await unknown.first().evaluate((el,width)=>el.getBoundingClientRect().width>=(width<650?108:150),width);
+  layoutCheck(fixture+' dice size',()=>assert.ok(diceFits,'Pending dice must retain their required minimum size'));
+ }
+ await p.evaluate(()=>scrollTo(0,0));await p.mouse.move(0,0);
+ await p.screenshot({path:fileURLToPath(new URL('education-result-'+label+'-'+width+'.png',out)),fullPage:false});
+ if(width<650)await p.locator('#precareer-dialog').screenshot({path:fileURLToPath(new URL('education-result-'+label+'-'+width+'-full-panel.png',out))});
+ if(width===1499){
+  const panelFits=await p.locator('#precareer-dialog').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;});
+  const footerFits=await p.locator('#precareer-rules-open').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;});
+  layoutCheck(fixture+' panel',()=>assert.ok(panelFits,'The complete desktop education panel must fit the 1499×1049 review viewport'));
+  layoutCheck(fixture+' footer',()=>assert.ok(footerFits,'Result details and sources footer must be visible in the desktop review viewport'));
+ }
+}
 async function dismiss(p){await p.locator('#precareer-dismiss').click();await p.locator('#precareer-dialog').waitFor({state:'hidden'});}
 async function resume(p){await p.locator('#precareer-resume').click();await p.locator('#precareer-dialog').waitFor();}
 async function bar(p,id){const d=p.locator('#'+id);if(!await d.evaluate(n=>n.open))await d.locator(':scope > summary').click();await p.waitForFunction(id=>document.getElementById(id).open,id);}
@@ -83,7 +102,7 @@ try{
    for(const recorded of [false,true]){
     let potential=forceEducation(educationReady(),'education-event',{},[1,1]);if(recorded)potential=command(potential,'gm-override',{field:'stat.PSI',value:8,reason:'Synthetic recorded PSI'});
     for(const index of [0,1]){await load(p,potential);await p.locator('.education-potential-prompt').waitFor();const potentialRaw=await saved(p);assert.match(await p.locator('.education-potential-prompt').innerText(),recorded?/Use recorded PSI/:/Test potential · Roll 2D/);assert.equal(await p.locator('.education-pending-dice .aslan-family-mystery').count(),recorded?0:2);
-     await p.locator('[data-education-info=potential]').click();await p.locator('#precareer-information-close').click();await dismiss(p);await resume(p);await p.reload();await ready(p);await p.locator('.education-potential-prompt').waitFor();assert.equal(await saved(p),potentialRaw);await fit(p);if(width===1499&&!recorded)assert.ok(await p.locator('.education-potential-prompt').evaluate(el=>{const content=el.querySelector('.education-event-content').getBoundingClientRect(),dice=el.querySelector('.education-pending-dice').getBoundingClientRect();return content.right<=dice.left&&Math.max(content.top,dice.top)<Math.min(content.bottom,dice.bottom);}), 'Desktop PSI explanation and full-size pending dice must share a row');
+     await p.locator('[data-education-info=potential]').click();await p.locator('#precareer-information-close').click();await dismiss(p);await resume(p);await p.reload();await ready(p);await p.locator('.education-potential-prompt').waitFor();assert.equal(await saved(p),potentialRaw);await fit(p);if(width===1499&&!recorded){const sharedRow=await p.locator('.education-potential-prompt').evaluate(el=>{const content=el.querySelector('.education-event-content').getBoundingClientRect(),dice=el.querySelector('.education-pending-dice').getBoundingClientRect();return content.right<=dice.left&&Math.max(content.top,dice.top)<Math.min(content.bottom,dice.bottom);});layoutCheck('PSI '+transport+' '+width+'px shared row',()=>assert.ok(sharedRow,'Desktop PSI explanation and full-size pending dice must share a row'));}
      if(index===0)await shot(p,'university-potential-'+(recorded?'recorded':'test')+'-'+transport,width);
      await p.locator('.education-potential-prompt [data-index="'+index+'"]').evaluate(el=>{el.click();el.click();});await p.waitForFunction(({key,n})=>JSON.parse(localStorage.getItem(key)).events.length===n+1&&!document.querySelector('#export').disabled,{key,n:potential.session.events.length});
      const afterRaw=await saved(p),after=JSON.parse(afterRaw),choiceCommand={type:'choose-effect',payload:{index}};assert.deepEqual(after.events.at(-1).command,choiceCommand);assert.equal(afterRaw,exportSession(execute(potential.session,choiceCommand,{id:after.events.at(-1).id,expectedRevision:potential.session.events.length}).session));if(recorded||index===1)assert.equal(project(after).state.rng,potential.state.rng);
@@ -121,5 +140,5 @@ try{
    if(transport==='http')assert.deepEqual(engineRequests,[],'HTTP result view must not import engine modules');checks.push(label+' recorded outcomes, no-mutation navigation, durable ack, study choices, notes/import, source and Companion boundaries');
   }catch(error){await p.screenshot({path:fileURLToPath(new URL('education-result-failure-'+label+'.png',out)),fullPage:true}).catch(()=>{});throw error;}finally{await context.close();}
  }
- assert.deepEqual(errors,[]);await writeFile(new URL('education-result-browser.json',out),JSON.stringify({fixtureChecks,checks,errors},null,2));console.log(JSON.stringify({fixtureChecks:fixtureChecks.length,checks,errors},null,2));
+ await writeFile(new URL('education-result-browser.json',out),JSON.stringify({fixtureChecks,checks,errors,layoutFailures},null,2));console.log(JSON.stringify({fixtureChecks:fixtureChecks.length,checks,errors,layoutFailures},null,2));assert.deepEqual(errors,[]);assert.deepEqual(layoutFailures,[],'Every collected layout requirement must pass');
 }finally{await browser?.close();await new Promise(r=>server.close(r));}
