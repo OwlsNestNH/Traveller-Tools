@@ -52,29 +52,40 @@ function dieDistribution(count,boon) {
  enumerate([]);distributionCache.set(key,frequencies);return frequencies;
 }
 
-// Exact inclusive tails, each no more than 5% of this six-roll distribution.
-// Supports the verified 1D/2D methods, with one extra die dropped for a boon.
-// Integer weights remain exact: at most 18 dice, or 6^18 possible outcomes.
-export function statisticsTailBounds(profiles) {
- if(!Array.isArray(profiles)||profiles.length!==6||profiles.some(p=>!p||![1,2].includes(p.count)||typeof p.boon!=='boolean'))return null;
- const key=profiles.map(p=>p.count+':'+p.boon).sort().join('/');
- if(tailCache.has(key))return tailCache.get(key);
+function totalDistribution(profiles) {
  let frequencies=[1];
  for(const {count,boon} of profiles){
   const next=dieDistribution(count,boon),combined=Array(frequencies.length+next.length-1).fill(0);
   frequencies.forEach((weight,total)=>next.forEach((other,score)=>{combined[total+score]+=weight*other;}));
   frequencies=combined;
  }
- const weight=frequencies.reduce((a,b)=>a+b,0);
+ return frequencies;
+}
+
+// User-selected inclusive cutoffs for six ordinary 2D rolls. Match each tail
+// separately for other recorded dice: P(total <= 35) and P(total >= 50).
+const baseline=totalDistribution(Array.from({length:6},()=>({count:2,boon:false})));
+const weightOf=scores=>BigInt(scores.reduce((sum,weight)=>sum+weight,0));
+const baselineTails=Object.freeze({low:weightOf(baseline.slice(0,36)),high:weightOf(baseline.slice(50)),weight:weightOf(baseline)});
+
+// Choose the widest inclusive tail that does not exceed its baseline chance.
+// Discrete dice cannot generally match that chance exactly. Supports verified
+// 1D/2D methods, with one extra die dropped for a boon. Distribution weights
+// remain exact Numbers (at most 6^18); cross-products use BigInt to stay exact.
+export function statisticsTailBounds(profiles) {
+ if(!Array.isArray(profiles)||profiles.length!==6||profiles.some(p=>!p||![1,2].includes(p.count)||typeof p.boon!=='boolean'))return null;
+ const key=profiles.map(p=>p.count+':'+p.boon).sort().join('/');
+ if(tailCache.has(key))return tailCache.get(key);
+ const frequencies=totalDistribution(profiles),weight=weightOf(frequencies);
  let low=null,high=null,cumulative=0;
  for(let score=0;score<frequencies.length;score++){
   cumulative+=frequencies[score];
-  if(cumulative&&cumulative*20<=weight)low=score;
+  if(cumulative&&BigInt(cumulative)*baselineTails.weight<=baselineTails.low*weight)low=score;
  }
  cumulative=0;
  for(let score=frequencies.length-1;score>=0;score--){
   cumulative+=frequencies[score];
-  if(cumulative&&cumulative*20<=weight)high=score;
+  if(cumulative&&BigInt(cumulative)*baselineTails.weight<=baselineTails.high*weight)high=score;
  }
  const bounds=Object.freeze({low,high});tailCache.set(key,bounds);return bounds;
 }
