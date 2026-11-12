@@ -65,7 +65,7 @@
  #army-career-dialog .career-choice-row .choice{font-size:22px;min-height:96px}
  #army-career-dialog #workspace>button:not(.quiet):not(.choice),#army-career-dialog #workspace>.actions>button:not(.quiet){width:100%;font-size:26px;min-height:64px;margin-top:18px}
  #army-career-dialog .army-career-source{font-size:16px;text-align:center;border:0;margin:18px 0 0;color:#bed0dd}
- #army-career-dialog .result-panel{border:0;border-radius:0;padding:0 0 20px;background:none;box-shadow:none;text-align:center}
+ #army-career-dialog .result-panel{border:0;border-radius:0;padding:0;background:none;box-shadow:none;text-align:center}
  #army-career-dialog .result-panel .result-status{font-size:24px;font-weight:800}
  #army-career-dialog .result-panel h3{font-size:32px;color:#ffd34b}
  #army-career-dialog .result-panel p{font-size:20px;line-height:1.45}
@@ -101,3 +101,5 @@
 
 @media screen{.army-mobile-sheet{display:none}#army-career-dialog[data-career-template="career-selection"] .choice-list{max-height:360px;overflow:auto;padding:2px 8px 2px 2px;scrollbar-color:#79a7bb #071d2a}#army-career-dialog[data-career-template="career-selection"] .career-choice-row .choice{min-height:76px;font-size:20px}}
 @media screen and (max-width:850px){#army-career-dialog #workspace{padding-top:78px}#army-career-dialog .army-mobile-sheet{display:inline-flex;position:absolute;top:0;right:0;min-height:52px;padding:10px 18px;font-size:20px}#army-career-close{top:76px}#army-career-dialog[data-career-template="career-selection"] .career-choice-row .choice{min-height:70px;font-size:20px}}
+
+@media screen{#army-career-dialog #step-title:focus{outline:none}}
