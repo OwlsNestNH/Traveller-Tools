@@ -147,7 +147,7 @@ function syncClanShareControls(savedLot){
  syncClanAssetControls();syncLandControls();
  const verifyContact=$('#clan-verify-contact');if(verifyContact){$('#clan-contact-clan-help').textContent=p.clans.find(c=>c.id===$('#clan-contact-clan').value)?.name??'';const c=p.contacts.find(c=>c.id===verifyContact.value);$('#clan-verify-contact-help').textContent=c?c.name+' · Contact '+(p.contacts.indexOf(c)+1)+' · '+c.clanName:'';$('[data-action=verify-clan-contact]').disabled=!c?.canVerify;}
 }
-function notify(message,error=false,status='info',action=false){$('#message').style.overflowWrap='anywhere';$('#message').className=error?'error':'result-'+status+(action?' action-announcement':'');$('#message').textContent=message;const popupError=$('#species-skill-error');if(popupError)popupError.textContent=error?message:'';}
+function notify(message,error=false,status='info',action=false,context={}){$('#message').style.overflowWrap='anywhere';$('#message').className=error?'error':'result-'+status+(action?' action-announcement':'');$('#message').textContent=message;const popupError=$('#species-skill-error');if(popupError)popupError.textContent=error?message:'';if(error)window.CrowTechnicalError?.show(message,context);}
 function clearActionNotice(){if($('#message').classList.contains('action-announcement'))notify('');}
 function actionNotice(type,result){
  return statisticsRollFeedback(result.log.at(-1),result.state)??conciseResult(result.log.at(-1),result.state,catalog)?.text??'Action recorded.';
@@ -725,7 +725,7 @@ $('#print').onclick=async()=>{
 };
 const finalSheet=createFinalSheet({document,getRecord:state=>{const record=document.createElement('div');record.innerHTML=sheetView(state);return record;},onSave:()=>download('traveller-character.json',exportSession(session)),onPrint:()=>window.print(),onLog:()=>$('#log-download').onclick()});
 $('#recovery-save').onclick=()=>{if(recoveryRaw!==null)download('traveller-unreadable-draft-backup.json',recoveryRaw);};
-$('#recovery-inspect').onclick=()=>{if(recoveryRaw!==null){inspectHistory(recoveryRaw);$('#legacy-title').focus();}};
+$('#recovery-inspect').onclick=()=>{if(recoveryRaw!==null){inspectHistory(recoveryRaw);$('#legacy-title').focus();if(!inspectionHistory)notify($('#legacy-description').textContent,true);}};
 $('#legacy-save').onclick=()=>{if(inspectionOriginal!==null||inspectionRaw!==null)download('traveller-legacy-original.json',inspectionOriginal??inspectionRaw);};
 $('#legacy-text').onclick=()=>{if(inspectionHistory!==null)download('traveller-recorded-history.txt',recordedHistoryText(inspectionHistory),'text/plain');};
 $('#legacy-close').onclick=()=>{closeHistory();$('#import').focus();};
@@ -773,7 +773,7 @@ async function start(){
   if(!projection?.ok){const result=await call({operation:'create',seed:crypto.randomUUID()});if(!result.ok)throw new Error(result.error.message);session=result.session;projection=result;aslanManualReviewKey=null;}
   trainingTagline=await restoredAslanTrainingTagline(session,projection,call);
   updateRecovery();render();if(storageWarning)notify(storageWarning,true);
- }catch(error){notify('Unable to start the rules engine: '+error.message,true);}
+ }catch(error){notify('Unable to start the rules engine: '+error.message,true,'info',false,{startup:true});}
  finally{setBusy(false);}
 }
 start();

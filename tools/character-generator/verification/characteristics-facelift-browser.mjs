@@ -1,3 +1,4 @@
+import {dismissTechnicalError} from './technical-error-browser-assertions.mjs';
 // Presentation regressions use temporary browser contexts and synthetic saves only.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -416,7 +417,7 @@ try {
           await page.locator('#swap-b').selectOption('1');
           await page.getByRole('button', {name: 'Swap scores', exact: true}).click();
           await ready(page);
-          assert.match(await page.locator('#message').innerText(), /GM|group|formula/i);
+          assert.match(await page.locator('#message').innerText(), /GM|group|formula/i);await dismissTechnicalError(page);
           assert.equal(await saved(page), raw, 'rejected cross-group swap is atomic');
           await page.locator('#swap-b').selectOption('5');
           await doubleActivate(page, 'swap-statistics');

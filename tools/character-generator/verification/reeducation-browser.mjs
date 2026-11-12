@@ -1,3 +1,4 @@
+import {dismissTechnicalError} from './technical-error-browser-assertions.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -18,7 +19,7 @@ async function replay(page){const before=await state(page);await page.reload();a
 const ordinary=buildReeducationFixture();
 try{
  await fresh('reeducation-roll-mobile',320,ordinary,async page=>{
-  await page.getByRole('heading',{name:'Re-education outcome'}).waitFor();await page.locator('#reeducation-anagathics').fill('1');await page.getByRole('button',{name:'Roll re-education result',exact:true}).click();await ready(page);assert.equal((await state(page)).stage,'reeducation-roll');assert.match(await page.locator('#message').textContent(),/reason/);await page.locator('#reeducation-anagathics-reason').fill('Referee confirmed one term since starting anagathics.');await page.getByRole('button',{name:'Roll re-education result',exact:true}).click();await ready(page);assert.equal((await state(page)).currentReeducation.roll.anagathicTerms,1);await replay(page);
+  await page.getByRole('heading',{name:'Re-education outcome'}).waitFor();await page.locator('#reeducation-anagathics').fill('1');await page.getByRole('button',{name:'Roll re-education result',exact:true}).click();await ready(page);assert.equal((await state(page)).stage,'reeducation-roll');assert.match(await page.locator('#message').textContent(),/reason/);await dismissTechnicalError(page);await page.locator('#reeducation-anagathics-reason').fill('Referee confirmed one term since starting anagathics.');await page.getByRole('button',{name:'Roll re-education result',exact:true}).click();await ready(page);assert.equal((await state(page)).currentReeducation.roll.anagathicTerms,1);await replay(page);
  });
  for(let row=1;row<=6;row++)await fresh('reeducation-row-'+row,row%2?390:1440,rolledReeducation(ordinary,row),async page=>{
   if(row===5){await page.getByRole('button',{name:'Roll the fine'}).click();await ready(page);assert.equal((await state(page)).currentReeducation.fineDie>=1,true);await field(page,'funding','provided');}

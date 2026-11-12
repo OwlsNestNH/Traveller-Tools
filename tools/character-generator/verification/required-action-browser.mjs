@@ -1,3 +1,4 @@
+import {dismissTechnicalError} from './technical-error-browser-assertions.mjs';
 // Actual released GUI screens, public-command fixtures and immutable blocked attempts.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -63,7 +64,7 @@ try{
   // Affordability failures keep exact factual errors and never gain a playful warning.
   await load(p,fixtures.lawyer);await p.locator('#lawyer-outcome').selectOption('hire');await p.locator('#lawyer-level').fill('10');await p.locator('[data-action=resolve-prisoner-lawyer]').click();await p.locator('#message.error').waitFor();assert.equal(await p.locator('.required-action-warning:visible').count(),0);assert.equal(await saved(p),exportSession(fixtures.lawyer.session));
   if(transport==='http'){
-   await load(p,fixtures.human);for(let i=0;i<fixtures.human.state.backgroundRemaining;i++)await p.locator('[name=skills]').nth(i).check();await p.route('**/api/v1',route=>route.request().postDataJSON().operation==='command'?route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,error:{message:'Synthetic connection failure'}})}):route.continue());await p.locator('#background-form [type=submit]').click();await p.getByText('Synthetic connection failure',{exact:true}).waitFor();assert.equal(await p.locator('.required-action-warning:visible').count(),0);await p.unroute('**/api/v1');
+   await load(p,fixtures.human);for(let i=0;i<fixtures.human.state.backgroundRemaining;i++)await p.locator('[name=skills]').nth(i).check();await p.route('**/api/v1',route=>route.request().postDataJSON().operation==='command'?route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,error:{message:'Synthetic connection failure'}})}):route.continue());await p.locator('#background-form [type=submit]').click();await p.locator('#crow-error-detail').getByText('Synthetic connection failure',{exact:true}).waitFor();await dismissTechnicalError(p);assert.equal(await p.locator('.required-action-warning:visible').count(),0);await p.unroute('**/api/v1');
   }
   await context.close();
  }
