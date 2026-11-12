@@ -1,4 +1,4 @@
-import {educationEventEvidence} from './education-event-projection.mjs';
+import {educationEventEvidence,educationEventText} from './education-event-projection.mjs';
 import {educationResultProjection,educationGraduationPreviewProjection} from './education-result-projection.mjs';
 import {familyNarrative} from './aslan-family-narrative.mjs';
 import {restrictedCreditItems,restrictedCreditPurchase} from './finalization-ledgers.mjs';
@@ -3379,7 +3379,9 @@ export function project(session) {
  const educationResultView=educationResultProjection({state,log,snapshots,events:session.events});
  const educationGraduationPreview=educationGraduationPreviewProjection(state);
  const educationEventView=educationEventEvidence(educationEventCheckpointView(state),{state,log,snapshots,events:session.events,skillModifier:skillCheckDM});
- return {state,log,revision:session.events.length,...(educationEventView?{educationEventView}:{}),...(state.stage==='precareer'?{educationAdmissionPreviews}:{}),...(educationResultView?{educationResultView}:{}),...(educationGraduationPreview?{educationGraduationPreview}:{})};
+ const activeEducation=state.character.educations?.[state.education];
+ const educationStory=activeEducation&&!activeEducation.completed?educationEventText(activeEducation.event):null;
+ return {state,log,revision:session.events.length,...(educationStory?{educationEventContext:educationStory}:{}),...(educationEventView?{educationEventView}:{}),...(state.stage==='precareer'?{educationAdmissionPreviews}:{}),...(educationResultView?{educationResultView}:{}),...(educationGraduationPreview?{educationGraduationPreview}:{})};
 }
 export function execute(session,command,{id,expectedRevision}={}) {
  const before=project(session);

@@ -1,3 +1,4 @@
+import {physicalSexSelectView} from '../gui/physical-sex-setup.mjs';
 import {physicalDiceSetting} from '../gui/physical-dice.mjs';
 import {flatLuckSetupView} from '../gui/flat-luck-setup.mjs';
 import {aezorghRollChoiceView} from '../gui/aezorgh-setup.mjs';
@@ -18,7 +19,7 @@ test('optional setup summary distinguishes defaults and retained selected settin
 });
 test('actual setup view keeps essential fields and Begin outside the optional disclosure',()=>{
  const source=read('gui/app.mjs'),start=source.indexOf('function setupView(){'),end=source.indexOf('\nfunction syncPsiOptions(',start);
- const setup=vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state:{}},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[{id:'LCK',name:'Luck',source:'Companion 2024 p. 5'},{id:'PSI',name:'Psionic strength',source:'Core 2022 p. 228'}]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton,aezorghRollChoiceView,flatLuckSetupView,physicalDiceSetting});
+ const setup=vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state:{}},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[{id:'LCK',name:'Luck',source:'Companion 2024 p. 5'},{id:'PSI',name:'Psionic strength',source:'Core 2022 p. 228'}]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton,aezorghRollChoiceView,flatLuckSetupView,physicalDiceSetting,physicalSexSelectView});
  const parts=setup.match(/^([\s\S]*?)<details name="opening-gm-sections" id="setup-optional-settings">([\s\S]*?)<\/details>([\s\S]*)$/);assert.ok(parts);
  for(const name of ['name','species','gender','homeworld','boons','allocation','minimumReroll'])assert.ok(parts[1].includes('name="'+name+'"'),name);
  assert.match(parts[2],/<summary>Characteristic options<span id="setup-optional-summary">No optional extras · GM changes off<\/span><\/summary>/);
@@ -37,13 +38,13 @@ test('header beta dialog keeps complete limits and retains every file action',()
 
 test('saved identity GM state is shown honestly and setup can explicitly disable it',()=>{
  const source=read('gui/app.mjs'),start=source.indexOf('function setupView(){'),end=source.indexOf('\nfunction syncPsiOptions(',start);
- const setup=vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state:{config:{gm:true}}},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton,aezorghRollChoiceView,flatLuckSetupView,physicalDiceSetting});
+ const setup=vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state:{config:{gm:true}}},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton,aezorghRollChoiceView,flatLuckSetupView,physicalDiceSetting,physicalSexSelectView});
  assert.match(setup,/GM changes on/);assert.match(setup,/name="gm" type="checkbox" checked/);
  assert.ok(source.includes("if(!!values.get('gm')!==projection.state.config.gm&&!await send('gm-mode',{enabled:!!values.get('gm')}))return;"));
 });
 test('setup checkbox keeps the requested label for current and historical rules',()=>{
  const source=read('gui/app.mjs'),start=source.indexOf('function setupView(){'),end=source.indexOf('\nfunction syncPsiOptions(',start);
- const render=state=>vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton,aezorghRollChoiceView,flatLuckSetupView,physicalDiceSetting});
+ const render=state=>vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton,aezorghRollChoiceView,flatLuckSetupView,physicalDiceSetting,physicalSexSelectView});
  assert.match(render({aezorghRoundUp:true}),/Aezorgh: use 2D6 ÷ 2 for Stats/);
  assert.match(render({config:{aezorghTwoDice:true}}),/Aezorgh: use 2D6 ÷ 2 for Stats/);
 });
@@ -52,7 +53,7 @@ test('interrupted setup renders saved Luck selection and explicit deselection wi
  const source=read('gui/app.mjs'),start=source.indexOf('function setupView(){'),end=source.indexOf('\nfunction syncPsiOptions(',start);
  for(const extras of [['LCK','MRL'],['MRL']]){
   const state={config:{flatLuck:true,extras}},before=structuredClone(state);
-  const html=vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[{id:'LCK',name:'Luck',source:'Companion p.5'},{id:'MRL',name:'Morale',source:'Companion p.6'}]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton,aezorghRollChoiceView,flatLuckSetupView,physicalDiceSetting});
+  const html=vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[{id:'LCK',name:'Luck',source:'Companion p.5'},{id:'MRL',name:'Morale',source:'Companion p.6'}]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton,aezorghRollChoiceView,flatLuckSetupView,physicalDiceSetting,physicalSexSelectView});
   assert.equal(/name="extras" value="LCK" checked/.test(html),extras.includes('LCK'));assert.match(html,/name="extras" value="MRL" checked/);assert.ok(html.includes(setupOptionalSummary(extras,false)));assert.match(html,/name="flatLuck" type="checkbox" checked/);assert.deepEqual(state,before);
  }
 });

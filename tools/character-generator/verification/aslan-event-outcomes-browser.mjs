@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {createRequire} from 'node:module';import {readFile} from 'node:fs/promises';import {fileURLToPath} from 'node:url';import path from 'node:path';
+import {createRequire} from 'node:module';import {readFile,mkdir} from 'node:fs/promises';import {fileURLToPath} from 'node:url';import path from 'node:path';
 import {createServer} from '../server.mjs';import {project,exportSession} from '../engine/session.mjs';
 import {aslanSetup,aslanEvent,run,force,settle} from './aslan-officer-fixtures.mjs';import {buildAslanOriginFixture} from './aslan-origin-fixtures.mjs';
 const require=createRequire(import.meta.url),{chromium}=require(process.argv[2]||'playwright');
@@ -17,6 +17,7 @@ const fixtures=[
 ];
 const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const httpOrigin='http://127.0.0.1:'+server.address().port;
 const errors=[];let browser;
+const out=fileURLToPath(new URL('./artifacts/',import.meta.url));await mkdir(out,{recursive:true});
 async function current(page){return project(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key)));}
 try{
  browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
@@ -35,6 +36,7 @@ try{
    await page.waitForFunction(revision=>Number(document.querySelector('#workspace')?.dataset.revision)>revision,before.revision);
    const after=await current(page);assert.equal(after.revision,before.revision+1);f.check(after.state);if(f.name==='rite'){assert.equal(after.state.stage,'aslan-rite-result');assert.equal(after.state.character.equipmentCredits.length,1);assert.match(await page.locator(selector).innerText(),/Continue to pre-career/);}else assert.equal(await page.locator(selector).count(),0);
    await page.reload();await page.waitForFunction(revision=>Number(document.querySelector('#workspace')?.dataset.revision)===revision,after.revision);assert.deepEqual((await current(page)).state,after.state);
+   if(f.name==='secret'){const panel=page.locator('#sheet .sheet-section').filter({has:page.getByRole('heading',{name:'Future conditions to review',exact:true})});await panel.waitFor({state:'visible'});assert.match(await panel.innerText(),/If you expose the secret, gain 1 Enemy/);assert.doesNotMatch(await panel.innerText(),/conditional-future|expose-secret|[{}]/);await panel.screenshot({path:out+'aslan-family-player-context-secret-'+width+'-'+(http?'http':'static')+'.png'});assert.deepEqual((await current(page)).state,after.state);}
    if(f.name==='rite'){await page.locator(selector).evaluate(button=>{button.click();button.click();});await page.waitForFunction(revision=>Number(document.querySelector('#workspace')?.dataset.revision)===revision,after.revision+1);const done=await current(page);assert.equal(done.state.stage,'precareer');assert.deepEqual(done.state.character.equipmentCredits,after.state.character.equipmentCredits);assert.equal(done.state.character.cash,0);assert.deepEqual(done.log.at(-1).rolls,[]);await page.locator('#precareer-dialog[open]').waitFor();}
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,f.name+' overflow');if(http)assert.deepEqual(engineRequests,[],'HTTP must not import engine');
    console.log('PASS '+f.name+' '+width+' '+(http?'HTTP':'static')+' click/double-click/reload/source-back');

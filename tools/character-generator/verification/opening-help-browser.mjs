@@ -19,12 +19,15 @@ try{
   await page.goto('http://127.0.0.1:'+server.address().port+'/'+(transport==='http'?'?api=local':''));await page.locator('#setup-form').waitFor();
   for(const species of ['human','aslan','vargr','aezorgh','vargr']){
    await page.locator('[name=species]').selectOption(species);
+   assert.equal(await page.locator('#setup-gender').inputValue(),'','Species changes must not assign physical sex');
+   assert.deepEqual(await page.locator('#setup-gender option:not(:disabled)').allTextContents(),['Female','Male']);
+   assert.equal(await page.locator('label[for=setup-gender]').innerText(),'Physical sex');
    assert.equal(await page.locator('#culture-choice').isVisible(),['aslan','vargr'].includes(species));
    assert.equal(await page.locator('[name=culture]').isEnabled(),['aslan','vargr'].includes(species));
    assert.equal(await page.locator('#variant-choice').isVisible(),species==='vargr');
    assert.equal(await page.locator('[name=variant]').isEnabled(),species==='vargr');
   }
-  await page.locator('[name=name]').fill('Opening help regression');await page.locator('[name=homeworld]').fill('Test homeworld');await page.locator('[name=gender]').selectOption('other');await page.locator('[name=culture]').selectOption('imperial');
+  await page.locator('[name=name]').fill('Opening help regression');await page.locator('[name=homeworld]').fill('Test homeworld');await page.locator('[name=gender]').selectOption('female');await page.locator('[name=culture]').selectOption('imperial');
   await page.locator('#setup-gm-controls').evaluate(el=>el.open=true);await page.locator('#setup-gm-settings').evaluate(el=>el.open=true);await page.locator('[name=boons]').selectOption('2');
   const before=await snapshot(page);
   for(const id of ['species','upbringing','strain','gender','generation','extras','academy','logs']){
@@ -56,7 +59,7 @@ try{
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
   await page.getByRole('button',{name:'Begin character',exact:true}).click();await page.locator('body[data-stage="statistics"]').waitFor();
   const saved=await page.evaluate(()=>localStorage.getItem('traveller-character-generator.v1'));const state=project(JSON.parse(saved)).state;
-  assert.equal(state.character.name,'Opening help regression');assert.equal(state.character.homeworld,'Test homeworld');assert.equal(state.character.species,'vargr');assert.equal(state.character.culture,'imperial');assert.equal(state.character.gender,'other');assert.equal(state.config.boons,2);
+  assert.equal(state.character.name,'Opening help regression');assert.equal(state.character.homeworld,'Test homeworld');assert.equal(state.character.species,'vargr');assert.equal(state.character.culture,'imperial');assert.equal(state.character.gender,'female');assert.equal(state.config.boons,2);
   await page.reload();await page.locator('body[data-stage="statistics"]').waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('traveller-character-generator.v1')),saved);
   assert.equal(apiRequests>0,transport==='http','HTTP runs must exercise the API transport');checks.push({transport,width,apiRequests,dialogs:8,keyboard:true,noMutation:true,leadingIcons:true,saveReload:true});await page.close();
  }

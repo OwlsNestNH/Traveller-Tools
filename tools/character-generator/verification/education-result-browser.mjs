@@ -66,7 +66,7 @@ try{
     }
    }
    // Empty selection cannot continue, changing the subject never rolls or saves.
-   const study=studyFixture();await load(p,study);const raw=await saved(p);assert.equal(await p.locator('#education-subject').inputValue(),'');assert.equal(await p.locator('.education-study-continue').isDisabled(),true);
+   const study=studyFixture();await load(p,study);const raw=await saved(p);assert.equal(await p.locator('[data-study-box]').count(),2);for(const label of ['Choose a Level/0 Skill','Choose a Level/1 Skill'])assert.equal(await p.getByRole('heading',{name:label,exact:true}).count(),1);assert.equal(await p.locator('[data-study-box="2"] select').isDisabled(),true);assert.equal(await p.locator('#education-subject').inputValue(),'');assert.equal(await p.locator('.education-study-continue').isDisabled(),true);
    await p.locator('#education-subject').selectOption('Science');assert.equal(await p.locator('.education-study-continue').isDisabled(),true);await p.locator('#education-skill').fill('Science (physics)');assert.equal(await p.locator('.education-study-continue').isEnabled(),true);assert.equal(await saved(p),raw);
    await dismiss(p);await resume(p);assert.equal(await p.locator('#education-skill').inputValue(),'Science (physics)');assert.equal(await saved(p),raw);
    await p.locator('.education-study-continue').evaluate(el=>{el.click();el.click();});await p.waitForFunction(()=>document.querySelector('.education-result-study')?.textContent.includes('Skill 2 of 2'));await ready(p);

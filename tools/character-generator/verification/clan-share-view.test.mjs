@@ -20,7 +20,7 @@ test('unknown clan source does not masquerade as a cash or Ship Share restrictio
  assert.match(html,/Source only; clan unknown/);assert.match(html,/id="clan-verify-lot" disabled/);
 });
 test('GM provenance forms preserve stable duplicate-name identity and source-only verification',()=>{
- const html=clanShareView(state({config:{gm:true}}),context);assert.match(html,/value="person-2"/);assert.match(html,/Same name · person-2/);assert.match(html,/value="__source"/);assert.match(html,/value="__new"/);assert.doesNotMatch(html,/value="person-1">Same name/);
+ const html=clanShareView(state({config:{gm:true}}),context);assert.match(html,/value="person-2"/);assert.match(html,/Same name · Contact 2/);assert.match(html,/value="__source"/);assert.match(html,/value="__new"/);assert.doesNotMatch(html,/value="person-1">Same name/);
  assert.match(html,/id="clan-verify-reason" rows="3" maxlength="500"/);assert.match(html,/id="clan-verify-new" maxlength="80"/);
 });
 test('post-finish conversion warns that debt is not silently repaid',()=>{
@@ -41,4 +41,12 @@ test('projected names and source labels are escaped, with wrapping live summarie
 test('sheet retains original awards, partial spending and forfeiture separately',()=>{
  const s={character:{clanShareLots:[{id:'lot-1',awarded:3,available:0,spent:1,forfeited:2}],clanShareRedemptions:[{kind:'contact',quantity:1,outputs:{relationshipAfter:{name:'<Person>'}}}]}};
  const html=clanShareSheet(s,context);assert.match(html,/3 awarded; 0 available; 1 exchanged; 2 forfeited/);assert.match(html,/&lt;Person&gt;/);assert.doesNotMatch(html,/<Person>/);assert.equal(clanShareSheet({character:{}},context),'');
+});
+
+test('player-facing share records use numbered names, retaining hidden stable IDs',async()=>{
+ const {shareAwardLabel}=await import('../gui/species-record-labels.mjs');
+ const lots=[{id:'clan-lot-42',label:'Clan Shares / clan-lot-42',awarded:3,available:2,spent:1,forfeited:0},{id:'clan-lot-91',label:'Source award',awarded:1,available:1,spent:0,forfeited:0}],s={character:{clanShareLots:lots}};
+ const before=JSON.stringify(s);assert.equal(shareAwardLabel(lots[0],s),'Clan Share award 1');assert.equal(shareAwardLabel(lots[1],s),'Source award');
+ const html=clanShareSheet(s,context);assert.match(html,/Clan Share award 1/);assert.doesNotMatch(html,/clan-lot-42|clan-lot-91/);assert.equal(JSON.stringify(s),before);
+ const form=clanShareView(state({config:{gm:true}}),context);assert.match(form,/value="person-2">Same name · Contact 2/);assert.doesNotMatch(form.replace(/<[^>]*>/g,''),/person-2|lot-1|lot-2/);
 });

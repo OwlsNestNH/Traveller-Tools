@@ -19,7 +19,7 @@ test('dice artwork and accessible equation show the exact recorded signed arithm
 test('study result uses only the supplied study command without adding an acknowledgement or roll',()=>{
  for(const studyStep of [1,2]){
   const view=educationResultView({...base,kind:'admission',study:true,studyStep},{...helpers,studyHtml:'<select id="education-subject"><option value="">Choose</option></select><button data-action="education-skill">Continue</button>'});
-  assert.match(view,new RegExp('Level '+(studyStep-1)+' · Skill '+studyStep+' of 2'));assert.match(view,/data-action="education-skill"/);assert.doesNotMatch(view,/acknowledge-education-result|data-action="education-event"|education-result-benefits/);
+  assert.match(view,/Choose your University skills/);assert.match(view,/first at level 0, second at level 1/);assert.match(view,/data-action="education-skill"/);assert.doesNotMatch(view,/acknowledge-education-result|data-action="education-event"|education-result-benefits/);
  }
 });
 test('no incomplete, source-pending or fabricated dice are rendered as a result',()=>{

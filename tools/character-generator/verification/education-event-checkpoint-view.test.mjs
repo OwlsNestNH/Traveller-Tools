@@ -11,7 +11,7 @@ test('checkpoint presentation retains exact original/child dice and never mutate
  }
 });
 test('D3 shows the actual raw D6 face, separately from its converted total',()=>{
- const r=eventStep(eventFixture(6),[5]),html=educationCheckpointView(educationCheckpointModel(r),helpers);assert.match(html,/data-recorded-face="5"/);assert.match(html,/Recorded total: 3 · Kept\/converted: 3/);assert.doesNotMatch(html,/data-recorded-face="3"/);
+ const r=eventStep(eventFixture(6),[5]),html=educationCheckpointView(educationCheckpointModel(r),helpers);assert.match(html,/data-recorded-face="5"/);assert.match(html,/Dice total: 3 · Kept\/converted: 3/);assert.doesNotMatch(html,/data-recorded-face="3"/);
 });
 test('mismatched pending IDs, absent evidence and source stages retain native fallbacks',()=>{
  const r=eventFixture(4);for(const mutate of [p=>delete p.educationEventView,p=>p.educationEventView.roll.id='stale',p=>p.state.stage='book-step',p=>p.educationEventView.eventDice=[6,6]]){const p=structuredClone(r);mutate(p);assert.equal(educationCheckpointModel(p),null);}

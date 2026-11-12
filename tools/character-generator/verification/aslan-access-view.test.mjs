@@ -42,3 +42,7 @@ test('fallback UI uses only projected route and draft permissions',()=>{
  const native=fallbackView({fallbackOptions:{normal:{name:'Continue as a Drifter',available:true,reason:''},draft:{name:'Enter draft',available:false,reason:'No second attempt in this term.'}}},context);assert.match(native,/Continue as a Drifter/);assert.match(native,/data-action="draft" disabled/);assert.match(native,/No second attempt/);
  const core=fallbackView({fallbackOptions:{normal:{name:'Continue as a Drifter',available:true,reason:''},draft:{name:'Enter draft',available:true,reason:''}}},context);assert.doesNotMatch(core,/data-action="draft" disabled/);assert.match(fallbackView({},context),/Preserve the current save/);
 });
+
+test('career access record hides internal route identity while preserving actual status',()=>{
+ const html=aslanAccessSheet({character:{aslanCareerAccess:[{...route,id:'aslan-access-472',name:'Scholar opportunity'}]}},context);assert.match(html,/Scholar opportunity/);assert.match(html,/Status: offered/);assert.doesNotMatch(html,/aslan-access-472/);
+});

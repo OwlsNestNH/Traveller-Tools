@@ -41,7 +41,7 @@ export function educationResultView(model,{esc,button,sourceLabel,studyHtml=''}=
  }
  const term=graduation&&Number.isFinite(model.years)&&Number.isInteger(model.terms)?'<p class="education-result-term">'+esc(model.years)+' years completed · '+esc(model.terms)+' education '+(model.terms===1?'term':'terms')+'</p>':'';
  studyHtml=studyHtml.replace(/<select id="education-subject"[\s\S]*?<\/select>/,match=>'<span class="education-study-selector">'+icon('book')+match+'</span>');
- const study=model.study?'<section class="education-result-study"><h4>Choose your '+(model.studyStep===2?'second':'first')+' study skill</h4><p>Level '+(model.studyStep===2?'1':'0')+' · Skill '+(model.studyStep===2?'2':'1')+' of 2</p>'+studyHtml+'</section>':button('Continue <span aria-hidden="true">→</span>','acknowledge-education-result','education-result-continue');
+ const study=model.study?'<section class="education-result-study"><h4>Choose your University skills</h4><p>Two different subjects: first at level 0, second at level 1.</p>'+studyHtml+'</section>':button('Continue <span aria-hidden="true">→</span>','acknowledge-education-result','education-result-continue');
  const source=model.source?'<p class="education-result-source">'+esc(sourceLabel(model.source.id,model.source.page))+'</p>':'';
  return '<section class="education-result" data-education-result="'+model.kind+'" data-education-outcome="'+model.outcome+'">'+heading+roll+details+panel+term+study+source+'</section>';
 }

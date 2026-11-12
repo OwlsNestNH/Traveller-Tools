@@ -280,7 +280,12 @@
 .education-checkpoint-details{margin:14px 0;border-top:1px solid #91e6ed}
 .education-checkpoint-details summary{min-height:48px;display:list-item;padding:12px 8px;font-size:21px;cursor:pointer;color:#ffda36}
 .education-checkpoint-details summary:focus-visible{outline:3px solid #ffd34b;outline-offset:3px}
-.education-checkpoint-details pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:16px}
+.education-event-story{margin:12px 0 16px;text-align:left}
+.education-event-story h4{color:#ffda36;font-size:25px;margin:0 0 8px}
+.education-event-story p{font-size:21px;line-height:1.35;margin:8px 0;overflow-wrap:anywhere}
+.education-event-story .education-event-possible{font-size:18px;color:#d8e4ed}
+.education-checkpoint-child .education-child-story{grid-column:1 / -1;font-size:18px}
+@media(max-width:650px){.education-event-story p{font-size:19px}.education-event-story .education-event-possible{font-size:17px}}
 .education-checkpoint-child{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:18px;align-items:center}
 .education-checkpoint-child h4{margin:0}.education-checkpoint-child .education-recorded-dice{grid-column:2;grid-row:1 / span 3;margin:0}
 @media(max-width:650px){.education-checkpoint-child{display:block}.education-checkpoint-child .education-recorded-dice{margin:12px 0}}
