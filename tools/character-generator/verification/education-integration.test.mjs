@@ -1,3 +1,4 @@
+import {acknowledgeEducationEvent} from './education-event-scenario.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -31,7 +32,7 @@ function studies(r,a='Admin',b='Medic'){
 }
 function university(seed='university',event=[2,3],graduation=[5,5]){
  let r=force(setup(seed),'precareer',{id:'core.university'},[3,3]);
- r=studies(r);r=force(r,'education-event',{},event);
+ r=studies(r);r=force(r,'education-event',{},event);r=acknowledgeEducationEvent(r);
  if(r.state.stage==='education-graduation')r=acknowledgeEducation(force(r,'education-graduation',{},graduation));
  return r;
 }
@@ -59,7 +60,7 @@ test('University specialities are saved, level0 normalized and graduation raises
  assert.throws(()=>run(r,'education-skill',{name:'Science (chemistry)'}),/Overlapping/);
  r=run(r,'education-skill',{name:'Animals (training)'});
  assert.equal(r.state.character.skills['Animals (training)'],1);
- r=force(r,'education-event',{},[2,3]);r=force(r,'education-graduation',{},[3,3]);
+ r=force(r,'education-event',{},[2,3]);r=acknowledgeEducationEvent(r);r=force(r,'education-graduation',{},[3,3]);
  assert.equal(r.state.character.skills['Science (physics)'],1);
  assert.equal(r.state.character.skills['Animals (training)'],2);
 });
@@ -85,25 +86,25 @@ test('prank total2 forces Prisoner without an active career and completes failed
 });
 test('native life event works without active career and preserves education continuation',()=>{
  let r=force(setup('life'),'precareer',{id:'core.university'},[3,3]);r=studies(r);
- r=force(r,'education-event',{},[3,4]);assert.equal(r.state.stage,'education-graduation');
+ r=force(r,'education-event',{},[3,4]);assert.equal(r.log.at(-1).rolls.length,1);assert.equal(r.state.stage,'education-event-roll');r=force(r,'roll-education-event-step',{pendingId:r.state.pendingEducationEventRoll.id},[4,5]);r=acknowledgeEducationEvent(r);assert.equal(r.state.stage,'education-graduation');
  assert.equal(r.state.pending,null);assert.deepEqual(r.state.character.lifeEvents[0].source,{id:'core',page:46});
  assert.equal(r.state.character.lifeEvents[0].row,9);assert.equal(r.state.character.lifeEvents[0].status,'completed');
  assert.ok(r.state.modifiers.some(m=>m.target==='qualification'&&m.value===2&&m.careerId==='any'));
  assert.equal(r.state.character.terms,0);assert.equal(r.state.character.educations[0].graduationAllowed,true);
- assert.equal(r.log.at(-1).rolls.length,2);assert.deepEqual(project(importSession(exportSession(r.session))).state,r.state);
+ assert.equal(r.log.at(-2).rolls.length,1);assert.equal(r.log.at(-1).rolls.length,0);assert.deepEqual(project(importSession(exportSession(r.session))).state,r.state);
 });
 test('hobby event excludes JaT and awards only level0',()=>{
  let r=force(setup('hobby'),'precareer',{id:'core.university'},[3,3]);r=studies(r);
  r=force(r,'education-event',{},[4,5]);assert.equal(r.state.stage,'education-skill');
  assert.throws(()=>run(r,'education-skill',{name:'Jack-of-all-Trades'}),/listed/);
  r=run(r,'education-skill',{name:'Engineer'});
- assert.equal(r.state.character.skills.Engineer,0);assert.equal(r.state.stage,'education-graduation');
+ assert.equal(r.state.character.skills.Engineer,0);assert.equal(r.state.stage,'education-event-result');r=acknowledgeEducationEvent(r);assert.equal(r.state.stage,'education-graduation');
 });
 test('tutor challenge can only use a skill learned this term and raises the selected one',()=>{
  let r=force(setup('tutor'),'precareer',{id:'core.university'},[3,3]);r=studies(r,'Advocate','Medic');
  r=force(r,'education-event',{},[5,5]);assert.equal(r.state.stage,'education-check');
  assert.throws(()=>run(r,'education-check',{name:'Leadership'}),/learned or improved/);
- r=force(r,'education-check',{name:'Advocate'},[5,4]);assert.equal(r.state.character.skills.Advocate,1);
+ r=force(r,'education-check',{name:'Advocate'},[5,4]);r=acknowledgeEducationEvent(r);assert.equal(r.state.character.skills.Advocate,1);
  assert.equal(r.state.character.relationships.at(-1).role,'Rival');assert.equal(r.state.stage,'education-graduation');
 });
 test('honours qualification modifier and pre-term commission are applied in the native career flow',()=>{
@@ -122,7 +123,7 @@ test('matching academy auto-entry, honours commission and distinct service award
  let r=force(setup('academy'),'precareer',{id:'core.academy-army'},[4,4]);
  while(r.state.stage==='effect-choice')r=run(r,'choose-effect',{index:0});
  r=acknowledgeEducation(r,'education-event');assert.equal(r.state.character.skills['Gun Combat'],0);
- r=force(r,'education-event',{},[2,3]);r=acknowledgeEducation(force(r,'education-graduation',{},[5,6]));
+ r=force(r,'education-event',{},[2,3]);r=acknowledgeEducationEvent(r);r=acknowledgeEducation(force(r,'education-graduation',{},[5,6]));
  r=run(r,'career',{id:'core.army',assignment:'support'});
  assert.equal(r.log.at(-1).rolls.length,0);assert.equal(r.state.stage,'preterm-commission');
  r=run(r,'preterm-commission',{attempt:true});
@@ -143,7 +144,7 @@ test('matching academy auto-entry, honours commission and distinct service award
 });
 test('failed academy total3 grants automatic entry but no pre-term commission',()=>{
  let r=force(setup('failed-academy'),'precareer',{id:'core.academy-navy'},[4,4]);
- r=acknowledgeEducation(r,'education-event');r=force(r,'education-event',{},[2,3]);r=acknowledgeEducation(force(r,'education-graduation',{},[1,2]));
+ r=acknowledgeEducation(r,'education-event');r=force(r,'education-event',{},[2,3]);r=acknowledgeEducationEvent(r);r=acknowledgeEducation(force(r,'education-graduation',{},[1,2]));
  r=run(r,'career',{id:'core.navy',assignment:'crew'});
  assert.equal(r.log.at(-1).rolls.length,0);
  assert.equal(r.state.stage,'survival');assert.equal(r.state.character.careers[0].commissionBlockedFirstTerm,true);
@@ -180,7 +181,7 @@ test('hobby choices hide unacquired talents while preserving legacy projection',
 
 for(const graduation of [[4,4],[5,6]])test('academy commission can be declined with graduation '+graduation.join('+'),()=>{
  let r=force(setup('decline-academy-'+graduation),'precareer',{id:'core.academy-navy'},[4,4]);
- r=acknowledgeEducation(r,'education-event');r=force(r,'education-event',{},[2,3]);r=acknowledgeEducation(force(r,'education-graduation',{},graduation));
+ r=acknowledgeEducation(r,'education-event');r=force(r,'education-event',{},[2,3]);r=acknowledgeEducationEvent(r);r=acknowledgeEducation(force(r,'education-graduation',{},graduation));
  r=run(r,'career',{id:'core.navy',assignment:'crew'});assert.equal(r.state.stage,'preterm-commission');
  r=run(r,'preterm-commission',{attempt:false});
  assert.equal(r.state.character.careers[0].officer,false);assert.equal(r.state.character.careers[0].rank,0);

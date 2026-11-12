@@ -1,3 +1,4 @@
+import {acknowledgeEducationEvent} from './education-event-scenario.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createSession,execute,project,exportSession} from '../engine/session.mjs';
@@ -8,7 +9,7 @@ const force=(r,type,payload,values)=>{const rolled=run(r,type,payload);return ru
 function fixture(){
  let r=run(createSession('graduation-preview'),'setup',{species:'human'});r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');
  for(let i=0;i<6;i++)r=run(r,'gm-override',{field:'pool',index:i,value:7,reason:'Synthetic graduation preview'});
- r=run(r,'accept-statistics');r=run(r,'background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)});r=force(r,'precareer',{id:'core.university'},[6,6]);r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});return force(r,'education-event',{},[2,3]);
+ r=run(r,'accept-statistics');r=run(r,'background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)});r=force(r,'precareer',{id:'core.university'},[6,6]);r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});return acknowledgeEducationEvent(force(r,'education-event',{},[2,3]));
 }
 test('University preview is projected from current rules without changing session, log or random state',()=>{
  const r=fixture(),before=exportSession(r.session),state=structuredClone(r.state),log=structuredClone(r.log),preview=r.educationGraduationPreview;

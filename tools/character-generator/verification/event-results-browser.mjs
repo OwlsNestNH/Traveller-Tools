@@ -14,7 +14,7 @@ try{
  for(const http of [false,true])for(const width of [320,1440]){
   const context=await browser.newContext({viewport:{width,height:1100}}),page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:'+server.address().port+(http?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
-  await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.reload();await page.getByRole('heading',{name:'University graduation',exact:true}).waitFor();
+  await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.reload();await page.getByRole('heading',{name:'University education event',exact:true}).waitFor();
   async function verifyPreviousResult(){
    await page.locator('#precareer-result-open').click();await page.locator('#precareer-information').waitFor({state:'visible'});await page.locator('#last-action-result').waitFor({state:'visible'});
    const text=await page.locator('#last-action-result').innerText();assert.match(text,/part/i);assert.match(text,/Carouse at least level 1/);assert.match(text,/Roll \[2, 3\] = 5/);assert.match(text,/Skill Carouse/);
@@ -24,7 +24,7 @@ try{
   await verifyPreviousResult();
   await page.locator('#precareer-dismiss').click();await page.locator('#precareer-dialog').waitFor({state:'hidden'});assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
   await page.getByRole('button',{name:'Full Log',exact:true}).click();await page.locator('#full-action-log').waitFor({state:'visible'});assert.match(await page.locator('#full-log-content').innerText(),/part/i);await page.keyboard.press('Escape');await page.locator('#full-action-log').waitFor({state:'hidden'});
-  assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);await page.reload();await page.getByRole('heading',{name:'University graduation',exact:true}).waitFor();await verifyPreviousResult();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
+  assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);await page.reload();await page.getByRole('heading',{name:'University education event',exact:true}).waitFor();await verifyPreviousResult();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);await page.screenshot({path:fileURLToPath(new URL('event-result-'+http+'-'+width+'.png',out)),fullPage:true});checks.push({http,width,pass:true});await context.close();
  }
  assert.deepEqual(errors,[]);await writeFile(new URL('event-results-browser.json',out),JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({checks,errors}));

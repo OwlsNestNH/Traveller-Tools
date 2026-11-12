@@ -1,3 +1,4 @@
+import {educationCheckpointModel} from './education-event-checkpoint-view.mjs';
 import {aslanFamilyDie} from './aslan-family-popup.mjs';
 import {currentActionNumbers} from './final-sheet-history.mjs';
 import {conciseResult} from './concise-result.mjs';
@@ -26,8 +27,10 @@ export function preCareerChoicesView(state,catalog,{esc,button}){
 const signed=value=>value>=0?'+'+value:String(value);
 // This prompt changes presentation only; the existing command owns all event effects.
 export function educationEventModel(state,projection){
+ const checkpoint=educationCheckpointModel(projection);
  const potential=educationPotentialModel(state);if(potential)return potential;
  const nested=educationNestedChoiceModel(state);if(nested)return nested;
+ if(checkpoint&&checkpoint.mode!=='existing-choice')return checkpoint;
  if(projection?.educationGraduationPreview)return {name:'University',kind:'graduation',preview:projection.educationGraduationPreview};
  return state?.stage==='education-event'&&state.character.educations?.[state.education]?.id==='core.university'?{name:'University'}:null;
 }
@@ -83,7 +86,7 @@ export function preCareerSourceView(state,catalog,{esc,sourceLabel}){
 }
 
 export function previousStepRecord(projection,session){
- const active=currentActionNumbers(session),administrative=new Set(['acknowledge-education-result','acknowledge-aslan-rite','notes','connection','configure','open-precareer','skip-precareer','cancel-education','cancel-career-transfer','restore']);
+ const active=currentActionNumbers(session),administrative=new Set(['acknowledge-education-event','acknowledge-education-result','acknowledge-aslan-rite','notes','connection','configure','open-precareer','skip-precareer','cancel-education','cancel-career-transfer','restore']);
  for(const event of [...projection.log].reverse()){
   if(!active.has(event.number))continue;
   let command=session.events[event.number-1]?.command;

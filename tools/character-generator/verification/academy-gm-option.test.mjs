@@ -1,3 +1,4 @@
+import {acknowledgeEducationEvent} from './education-event-scenario.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -30,7 +31,7 @@ function studies(r,a='Admin',b='Medic'){
 }
 function university(seed='university',event=[2,3],graduation=[5,5]){
  let r=force(setup(seed),'precareer',{id:'core.university'},[3,3]);
- r=studies(r);r=force(r,'education-event',{},event);
+ r=studies(r);r=force(r,'education-event',{},event);r=acknowledgeEducationEvent(r);
  if(r.state.stage==='education-graduation')r=acknowledgeEducation(force(r,'education-graduation',{},graduation));
  return r;
 }
@@ -40,7 +41,7 @@ function academy(enabled=false, id='core.academy-army', graduate=true){
  if(enabled)r=run(r,'gm-academy-training',{enabled:true});
  r=force(r,'precareer',{id},[5,5]);
  while(r.state.stage==='effect-choice')r=run(r,'choose-effect',{index:0});
- r=acknowledgeEducation(r,'education-event');r=force(r,'education-event',{},[2,3]);r=acknowledgeEducation(force(r,'education-graduation',{},graduate?[5,6]:[1,2]));
+ r=acknowledgeEducation(r,'education-event');r=force(r,'education-event',{},[2,3]);r=acknowledgeEducationEvent(r);r=acknowledgeEducation(force(r,'education-graduation',{},graduate?[5,6]:[1,2]));
  return r;
 }
 function enter(r,id='core.army',assignment='support',basicIndex=0){

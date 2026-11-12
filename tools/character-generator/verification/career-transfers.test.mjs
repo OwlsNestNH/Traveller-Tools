@@ -1,3 +1,4 @@
+import {acknowledgeEducationEvent} from './education-event-scenario.mjs';
 // Preserved full-engine development regression, including deferred Zhodani.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -143,7 +144,7 @@ test('age edits do not invent completed terms, while later education does expire
  assert.equal(right(aged).status,'unconsumed');assert.equal(aged.state.careerTransferOptions[0].available,true);
  let r=run(merchant,'open-precareer');r=force(r,'precareer',{id:'core.university'},[6,6]);
  r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});
- r=force(r,'education-event',{},[2,3]);r=force(r,'education-graduation',{},[6,6]);
+ r=force(r,'education-event',{},[2,3]);r=acknowledgeEducationEvent(r);r=force(r,'education-graduation',{},[6,6]);
  assert.equal(r.state.character.terms,merchant.state.character.terms+1);assert.equal(right(r).status,'expired');assert.equal(right(r).expired.reason,'next-term-window-ended');
 });
 test('source prerequisites remain enforced and source-rank decisions recheck pending context',()=>{

@@ -1,3 +1,4 @@
+import {educationCheckpointModel,educationCheckpointView} from './education-event-checkpoint-view.mjs';
 import {educationEventModel,educationEventView,educationGraduationView,educationPotentialModel,educationPotentialView,educationNestedChoiceModel,educationNestedChoiceView} from './precareer-popup.mjs';
 import {educationResultModel} from './education-result-model.mjs';
 import {educationResultView} from './education-result-view.mjs';
@@ -396,6 +397,9 @@ function bookView(state){
 }
 function equipmentDetailsView(state){const p=state.pending;if(['landhold-details','equipment-credit-details'].includes(p.kind))return ledgerDetailsView(p,{esc,button,sourceLabel});if(p.kind==='artefact-details')return '<p>'+esc(sourceLabel(p.source,p.page))+'</p><p>This artefact is already yours. A placeholder, your own description, or leaving it unknown is fine. No value or powers are assumed.</p><label>Name or placeholder (optional)<input id="artefact-name" maxlength="120" placeholder="'+esc(p.benefitName)+'"></label><label>Description (optional)<textarea id="artefact-description" rows="4" maxlength="2000"></textarea></label><div class="actions">'+button('Save details','resolve-artefact-details')+button('Cancel','cancel-deferred-equipment','quiet')+'</div>';return '<p>'+esc(sourceLabel(p.source,p.page))+'</p>'+benefitDecisionView(state)+'<label>Source or referee note<textarea id="book-note" rows="2" maxlength="500"></textarea></label><label class="check"><input id="book-confirm" type="checkbox"><span>I checked this selection and its restrictions.</span></label><div class="actions">'+button('Record outcome and continue','resolve-book')+button('Cancel','cancel-deferred-equipment','quiet')+'</div>';}
 function stageView(state,insideEquipmentDialog=false){
+ const checkpoint=educationCheckpointModel(projection);
+ if(checkpoint){let choiceHtml='';if(checkpoint.mode==='existing-choice'){if(checkpoint.row===2&&educationPotentialModel(state))choiceHtml=educationPotentialView(educationPotentialModel(state));else if(checkpoint.row===10&&educationNestedChoiceModel(state))choiceHtml=educationNestedChoiceView(educationNestedChoiceModel(state),state,{esc});}if(checkpoint.mode!=='existing-choice'||choiceHtml)return educationCheckpointView(checkpoint,{esc,sourceLabel,choiceHtml,careerLabel:id=>catalog.careers.find(c=>c.id===id)?.name??id});}
+
  const educationModel=educationResultModel(projection);
  if(educationModel)return educationResultView(educationModel,{esc,button,sourceLabel,studyHtml:educationModel.study?educationSkillView(state,catalog,esc,button,{result:true}):''});
  const riteModel=aslanRitePopupModel(state);if(riteModel&&!(riteModel.equipment&&aslanManualReviewKey===JSON.stringify([projection.revision,state.pending])))return '<p>Your Rite of Passage</p>'+aslanRitePopupView({...riteModel,tagline:originTagline(riteTagKey(riteModel.rite),projection.log.findLast(event=>event.type==='roll-aslan-rite')?.id)},{esc});
@@ -599,9 +603,10 @@ document.addEventListener('click',async event=>{
  }
   if(action==='injury-loss')return send(action,{index:Number(el.dataset.index)});
   if(action==='injury-treatment')return send(action,{restore:Object.fromEntries([...document.querySelectorAll('[data-injury-restore]')].map(input=>[input.dataset.injuryRestore,Number(input.value)])),inService:$('#injury-in-service').checked});
-  if(action==='choose-effect'){if(educationPotentialModel(projection.state)&&(event.detail>1||el.disabled))return;return send(action,{index:Number(el.dataset.index)});}
+  if(action==='choose-effect'){if((educationPotentialModel(projection.state)||educationCheckpointModel(projection))&&(event.detail>1||el.disabled))return;return send(action,{index:Number(el.dataset.index)});}
  if(action==='allocate-specializations')return send(action);
  if(action==='choose-skill')return send(action,{name:$('#award-skill').value});
+ if(['roll-education-event-step','acknowledge-education-event'].includes(action)){if(event.detail>1||el.disabled)return;return send(action,{pendingId:el.dataset.pendingId});}
  if(['education-event','education-graduation'].includes(action)){if(event.detail>1||el.disabled)return;return send(action);}
  if(action==='acknowledge-education-result'){if(event.detail>1||el.disabled)return;return send(action);}
  if(action==='education-skill'){if(educationNestedChoiceModel(projection.state)&&(event.detail>1||el.disabled))return;return send(action,{name:$('#education-hobby-skill')?.value??$('#education-skill').value});}

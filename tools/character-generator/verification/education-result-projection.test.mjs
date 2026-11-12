@@ -1,3 +1,4 @@
+import {acknowledgeEducationEvent} from './education-event-scenario.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {graduationFixture} from './education-result-fixtures.mjs';
@@ -14,7 +15,7 @@ function force(r,type,payload,values){const rolled=run(r,type,payload);return ru
 function graduate(id,dice=[3,4]){
  let r=force(setup('projection-'+id),'precareer',{id},[6,6]);
  if(id==='core.university'){r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});}else {for(let n=0;['effect-choice','skill-choice'].includes(r.state.stage)&&n<20;n++){if(r.state.stage==='effect-choice'){r=run(r,'choose-effect',{index:0});continue;}const p=r.state.pendingChoice,base=p.allowed?.[0]??p.names?.[0]??p.name;const specialties={'Gun Combat':'slug','Melee':'blade','Athletics':'dexterity','Drive':'wheel','Flyer':'grav','Pilot':'spacecraft','Gunner':'turret'};r=run(r,'choose-skill',{name:specialties[base]?base+' ('+specialties[base]+')':base});}r=run(r,'acknowledge-education-result');}
- r=force(r,'education-event',{},[2,3]);return force(r,'education-graduation',{},dice);
+ r=force(r,'education-event',{},[2,3]);r=acknowledgeEducationEvent(r);return force(r,'education-graduation',{},dice);
 }
 test('University study result shows verified replacement dice and stable exact outcome identity',()=>{
  let r=force(setup(),'precareer',{id:'core.university'},[3,4]);const first=r.educationResultView;
@@ -46,7 +47,7 @@ test('academies retain distinct failed-graduation threshold and honours awards',
  }
 });
 test('event ejection is not a failed graduation or a tagline opportunity',()=>{
- let r=force(setup('blocked-projection'),'precareer',{id:'core.university'},[6,6]);r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});r=force(r,'education-event',{},[1,2]);
+ let r=force(setup('blocked-projection'),'precareer',{id:'core.university'},[6,6]);r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});r=force(r,'education-event',{},[1,2]);r=acknowledgeEducationEvent(r);
  assert.equal(r.state.character.educations[0].graduation.attempted,false);assert.equal(r.educationResultView,undefined);assert.equal(educationResultModel(r),null);
 });
 
@@ -63,7 +64,7 @@ test('pending award completion excludes an intervening GM stat correction from g
 
 test('failed result distinguishes verified initial EDU from later changes and current total',()=>{
  let r=force(setup('retained-edu'),'precareer',{id:'core.university'},[6,6]);r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});
- r=run(r,'gm-override',{field:'stat.EDU',value:3,reason:'Later correction is not an initial education award'});r=force(r,'education-event',{},[2,3]);r=force(r,'education-graduation',{},[1,2]);
+ r=run(r,'gm-override',{field:'stat.EDU',value:3,reason:'Later correction is not an initial education award'});r=force(r,'education-event',{},[2,3]);r=acknowledgeEducationEvent(r);r=force(r,'education-graduation',{},[1,2]);
  assert.equal(r.state.character.stats.EDU,3);assert.ok(r.educationResultView.retained.includes('Initial EDU +1 is not removed by this result.'));assert.ok(!r.educationResultView.retained.some(x=>x.includes('EDU 8')||x.includes('EDU +4')));
 });
 test('honours mobile metadata preserves canonical rights and remains projection-only',()=>{

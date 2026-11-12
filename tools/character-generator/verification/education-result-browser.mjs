@@ -98,7 +98,7 @@ try{
    }
 
    // Graduation preview is current evidence, never a roll or award on navigation.
-   let graduation=forceEducation(educationReady(),'education-event',{},[2,3]);graduation=command(graduation,'gm-override',{field:'stat.INT',value:8,reason:'Synthetic preview INT'});await load(p,graduation);await p.locator('.education-graduation-prompt').waitFor();const graduationRaw=await saved(p);
+   let graduation=forceEducation(educationReady(),'education-event',{},[2,3]);graduation=command(graduation,'acknowledge-education-event',{pendingId:graduation.state.educationEventResult.id});graduation=command(graduation,'gm-override',{field:'stat.INT',value:8,reason:'Synthetic preview INT'});await load(p,graduation);await p.locator('.education-graduation-prompt').waitFor();const graduationRaw=await saved(p);
    assert.match(await p.locator('.graduation-formula').innerText(),/Roll 2D \+ 0/);assert.match(await p.locator('.education-graduation-prompt').innerText(),/INT 8/);
    for(const kind of ['graduation','calculation']){await p.locator('[data-education-info='+kind+']').click();await p.locator('#precareer-information').waitFor();assert.equal(await p.locator('#precareer-information [data-action]').count(),0);await p.locator('#precareer-information-close').click();assert.equal(await saved(p),graduationRaw);}
    await dismiss(p);await resume(p);await p.reload();await ready(p);await p.locator('.education-graduation-prompt').waitFor();assert.equal(await saved(p),graduationRaw);await fit(p);

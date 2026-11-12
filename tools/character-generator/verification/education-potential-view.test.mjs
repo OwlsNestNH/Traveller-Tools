@@ -1,3 +1,4 @@
+import {acknowledgeEducationEvent} from './education-event-scenario.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {educationPotentialModel,educationPotentialView} from '../gui/precareer-popup.mjs';
@@ -11,7 +12,7 @@ test('University potential choices preserve exact existing commands, both PSI va
   const raw=exportSession(r.session),before=structuredClone(r.state),model=educationPotentialModel(r.state),html=educationPotentialView(model);
   assert.equal(model.recorded,recorded);assert.match(html,recorded?/Use recorded PSI/:/Test potential · Roll 2D/);assert.equal((html.match(/data-action="choose-effect"/g)||[]).length,2);assert.match(html,/data-index="0"/);assert.match(html,/data-index="1"/);if(recorded)assert.doesNotMatch(html,/Roll 2D|admission-dice/);
   assert.equal(exportSession(r.session),raw);assert.deepEqual(r.state,before);assert.deepEqual(project(r.session).state,r.state);
-  const after=command(r,'choose-effect',{index});assert.equal(after.state.stage,'education-graduation');assert.equal(educationPotentialModel(after.state),null);
+  const resolved=command(r,'choose-effect',{index});assert.equal(resolved.state.stage,'education-event-result');const after=acknowledgeEducationEvent(resolved);assert.equal(after.state.stage,'education-graduation');assert.equal(educationPotentialModel(after.state),null);
   assert.equal(!!after.state.character.psionEntryPermission,index===0);if(recorded||index===1)assert.equal(after.state.rng,r.state.rng);else assert.notEqual(after.state.rng,r.state.rng);
   if(recorded)assert.equal(after.state.character.stats.PSI,psi);else assert.equal(Object.hasOwn(after.state.character.stats,'PSI'),index===0);
  }
@@ -22,6 +23,6 @@ test('potential presentation rejects unrelated, altered, Companion and source ch
 });
 
 test('decline retains previously granted permission without changing PSI or RNG',()=>{
- let r=command(fixture(),'choose-effect',{index:0});r=forceEducation(r,'education-graduation',{},[4,4]);r=command(r,'acknowledge-education-result');r=command(r,'open-precareer');r=forceEducation(r,'precareer',{id:'core.university'},[6,6]);r=command(r,'education-skill',{name:'Admin'});r=command(r,'education-skill',{name:'Medic'});r=forceEducation(r,'education-event',{},[1,1]);
+ let r=acknowledgeEducationEvent(command(fixture(),'choose-effect',{index:0}));r=forceEducation(r,'education-graduation',{},[4,4]);r=command(r,'acknowledge-education-result');r=command(r,'open-precareer');r=forceEducation(r,'precareer',{id:'core.university'},[6,6]);r=command(r,'education-skill',{name:'Admin'});r=command(r,'education-skill',{name:'Medic'});r=forceEducation(r,'education-event',{},[1,1]);
  assert.ok(educationPotentialModel(r.state));assert.equal(r.state.character.psionEntryPermission,true);const after=command(r,'choose-effect',{index:1});assert.equal(after.state.character.psionEntryPermission,true);assert.equal(after.state.rng,r.state.rng);assert.equal(after.state.character.stats.PSI,r.state.character.stats.PSI);
 });

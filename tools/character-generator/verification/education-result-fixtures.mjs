@@ -1,3 +1,4 @@
+import {acknowledgeEducationEvent} from './education-event-scenario.mjs';
 // Synthetic public-command fixtures. No private campaign data or saved-state edits.
 import assert from 'node:assert/strict';
 import {api,createSession,execute,project} from '../engine/session.mjs';
@@ -17,11 +18,11 @@ export function educationReady(id='core.university'){
  assert.equal(r.state.stage,'education-event');return r;
 }
 export function graduationFixture(id='core.university',outcome='ordinary'){
- let r=forceEducation(educationReady(id),'education-event',{},[2,3]);assert.equal(r.state.stage,'education-graduation');
+ let r=forceEducation(educationReady(id),'education-event',{},[2,3]);r=acknowledgeEducationEvent(r);assert.equal(r.state.stage,'education-graduation');
  const values=outcome==='honours'?[6,5]:outcome==='failure'?[1,1]:outcome==='failure-high'?[2,2]:[4,4];r=forceEducation(r,'education-graduation',{},values);
  assert.equal(r.state.stage,'education-result');assert.equal(r.educationResultView?.kind,'graduation');return r;
 }
-export function eventBlockedFixture(){return forceEducation(educationReady(),'education-event',{},[1,2]);}
+export function eventBlockedFixture(){return acknowledgeEducationEvent(forceEducation(educationReady(),'education-event',{},[1,2]));}
 export function sourceEducationFixture(species='vargr'){return command(educationSetup('education-source-'+species,species),'precareer',{id:'core.university'});}
 export function validateEducationFixtures(){
  const rows=[];
