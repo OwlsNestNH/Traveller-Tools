@@ -432,3 +432,9 @@ body[data-stage="background"] #message{max-width:var(--tool-content-width);margi
 .crow-error-dialog h2{color:#ff7b85}.crow-error-dialog .eyebrow{color:#d8b76a}
 .crow-error-dialog p{line-height:1.55}.crow-error-dialog button{clear:both}
 #crow-error-dialog button{background:#185876;border-color:#78bbdc;color:#fff;min-height:48px}
+.crow-recovery-actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.crow-recovery-actions button{min-height:48px}
+.required-action-warning .crow-recovery-actions button{background:#185876;color:#fff;border:2px solid #78bbdc;font-size:1rem;padding:10px 16px}
+#crow-error-diagnostics{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.85rem}
+#crow-rewind-dialog select{min-width:0;max-width:100%}#crow-rewind-dialog ol{padding-left:1.5rem}#crow-rewind-dialog input[type=checkbox]{width:24px;height:24px}
+#crow-rewind-dialog button{background:#185876;border-color:#78bbdc;color:#fff;min-height:48px}#crow-rewind-dialog .crow-assistance-info{min-width:44px;width:44px;min-height:44px;padding:0}
+#workspace .required-action-warning .crow-recovery-actions button{background:#185876;color:#fff;border:2px solid #78bbdc;font-size:1rem;padding:10px 16px;min-height:48px}

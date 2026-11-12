@@ -1,3 +1,4 @@
+import {mountRewindConfirmation,createNavigationDrafts} from './recovery-actions.mjs';
 import {mountCrowIntroduction} from './crow-assistance.mjs';
 import {mountRequiredActions,clearRequiredActions} from './required-action.mjs';
 import {physicalSexSelectView} from './physical-sex-setup.mjs';
@@ -82,6 +83,19 @@ const key='traveller-character-generator.v1';
 let backgroundDraft=null;
 let notesDraft=null,inspectionRaw=null,inspectionHistory=null,inspectionOriginal=null;
 let session,projection,catalog,busy=false,selectedCareer='',effects=[],storageWarning='',operationGeneration=0,recoveryRaw=null;
+const recoveryDrafts=createNavigationDrafts();
+const recoveryKey=()=>JSON.stringify([operationGeneration,session?.seed,projection?.revision,selectedCareer,aslanManualReviewKey]);
+const recoveryRewind=mountRewindConfirmation({document,getSession:()=>session,getProjection:()=>projection,getKey:recoveryKey,isBusy:()=>busy,onBackup:()=>download('traveller-accepted-character.json',exportSession(session)),onRestore:async revision=>{const ok=await send('restore',{revision},{discardDrafts:true});if(ok)window.CrowTechnicalError?.close();return ok;}});
+function recoveryActions({control,technical=false}={}){
+ const scope=control?.closest('dialog[open]')??[...document.querySelectorAll('dialog[open]')].findLast(d=>!['crow-error-dialog','crow-rewind-dialog'].includes(d.id))??$('#workspace');
+ // Explicit presentation-only adapters. Do not add command/cancel buttons here.
+ for(const selector of ['#precareer-admission-back','#precareer-options-back','[data-action="career-list"]','[data-action="aslan-event-choices"]']){
+  const back=scope?.querySelector(selector);if(back&&!back.disabled&&!back.closest('[hidden],dialog:not([open])')&&back.getClientRects().length)return [{id:'go-back',kind:'navigate',label:'Go back',available:()=>!busy&&back.isConnected,run:()=>{recoveryDrafts.capture($('#workspace'),recoveryKey());back.click();}}];
+ }
+ if(!technical&&projection?.state.config.gm&&projection.revision)return [{id:'review-rewind',kind:'rewind',label:'Go back…',available:()=>!busy&&!!projection?.state.config.gm,run:opener=>recoveryRewind.open(opener,{technical})}];
+ return [];
+}
+window.CrowTechnicalError?.setRecoveryProvider((context={})=>({diagnostics:{stage:projection?.state.stage??'startup',revision:projection?.revision??null},actions:session?[{id:'save-accepted-character',kind:'backup',label:'Save accepted character',available:()=>!busy,run:()=>download('traveller-accepted-character.json',exportSession(session))},...(context.startup||context.kind==='presentation'?[]:recoveryActions({technical:true}))]:[]}));
 const stageNames={'aslan-rite-result':'Your Rite of Passage result','aslan-pride-result':'Your pride result','aslan-clan-result':'Your clan result','aslan-family-result':'Your family result','aslan-birth-result':'Your birth-order result','equipment-finalization':'Assets & benefits','borrowed-event-roll':'Discover the next part of your story','career-event':'Discover your career event','career-mishap':'Resolve your career mishap','relationship-event':'Choose the relationship consequence','cross-career-cover':'Choose your cover career','benefit-wager':'Choose an optional benefit wager','aslan-family':'Discover your family background','aslan-birth-order':'Your place in the family','aslan-estate':'Record the family land baseline','aslan-clan':'Find your clan','aslan-pride':'Find your pride','aslan-rite':'Complete your rite','aslan-officer-entry':'Qualify for the officer career','aslan-officer-rank':'GM officer rank mapping','assignment-entry':'Qualify for your new assignment','advisory-cash-source':'Resolve the unprinted cash result','advisory-career':'Choose your advisory career','advisory-cash':'Resolve your advisory cash benefit','cross-career-training':'Choose your extra training','relationship-loss':'Choose a relationship to remove','merchant-fine-roll':'Roll the Merchant fine','merchant-fine-decision':'Resolve the Merchant fine','reeducation-roll':'Re-education outcome','reeducation-fine':'Re-education fine','reeducation-decisions':'Resolve re-education decisions','psionic-games-preliminaries':'Compete in the Psionic Games','psionic-games-final':'The Psionic Games final','psionic-games-decisions':'Resolve the Games term',retirement:'Retired from character creation','psionic-training':'Explore your psionic talents','injury-loss':'Resolve the injury','injury-treatment':'Choose injury treatment','companion-admission':'Check education admission','companion-skill':'Choose your education awards','education-skill':'Choose your study skills','education-service':'Choose academy service awards','education-event':'Your education term','education-check':'Demonstrate what you learned','education-graduation':'Graduation','preterm-commission':'Education commission opportunity',identity:'Start your Traveller',statistics:'Roll and place characteristics',background:'Choose background skills',precareer:'Before your career',career:'Choose your next career','failed-entry':'Choose a new direction','book-step':'Resolve a source step',survival:'Will you make it through?',advancement:'Your career develops',training:'Choose a training table','effect-choice':'Make a life-path choice','skill-choice':'Choose your new skill','term-end':'The end of a term',benefits:'What you take with you',finish:'Your Traveller is ready to review',ageing:'The passing years',deceased:'The end of a life path'};
 const coverageLabels={'zhodani-relationship-loss':'Missing relationship source decision','zhodani-reeducation':'Re-education source decisions','zhodani-anagathic-ageing':'Anagathic ageing credit','zhodani-ageing-psi':'PSI ageing decision','career-transfer':'Career transfer rank decisions','psionic-games':'Psionic Games source decisions','native-effect':'A special event or award','benefit-equipment':'Equipment selections','benefit-ship':'Ship choices and history','benefit-source':'Special benefit rulings',pension:'Pension eligibility or payment conditions','injury-zero':'Injury survival rulings','injury-medical':'Employer medical contributions','medical-settlement':'Medical bill financing','ageing-financing':'Ageing-care financing','psionic-training-terms':'Psionic training access, costs and timing','psionic-history':'Earlier psionic attempt history','psionic-repeat-training':'Repeated psionic training','psionic-retry':'A psionic replacement award','missing-characteristic-check':'A cross-species characteristic check','species-setup':'Species upbringing details','companion-career-rights':'Education rights in a later career'};
 const button=(label,action,cls='',attributes='')=>'<button type="button" data-action="'+action+'" class="'+cls+'" '+attributes+'>'+label+'</button>';
@@ -168,7 +182,7 @@ function inspectHistory(raw,original=null,issue=''){
 }
 function closeHistory(){inspectionRaw=null;inspectionOriginal=null;inspectionHistory=null;$('#legacy-history').hidden=true;$('#legacy-actions').replaceChildren();}
 function setBusy(value){
- busy=value;
+ busy=value;queueMicrotask(()=>window.CrowTechnicalError?.refresh());
  if(projection?.state.stage==='background')syncBackgroundSkills(document,projection.state,backgroundDraft?.skills??[],{esc},value);
  if(value){for(const el of document.querySelectorAll('button,input[type=file],#character-notes'))if(!el.disabled){el.dataset.busyDisabled='true';el.disabled=true;}}
  else {for(const el of document.querySelectorAll('[data-busy-disabled]')){el.disabled=false;delete el.dataset.busyDisabled;}$('#legacy-text').disabled=inspectionHistory===null;}
@@ -191,9 +205,9 @@ function focusAfterAction(previousStage,focused){
  }
  if(!target||target.disabled)target=$('#step-title');target?.focus();
 }
-async function send(type,payload={}){
+async function send(type,payload={},recoveryOptions={}){
  if(busy)return false;
- const token=operationGeneration,previousState=projection.state,previousStage=previousState.stage;
+ const token=operationGeneration,previousState=projection.state,previousStage=previousState.stage;let committed=false;
  const focused={id:document.activeElement?.id,action:document.activeElement?.dataset.action};
  setBusy(true);
  try{
@@ -201,8 +215,8 @@ async function send(type,payload={}){
   if(token!==operationGeneration)return false;
   if(!result.ok)throw new Error(result.error.message);
   trainingTagline=aslanTrainingTagline(result.log.at(-1),result.state,{previousState,command:{type,payload}});
-  session=result.session;projection=result;aslanManualReviewKey=null;if(type==='notes'&&notesDraft===payload.text)notesDraft=null;effects=[];persist();render();focusAfterAction(previousStage,focused);notify(storageWarning||actionNotice(type,result),!!storageWarning,rollResult(result.log.at(-1),result.state,catalog)?.status??'info',!storageWarning);return true;
- }catch(error){if(token===operationGeneration)notify(error.message,true);return false;}
+  session=result.session;projection=result;committed=true;window.CrowStartupRecovery?.lock();if(recoveryOptions.discardDrafts){notesDraft=null;backgroundDraft=null;effects=[];selectedCareer='';recoveryDrafts.clear();}aslanManualReviewKey=null;if(type==='notes'&&notesDraft===payload.text)notesDraft=null;effects=[];persist();render();focusAfterAction(previousStage,focused);notify(storageWarning||actionNotice(type,result),!!storageWarning,rollResult(result.log.at(-1),result.state,catalog)?.status??'info',!storageWarning);return true;
+ }catch(error){if(token===operationGeneration)notify(error.message,true,'info',false,{kind:committed?'presentation':'action',...(committed?{guidance:'The action was accepted. Show current step redraws its stored result without repeating a roll, purchase or action. Save accepted character keeps a backup; unsaved form fields stay on this page.',actions:[{id:'show-current-step',kind:'navigate',label:'Show current step',available:()=>!busy,run:()=>{render();return true;}}]}:{})});return false;}
  finally{if(token===operationGeneration)setBusy(false);}
 }
 document.addEventListener('change',event=>{if(event.target.matches('#background-form [name=skills]')&&!busy){backgroundDraft={key:backgroundDraftKey(session,projection.state),skills:selected(event.target.form,'skills')};syncBackgroundSkills(document,projection.state,backgroundDraft.skills,{esc});}});
@@ -540,6 +554,7 @@ function render(){
  },onNameClan:async name=>{if(!await send('name-aslan-clan',{name}))throw new Error($('#message').textContent||'Clan name could not be recorded.');},onChooseClan:async payload=>{if(!await send('choose-aslan-clan',payload))throw new Error($('#message').textContent||'Clan could not be recorded.');},onToggleGM:async enabled=>{if(!await send('gm-mode',{enabled}))throw new Error($('#message').textContent||'GM setting could not be recorded.');const detail=$('#aslan-clan-record')?.closest('details');if(detail)detail.open=true;if(enabled)$('#aslan-clan-name')?.focus();}});
  mountAslanClanInformation(document);mountAslanPrideInformation(document);mountAslanBackgroundInformation(document);mountAslanRiteInformation(document,{resultKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id,projection.log.findLast(event=>event.type==='roll-aslan-rite')?.id,state.currentAslanOrigin?.rite?.dice,state.currentAslanOrigin?.rite?.statsBefore,state.currentAslanOrigin?.rite?.modifier,state.currentAslanOrigin?.rite?.additionalRolls])});
  mountEquipmentDialog(document,()=>send('cancel-deferred-equipment'));
+ recoveryDrafts.restore($('#workspace'),recoveryKey());
 }
 function renderEffects(){
  const list=$('#effect-list');clearRequiredActions(list.closest('dialog[open]')??$('#workspace'));
@@ -773,10 +788,11 @@ async function start(){
   if(!projection?.ok){const result=await call({operation:'create',seed:crypto.randomUUID()});if(!result.ok)throw new Error(result.error.message);session=result.session;projection=result;aslanManualReviewKey=null;}
   trainingTagline=await restoredAslanTrainingTagline(session,projection,call);
   updateRecovery();render();if(storageWarning)notify(storageWarning,true);
- }catch(error){notify('Unable to start the rules engine: '+error.message,true,'info',false,{startup:true});}
+  return true;
+ }catch(error){notify('Unable to start the rules engine: '+error.message,true,'info',false,{startup:true});return false;}
  finally{setBusy(false);}
 }
-start();
+export const startupReady=start();
 
 document.addEventListener('change',event=>{if(['clan-share-kind','clan-share-lot'].includes(event.target.id)){if($('#clan-weapons-confirmed'))$('#clan-weapons-confirmed').checked=false;if($('#clan-lower-value-confirmed'))$('#clan-lower-value-confirmed').checked=false;}if(['clan-share-kind','clan-share-lot','clan-share-contact','clan-verify-lot','clan-verify-target','clan-verify-contact','clan-contact-clan'].includes(event.target.id))syncClanShareControls();});
 
@@ -802,4 +818,4 @@ document.addEventListener('change',event=>{if(['credit-category','credit-item'].
 
 document.addEventListener('input',event=>{if(event.target.id==='education-skill')syncEducationStudyContinue(projection.state,catalog,document);});
 
-mountRequiredActions({document,getState:()=>projection?.state??{},isBusy:()=>busy,backgroundSelection,studyValid:(state,value)=>educationStudySelectionValid(state,catalog,value)});
+mountRequiredActions({document,getState:()=>projection?.state??{},isBusy:()=>busy,backgroundSelection,getRecoveryActions:recoveryActions,studyValid:(state,value)=>educationStudySelectionValid(state,catalog,value)});

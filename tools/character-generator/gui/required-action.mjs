@@ -1,3 +1,4 @@
+import {recoveryButton} from './recovery-actions.mjs';
 import {crowAssistanceView} from './crow-assistance.mjs';
 // Presentation-only validation. Never interprets transport/engine errors as omissions.
 export const REQUIRED_HEADLINES=Object.freeze({
@@ -79,16 +80,16 @@ export function missingField(control){
  return !String(control.value??'').trim()||control.validity?.valid===false;
 }
 let serial=0;
-export function showRequiredAction(root,{control,type='generic',detail,key=''}){
+export function showRequiredAction(root,{control,type='generic',detail,key='',actions=[]}){
  if(!control)return;
  const scope=control.closest('dialog[open]')??root.querySelector('#workspace')??root.body;
  let warning=scope.querySelector(':scope > .required-action-warning');
- if(!warning){warning=root.createElement('div');warning.id='required-action-warning-'+(++serial);warning.className='required-action-warning';warning.setAttribute('role','alert');warning.setAttribute('aria-atomic','true');scope.prepend(warning);}
+ if(!warning){warning=root.createElement('div');warning.id='required-action-warning-'+(++serial);warning.className='required-action-warning';warning.dataset.crowEssential='true';warning.setAttribute('role','alert');warning.setAttribute('aria-atomic','true');scope.prepend(warning);}
  const introduction=scope.querySelector(':scope > #crow-introduction');if(introduction)introduction.hidden=true;
  const assistance=crowAssistanceView(root,{type,informationDialog:introduction?'crow-introduction-dialog':null});assistance.help.id=warning.id+'-crow-help';if(!introduction)assistance.button.setAttribute('aria-controls',assistance.help.id);
  const title=root.createElement('strong'),instruction=root.createElement('p');title.textContent=requiredHeadline(type,key);instruction.textContent=detail;
  const speech=root.createElement('div');speech.className='crow-speech';speech.append(title,instruction);
- warning.replaceChildren(assistance.row,speech,assistance.help);warning.hidden=false;
+ const recovery=root.createElement('div');recovery.className='crow-recovery-actions';const dismiss=()=>{warning.hidden=true;if(introduction)introduction.hidden=false;if(control.isConnected){control.focus();control.scrollIntoView?.({block:'nearest'});}};recovery.append(recoveryButton(root,{id:'continue',label:'Continue',ariaLabel:'Continue to the missing field',run:dismiss}));for(const action of actions)recovery.append(recoveryButton(root,action));warning.replaceChildren(assistance.row,speech,assistance.help,recovery);warning.hidden=false;
  control.setAttribute('aria-invalid','true');
  const ids=new Set((control.getAttribute('aria-describedby')??'').split(/\s+/).filter(Boolean));ids.add(warning.id);control.setAttribute('aria-describedby',[...ids].join(' '));
  for(let node=control.parentElement;node&&node!==scope;node=node.parentElement)if(node.tagName==='DETAILS')node.open=true;
@@ -99,9 +100,9 @@ export function showRequiredAction(root,{control,type='generic',detail,key=''}){
 }
 // Installed once. Capture blocks local popup listeners and bubbling app handlers
 // before any command, draft persistence, RNG call or navigation can run.
-export function mountRequiredActions({document:root,getState,isBusy,backgroundSelection,studyValid}){
+export function mountRequiredActions({document:root,getState,isBusy,backgroundSelection,studyValid,getRecoveryActions=()=>[]}){
  const active=control=>control&&!control.disabled&&!control.closest('[hidden]');
- const fail=(control,type,detail)=>{const state=getState();showRequiredAction(root,{control,type,detail,key:requiredActionKey(state,control)});return true;};
+ const fail=(control,type,detail)=>{const state=getState();showRequiredAction(root,{control,type,detail,key:requiredActionKey(state,control),actions:getRecoveryActions({control,state})});return true;};
  function validate(action,trigger){
   const state=getState();
   if(action==='background'){

@@ -78,13 +78,13 @@ test('routed presentation fixture preserves browser crypto secure-context requir
 });
 
 test('actual GUI startup reports missing browser UUID instead of rendering a partial character',async()=>{
- const app=read('tools/character-generator/gui/app.mjs'),begin=app.indexOf('async function start(){'),end=app.indexOf('\nstart();',begin);
- assert.ok(begin>=0&&end>begin,'Inspect the unchanged startup function, not a rewritten implementation');
+ const app=read('tools/character-generator/gui/app.mjs'),begin=app.indexOf('async function start(){'),end=app.indexOf('\nexport const startupReady=start();',begin);
+ assert.ok(begin>=0&&end>begin,'Inspect the actual startup function, not a rewritten implementation');
  async function run(crypto){
   const calls=[],messages=[];let renders=0;
   const context={crypto,restoredAslanTrainingTagline,call:async request=>{calls.push(request.operation);return api(JSON.parse(JSON.stringify(request)));},localStorage:{getItem:()=>null},key:'test',projection:undefined,storageWarning:'',setBusy:()=>{},updateRecovery:()=>{},render:()=>renders++,notify:(message,error)=>messages.push({message,error})};
-  await vm.runInNewContext(app.slice(begin,end)+'\nstart();',context);return{calls,messages,renders};
+  const ready=await vm.runInNewContext(app.slice(begin,end)+'\nstart();',context);return{calls,messages,renders,ready};
  }
- const unavailable=await run({});assert.equal(unavailable.renders,0);assert.deepEqual(unavailable.calls,['catalog']);assert.equal(unavailable.messages[0].error,true);assert.match(unavailable.messages[0].message,/Unable to start the rules engine: crypto.randomUUID is not a function/);
- const available=await run({randomUUID:()=> 'startup-capability-check'});assert.equal(available.renders,1);assert.deepEqual(available.calls,['catalog','create']);assert.deepEqual(available.messages,[]);
+ const unavailable=await run({});assert.equal(unavailable.ready,false);assert.equal(unavailable.renders,0);assert.deepEqual(unavailable.calls,['catalog']);assert.equal(unavailable.messages[0].error,true);assert.match(unavailable.messages[0].message,/Unable to start the rules engine: crypto.randomUUID is not a function/);
+ const available=await run({randomUUID:()=> 'startup-capability-check'});assert.equal(available.ready,true);assert.equal(available.renders,1);assert.deepEqual(available.calls,['catalog','create']);assert.deepEqual(available.messages,[]);
 });
