@@ -116,5 +116,5 @@
 .education-result .university-skill-level{font-size:20px;margin:0 0 12px}
 .university-skill-box select,.university-skill-box input{width:100%;min-height:48px}
 .university-skill-retained{color:#f5f7fa}
-.university-skill-retained span{display:block;font-size:18px;margin-top:8px;color:#c6dbe8}
+.university-skill-retained span:not(.education-study-selector){display:block;font-size:18px;margin-top:8px;color:#c6dbe8}
 @media(max-width:650px){.university-study-pair{grid-template-columns:1fr;gap:12px}.university-skill-box{padding:0}.education-result .university-skill-box h5{font-size:23px}}

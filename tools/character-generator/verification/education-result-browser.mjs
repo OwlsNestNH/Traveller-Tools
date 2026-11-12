@@ -28,6 +28,12 @@ async function fit(p){
 }
 async function shot(p,label,width){
  const fixture=label+' '+width+'px',unknown=p.locator('.education-pending-dice .aslan-family-mystery');
+ const studySelectors=p.locator('.university-study-pair .education-study-selector');
+ if(await studySelectors.count()){
+  const inlineRows=await studySelectors.evaluateAll(rows=>rows.every(row=>{const book=row.querySelector('.education-result-art').getBoundingClientRect(),select=row.querySelector('select').getBoundingClientRect();return book.right<=select.left&&Math.max(book.top,select.top)<Math.min(book.bottom,select.bottom);}));
+  layoutCheck(fixture+' book/dropdown rows',()=>assert.ok(inlineRows,'Both study rows, including recorded selections, must keep the book beside the dropdown'));
+ }
+
  if(await unknown.count()){
   assert.equal(await unknown.count(),2);assert.equal(await p.locator('.education-event-roll .admission-dice,.education-event-roll .graduation-dice-art').count(),0);
   const diceFits=await unknown.first().evaluate((el,width)=>el.getBoundingClientRect().width>=(width<650?108:150),width);
