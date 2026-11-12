@@ -298,3 +298,18 @@
 @media screen{#precareer-aslan-origin>.aslan-origin-sheet>h3{display:none}#precareer-aslan-origin .aslan-origin-sheet{font-size:16px;line-height:1.5;overflow-wrap:anywhere}#precareer-aslan-origin>summary{font-weight:750;color:#ffdc67}#precareer-aslan-origin .aslan-origin-sheet p{margin:0 0 14px}}
 
 @media screen{#precareer-overview{padding:20px 22px;min-height:0}#precareer-overview h2{margin:10px 0}#precareer-overview p.sheet-meta{font-size:16px;line-height:1.45;overflow-wrap:anywhere}#precareer-overview .sheet-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0 0}#precareer-overview .sheet-facts>span{min-width:0;overflow-wrap:anywhere}#precareer-overview .sheet-facts strong{font-size:20px}}
+/* Nonmodal choices reserve space for the live record instead of covering it. */
+@media screen and (min-width:1101px){
+ .layout.precareer-layout:has(>#precareer-dialog:not(:modal)){grid-template-columns:minmax(0,1fr) clamp(320px,27vw,400px);column-gap:24px;row-gap:16px}
+ .precareer-layout:has(>#precareer-dialog:not(:modal)) #precareer-context{display:contents}
+ .precareer-layout:has(>#precareer-dialog:not(:modal)) #precareer-rail{grid-column:2;grid-row:1 / span 2;width:100%;min-width:0}
+ .precareer-layout:has(>#precareer-dialog:not(:modal)) .precareer-step-card{grid-column:1;grid-row:2;width:100%;min-width:0;min-height:0;display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;padding:12px 18px}
+ .precareer-layout:has(>#precareer-dialog:not(:modal)) .precareer-step-card :is(p,button){margin:0}
+ .precareer-layout:has(>#precareer-dialog:not(:modal)) .precareer-step-rule{display:none}
+ .precareer-layout #precareer-dialog:not(:modal){grid-column:1;grid-row:1;width:100%;min-width:0;margin:0}
+ .precareer-layout #precareer-dialog:not(:modal) button.precareer-choice{gap:14px;padding:15px 18px;font-size:clamp(24px,2vw,32px)}
+}
+@media screen and (min-width:651px) and (max-width:1100px){
+ .precareer-layout:has(>#precareer-dialog:not(:modal)) #precareer-context{grid-row:1}
+ .precareer-layout #precareer-dialog:not(:modal){grid-row:2;width:100%;margin:18px 0 0}
+}

@@ -3,6 +3,7 @@ import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {createServer} from '../server.mjs';
+import {studyFixture} from './education-result-fixtures.mjs';
 import {api,exportSession} from '../engine/session.mjs';
 import {buildAslanOriginFixture as build,run,force} from './aslan-origin-fixtures.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
@@ -151,6 +152,17 @@ try{
    await originBar.scrollIntoViewIfNeeded();await screenshot(page,'aslan-family-sidebar-origin-'+width);assert.deepEqual(await saved(page),before);
    await page.locator('#precareer-resume').click();await page.locator('#precareer-dismiss').click();assert.equal(await originBar.evaluate(e=>e.open),true);assert.deepEqual(await saved(page),before);
    checks.push({sidebar:width,pass:true});
+  }finally{await context.close();}
+ }
+
+ for(const width of [651,1101,1499,1586])for(const kind of ['standard','study']){
+  const fixture=kind==='study'?studyFixture():run(force(build({stage:'aslan-rite'}),'roll-aslan-rite',{},[3,4]),'acknowledge-aslan-rite'),{page,context}=await open(fixture,width);
+  try{
+   const before=await saved(page);await page.locator('#precareer-dialog[open]').waitFor();
+   const geometry=await page.evaluate(()=>{const d=document.querySelector('#precareer-dialog'),r=document.querySelector('#precareer-rail'),a=d.getBoundingClientRect(),b=r.getBoundingClientRect();return {modal:d.matches(':modal'),right:a.right,left:b.left,top:a.top,railBottom:b.bottom,railRight:b.right,width:innerWidth};});
+   assert.equal(geometry.modal,false);if(width>=1101)assert.ok(geometry.right+16<=geometry.left,'Nonmodal panel must not cover the live record');else assert.ok(geometry.top>=geometry.railBottom,'Tablet panel must follow the live record');assert.ok(geometry.railRight<=geometry.width);assert.equal(await page.locator('#precareer-overview').isVisible(),true);
+   if(kind==='study')assert.equal(await page.locator('[data-study-box]').count(),2);
+   await screenshot(page,'aslan-family-sidebar-open-'+kind+'-'+width);assert.deepEqual(await saved(page),before);checks.push({sidebarOpen:kind,width,pass:true});
   }finally{await context.close();}
  }
 

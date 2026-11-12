@@ -75,7 +75,7 @@ try{
    await p.locator('#precareer-previous').click();assert.match(await p.locator('#precareer-information-previous').innerText(),/Read only|Read-only/i);assert.match(await p.locator('#precareer-information-previous').innerText(),/Background skills/);
    for(const skill of fixture.session.events.at(-1).command.payload.skills)assert.ok((await p.locator('#precareer-information-previous').innerText()).includes(skill));await closeInfo(p);
    for(const id of ['precareer-characteristics','precareer-skills','precareer-notes','precareer-more-record','precareer-skills']){
-    await bar(p,id);if(id==='precareer-more-record')assert.equal(await p.locator('#precareer-more-record .sheet-meta').count(),1);assert.deepEqual(await p.locator('#sheet>details[data-precareer-bar][open]').evaluateAll(ns=>ns.map(n=>n.id)),[id]);await fit(p);
+    await bar(p,id);if(id==='precareer-more-record'){assert.equal(await p.locator('#precareer-more-record .sheet-meta').count(),0);assert.equal(await p.locator('#precareer-overview .sheet-meta').count(),1);assert.equal(await p.locator('#precareer-overview .sheet-facts').count(),1);assert.equal(await p.locator('.sheet-meta').count(),1);assert.equal(await p.locator('.sheet-facts').count(),1);}assert.deepEqual(await p.locator('#sheet>details[data-precareer-bar][open]').evaluateAll(ns=>ns.map(n=>n.id)),[id]);await fit(p);
    }
    const skillsBar=p.locator('#precareer-skills');await skillsBar.locator(':scope > summary').focus();await p.keyboard.press('Enter');assert.equal(await skillsBar.evaluate(el=>el.open),false);await p.keyboard.press('Space');assert.equal(await skillsBar.evaluate(el=>el.open),true);
    assert.equal(await saved(p),before);assert.equal(commands.length,baseline,'presentation controls must not submit commands');
