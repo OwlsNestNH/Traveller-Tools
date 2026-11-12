@@ -47,3 +47,23 @@ test('academy and source-assisted entry never acquire the University checkpoint 
 test('compact original-roll strip preserves faces without duplicating the event heading',()=>{
  for(const row of [2,10]){const model=educationCheckpointModel(eventFixture(row)),html=educationCheckpointView(model,helpers),strip=html.match(/<section class="education-checkpoint-record">(.*?)<\/section>/s)[1];assert.match(strip,/Recorded education event/);assert.doesNotMatch(strip,new RegExp(model.eventName));assert.equal((strip.match(/data-recorded-face=/g)||[]).length,2);assert.ok(html.includes('Event '+row+' · '+model.eventName));}
 });
+
+test('earlier evidence is read-only and internal selections are not presented as earned awards',()=>{
+ for(const f of checkpointFixtures().filter(f=>['injury-roll','draft-roll','independence-failure','independence-success'].includes(f.label))){const model=educationCheckpointModel(f.result),html=educationCheckpointView(model,helpers),detail=html.match(/<details class="education-checkpoint-details">(.*?)<\/details>/s)[1];assert.doesNotMatch(detail,/data-action=/);assert.ok(html.indexOf('<details')>html.indexOf('data-action='));const lines=educationAppliedLines(model.appliedChanges).join(' ');assert.doesNotMatch(lines,/life-event-|graduationAllowed|selections/);if(f.label==='draft-roll')assert.match(lines,/Graduation is no longer permitted/);if(f.label==='independence-failure')assert.match(html,/No Independence skill was gained/);if(f.label.startsWith('independence'))assert.match(html,/Selected hobby: Independence/);}
+});
+
+test('real Life benefits, asset ownership and medical liabilities stay visible outside audit details',()=>{
+ const fixtures=checkpointFixtures();
+ for(const [label,expected] of [['life-9-benefit',/Qualification DM \+2.*next applicable check/],['life-10-benefit',/Benefit-roll bonus \+2 \(available; one use\)/],['artefact-result',/Owned asset: Alien Artefact · details pending/],['medical-bill-result',/Cr10000 personal bill \(unpaid/],['future-benefit-loss',/One future Benefit roll must be forfeited/],['conditional-psion-access',/Conditional Psion access at 1 completed term/]]){
+  const r=fixtures.find(f=>f.label===label).result,model=educationCheckpointModel(r),html=educationCheckpointView(model,helpers),visible=html.slice(0,html.indexOf('<details'));
+  assert.match(visible,expected,label);assert.doesNotMatch(visible,/life-event-\d|life-asset-|medical-\d/);assert.deepEqual(model.appliedChanges,r.educationEventView.appliedChanges);
+ }
+});
+test('a pending equipment-description task is not presented as ownership; cash and debt retain exact amounts',()=>{
+ const stateGroups=[{changes:[{path:'character.deferredEquipment.0',before:null,after:{name:'Alien Artefact',status:'pending'}}]}];
+ const lines=educationAppliedLines([{changes:[{path:'cash',before:5000,after:0},{path:'debt',before:0,after:10000}]}],stateGroups).join(' ');assert.match(lines,/Cash: Cr5000 → Cr0/);assert.match(lines,/Debt: Cr0 → Cr10000/);assert.match(lines,/not an additional award/);assert.doesNotMatch(lines,/Owned asset/);
+});
+
+test('relationship conversion, narrative and removed modifiers are not new awards',()=>{
+ const lines=educationAppliedLines([{changes:[{path:'relationships.0',before:{name:'Friend',role:'Ally'},after:{name:'Friend',role:'Enemy'}},{path:'lifeEvents.0',before:{decision:null},after:{decision:{kind:'narrative',outcome:'birth'}}}]}],[{changes:[{path:'modifiers.0',before:{target:'qualification',value:2},after:null}]}]).join(' ');assert.match(lines,/Friend: Ally → Enemy/);assert.match(lines,/A birth was recorded/);assert.match(lines,/modifier removed/);
+});

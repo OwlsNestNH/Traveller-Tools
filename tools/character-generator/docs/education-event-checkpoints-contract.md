@@ -61,6 +61,40 @@ All 11 Life rows and 6 Unusual rows are covered, including injury results1–6 a
 
 Rows3/9 cover ordinary and ageing-source departure, human hobby0, native/Imperial male/female Aslan, existing Independence, raw7-versus8 at SOC7, level0 at lowered skill cap, rejected unacquired talents/Jack-of-all-Trades, and species-source admission exclusions. Permanent loss does not suppress ordinary checkpoints. Existing row2 recorded PSI0 skips testing and retains permission semantics; an absent-PSI lost state rejects retesting. Institute testing rejects permanent loss; decline retains it. Synthetic rule-state comparisons cover rare lost-potential branches without inventing a public loss-edit command.
 
-The old Aslan hobby projector blindly mapped the string `options:any` as an array. The .31-only array guard fixes that read-only crash; older revision behavior has not been broadened pending separate review. .29/.30 all-row golden state/log fixtures remain unchanged.
+The old Aslan hobby projector blindly mapped the string `options:any` as an array. A reviewed all-revision array guard fixes that read-only crash without rewriting old saves or changing continuation mechanics. .29/.30 all-row golden state/log fixtures remain unchanged.
 
 Final all-row candidate verification: **1,982/1,982 Node tests passed**, including 33 checkpoint-focused groups and permanent nested rollback/strict-identity/import/replay probes. No GUI/browser or publication approval is implied.
+
+### Supplementary applied-state evidence
+
+`educationEventView.appliedStateChanges` supplements (does not alter) existing
+`appliedChanges`. Each group has `actionId`, original `command`, `contextId`,
+and `changes: [{path,before,after,source}]`. Paths currently are
+`modifiers.N` and `character.deferredEquipment.N`. Values and sources are
+copied from the original action snapshots; absent values/sources are null.
+The same effective-branch filtering excludes notes, GM edits and superseded
+replay outcomes. It is projection-only, not a saved award ledger.
+
+Consequence inventory for GUI:
+- Life 9: supplementary `modifiers.N` records qualification +2, scope next,
+  career any, source Core46. Preserve those recorded limits in the label.
+- Life 10: existing character changes `lifeBenefitBonuses.N` records available
+  +2 Benefit bonus, not cash or an additional Benefit roll.
+- Unusual 3/6: existing `assets.N` records the owned artefact/technology.
+  `detailsPending:true` and supplementary deferred equipment task mean its
+  description is still pending. Do not assign powers/value, or mistake a
+  pending description for an unawarded asset.
+- Injury: existing `injuries.N` and `stats.X` describe actual loss/restoration.
+  `medicalBills.N` describes total/covered/personal costs and settlement status,
+  Core49. An unsettled bill with paid/debt zero is neither a payment nor debt.
+  Cash/debt changes, when actually applied, have their own character deltas.
+- Relationships, skills, PSI test/access, future conditions, forced destination,
+  life-event decisions and deferred awards remain separate recorded evidence;
+  never infer applied awards from `pendingEffects` or `pendingChoice`.
+- Life 11 lose-benefit: `lifeBenefitLosses.N` status owed is an obligation,
+  not an already consumed roll. Existing-PSI institute acceptance can change
+  `lifePsionAccess` without changing PSI; preserve its timing/career limits.
+  Narrative birth/death/amnesia/government outcomes are recorded in `lifeEvents`;
+  relationship conversion is a before/after relationship change, not two awards.
+- Supplementary deltas include removal/change as well as addition. Render the
+  before/after transition, not every modifier record as a new bonus.

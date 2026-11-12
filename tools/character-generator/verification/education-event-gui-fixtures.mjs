@@ -15,5 +15,10 @@ export function checkpointFixtures(){
  fixtures.push({label:'independence-roll',result:aslan,capture:true});
  for(const values of [[3,4],[4,4]])fixtures.push({label:'independence-'+(values[0]===3?'failure':'success'),result:eventStep(aslan,values),capture:true});
  let aged=command(educationReady(),'gm-override',{field:'age',value:34,reason:'Synthetic ageing boundary'});aged=forceEducation(aged,'education-event',{},[1,2]);fixtures.push({label:'interrupted-ageing',result:aged,capture:true});
+ for(const row of [9,10])fixtures.push({label:'life-'+row+'-benefit',result:eventStep(eventFixture(7),[Math.max(1,row-6),Math.min(6,row-1)]),capture:true});
+ fixtures.push({label:'artefact-result',result:eventStep(eventStep(eventFixture(7),[6,6]),[3]),capture:true});
+ let medical=eventStep(eventStep(eventFixture(7),[1,1]),[3]);medical=command(medical,'injury-loss',{index:0});medical=command(medical,'injury-treatment',{restore:{STR:2},inService:false});fixtures.push({label:'medical-bill-result',result:medical,capture:true});
+ let crime=eventStep(eventFixture(7),[5,6]);crime=command(crime,'resolve-life-event',{confirmed:true,reason:'Synthetic consequence review',outcome:'lose-benefit'});fixtures.push({label:'future-benefit-loss',result:crime,capture:true});
+ let psi=command(educationReady(),'gm-override',{field:'stat.PSI',value:8,reason:'Synthetic known potential'});psi=forceEducation(psi,'education-event',{},[3,4]);psi=eventStep(eventStep(psi,[6,6]),[1]);psi=command(psi,'resolve-life-event',{confirmed:true,reason:'Synthetic access review',outcome:'test',funding:'provided',cost:0,timingConfirmed:true});fixtures.push({label:'conditional-psion-access',result:psi,capture:true});
  return fixtures;
 }

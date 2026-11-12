@@ -97,3 +97,30 @@ test('nested identities, severity import, replay pruning and restore preserve ex
  const originalTableAction=r.revision-1;r=run(r,'gm-replay',{revision:originalTableAction,rollIndex:0,values:[6],reason:'Synthetic alternate injury result'});assert.equal(r.state.stage,'education-event-result');assert.equal(r.state.pendingEducationEventRoll,undefined);assert.equal(r.educationEventView.childRolls.length,2);assert.deepEqual(r.educationEventView.childRolls.at(-1).kept,[6]);assert.equal(r.educationEventView.childRolls.some(x=>x.label==='Injury severity'),false);
  const rng=r.state.rng;r=run(r,'restore',{revision:restoreRevision});assert.equal(r.state.pendingEducationEventRoll.id,tableId);assert.equal(r.state.rng,rng);assert.equal(r.educationEventView.childRolls.length,1);assert.equal(r.educationEventView.roll.source.page,49);
 });
+test('event evidence includes applied modifiers and distinguishes owned artefacts from pending details',()=>{
+ let r=life(9);const raw=exportSession(r.session),groups=r.educationEventView.appliedStateChanges;
+ assert.equal(groups.length,1);assert.equal(groups[0].actionId,r.log.at(-1).id);assert.equal(groups[0].contextId,r.state.educationEventResult.id.replace(/-result$/,''));
+ assert.deepEqual(groups[0].changes,[{path:'modifiers.0',before:null,after:r.state.modifiers[0],source:{id:'core',page:46}}]);
+ assert.equal(groups[0].changes[0].after.target,'qualification');assert.equal(groups[0].changes[0].after.value,2);assert.equal(groups[0].changes[0].after.scope,'next');
+ project(r.session);assert.equal(exportSession(r.session),raw);
+ const original=groups;r=run(r,'notes',{text:'Synthetic evidence excludes notes'});assert.deepEqual(r.educationEventView.appliedStateChanges,original);
+ const changed=run(r,'gm-replay',{revision:r.revision-2,rollIndex:0,values:[4,6],reason:'Synthetic superseded modifier evidence'});
+ assert.equal(changed.educationEventView.appliedStateChanges.some(g=>g.changes.some(c=>c.path.startsWith('modifiers.'))),false);
+ const restored=run(changed,'restore',{revision:r.revision});assert.deepEqual(restored.educationEventView.appliedStateChanges,original);
+ r=life(10);const bonus=r.educationEventView.appliedChanges.flatMap(x=>x.changes).find(x=>x.path==='lifeBenefitBonuses.0');
+ assert.equal(bonus.before,null);assert.equal(bonus.after.value,2);assert.equal(bonus.after.status,'available');assert.deepEqual(bonus.after.source,{id:'core',page:46});
+ r=unusual(3);const asset=r.educationEventView.appliedChanges.flatMap(x=>x.changes).find(x=>x.path==='assets.0').after;
+ const task=r.educationEventView.appliedStateChanges.flatMap(x=>x.changes).find(x=>x.path==='character.deferredEquipment.0').after;
+ assert.equal(asset.ownership,'owned');assert.equal(asset.detailsPending,true);assert.equal(task.status,'pending');assert.equal(task.kind,'artefact');assert.equal(task.assetId,asset.id);assert.equal(asset.value,undefined);
+ roundtrip(r);
+});
+test('medical event evidence records outstanding bill and restored stats without claiming paid cash or debt',()=>{
+ let r=step(life(2),[3]);r=run(r,'injury-loss',{index:0});
+ const restore=Object.fromEntries(Object.entries(r.state.character.injuries[0].losses).filter(([,n])=>n>0));
+ r=run(r,'injury-treatment',{restore,inService:false});
+ const changes=r.educationEventView.appliedChanges.flatMap(x=>x.changes),bill=changes.find(x=>x.path==='medicalBills.0').after;
+ assert.ok(bill.personalCost>0);assert.equal(bill.totalCost,bill.personalCost);assert.equal(bill.coveredCost,0);
+ assert.equal(bill.settled,false);assert.equal(bill.paid,0);assert.equal(bill.debt,0);assert.deepEqual(bill.source,{id:'core',page:49});
+ assert.ok(changes.some(x=>x.path.startsWith('stats.')));assert.ok(changes.some(x=>x.path.startsWith('injuries.')));
+ assert.equal(changes.some(x=>['cash','debt'].includes(x.path)),false);roundtrip(r);
+});

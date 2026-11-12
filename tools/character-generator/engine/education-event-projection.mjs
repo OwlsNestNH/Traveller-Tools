@@ -9,12 +9,24 @@ export function educationEventEvidence(view,{state,log,snapshots,events,skillMod
  const initial=view.eventRoll;if(!Array.isArray(initial?.kept)||initial.kept.length!==2||initial.kept.some(n=>!Number.isInteger(n)||n<1||n>6)||initial.kept.reduce((a,b)=>a+b,0)!==view.row)return null;
  const id=view.id.replace(/-result$/,''),branches=[[]];
  for(let i=0;i<events.length;i++){const c=events[i].command;branches.push(c.type==='restore'?[...branches[c.payload.revision]]:c.type==='gm-replay'?[...branches[c.payload.revision-1],i]:[...branches.at(-1),i]);}
- const applied=[],childRolls=[];
+ const applied=[],appliedStateChanges=[],childRolls=[];
  for(const i of branches.at(-1)){
   let original=i;while(events[original]?.command.type==='gm-replay')original=events[original].command.payload.revision-1;
   const command=events[original]?.command,before=snapshots[original],after=snapshots[i+1];
   if(!commands.has(command?.type)||contextId(before)!==id&&contextId(after)!==id)continue;
   const changes=characterChanges(before.character,after.character);if(changes.length)applied.push({actionId:log[i].id,command:command.type,changes});
+  // Supplement the unchanged character audit with persisted state modifiers and
+  // deferred detail tasks. Neither an effect queue nor a pending task is an award.
+  const stateChanges=[];
+  for(const [path,old,next] of [
+   ['modifiers',before.modifiers??[],after.modifiers??[]],
+   ['character.deferredEquipment',before.character.deferredEquipment??[],after.character.deferredEquipment??[]]
+  ])for(let n=0;n<Math.max(old.length,next.length);n++){
+   if(JSON.stringify(old[n])===JSON.stringify(next[n]))continue;
+   const source=next[n]?.source??old[n]?.source??before.pendingEducationEventRoll?.source??null;
+   stateChanges.push({path:path+'.'+n,before:structuredClone(old[n]??null),after:structuredClone(next[n]??null),source:structuredClone(source)});
+  }
+  if(stateChanges.length)appliedStateChanges.push({actionId:log[i].id,command:command.type,contextId:id,changes:stateChanges});
   for(const roll of log[i].rolls??[])if(roll.label!=='Pre-career event'){
    const pending=before.pendingEducationEventRoll;let check=null;
    if(Number.isFinite(pending?.target)&&Number.isFinite(pending.modifier))check={...(pending.stat?{stat:pending.stat}:{}),modifier:pending.modifier,target:pending.target,...(pending.comparison?{comparison:pending.comparison,comparisonStat:pending.comparisonStat,comparisonScore:pending.comparisonScore}:{})};
@@ -24,5 +36,5 @@ export function educationEventEvidence(view,{state,log,snapshots,events,skillMod
   }
  }
  const {rolls:_internalRolls,...publicView}=view;
- return {...structuredClone(publicView),name:names[view.row],forcedCareer:structuredClone(state.forcedCareer??null),descriptionSource:'implemented-mechanics',eventDice:[...initial.kept],eventTotal:view.row,childRolls,appliedChanges:applied,pendingEffects:structuredClone(state.effectsQueue??[]),pendingChoice:structuredClone(state.pendingChoice??null),source:{id:'core',title:'Core Rulebook Update 2022',page:17}};
+ return {...structuredClone(publicView),name:names[view.row],forcedCareer:structuredClone(state.forcedCareer??null),descriptionSource:'implemented-mechanics',eventDice:[...initial.kept],eventTotal:view.row,childRolls,appliedChanges:applied,appliedStateChanges,pendingEffects:structuredClone(state.effectsQueue??[]),pendingChoice:structuredClone(state.pendingChoice??null),source:{id:'core',title:'Core Rulebook Update 2022',page:17}};
 }
