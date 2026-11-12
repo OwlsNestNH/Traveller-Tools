@@ -47,7 +47,7 @@ const money=value=>'Cr'+value.toLocaleString('en-US');
 // Audit changes on a replay compare against the discarded branch. Reconstruct
 // the observed values, then compare only successive current-branch actions so
 // an unchanged replacement still retains its injury, promotion or restriction.
-function currentEvents(projection,session){
+export function currentEvents(projection,session){
  const current=currentActionNumbers(session),values=new Map(),events=[];
  let previous=new Map(),modifiers=[],previousModifiers=[],pending={},previousPending={};
  for(const event of projection.log){

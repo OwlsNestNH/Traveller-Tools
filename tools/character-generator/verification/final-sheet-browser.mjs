@@ -55,7 +55,7 @@ try{
    assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),saved);
    await page.emulateMedia({media:'print'});
    assert.equal(await page.locator('.layout').isVisible(),false);assert.equal(await page.locator('.log-section').isVisible(),false);
-   assert.equal(await content.isVisible(),true);assert.equal(await content.getByRole('heading',{name:'Events & decisions'}).isVisible(),true);
+   assert.equal(await content.isVisible(),true);assert.equal(await content.getByRole('heading',{name:'Results & decisions'}).isVisible(),true);
    assert.equal(await dialog.getByRole('button',{name:'Close sheet',exact:true}).isVisible(),false);
    await page.emulateMedia({media:'screen'});
    const downloading=page.waitForEvent('download');await dialog.getByRole('button',{name:'Save character & log',exact:true}).click();

@@ -1,3 +1,4 @@
+import {characterSheetTiming} from './character-sheet-timing.mjs';
 import {educationEventEvidence,educationEventText} from './education-event-projection.mjs';
 import {educationResultProjection,educationGraduationPreviewProjection} from './education-result-projection.mjs';
 import {familyNarrative} from './aslan-family-narrative.mjs';
@@ -3278,7 +3279,7 @@ export function project(session) {
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
 
- let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(['character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.aezorghRoundUp=true;if(['character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.optionalImperialCharisma=true;if(['character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.optionalPsiRequiresTesting=true;if(['character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.aezorghBaseSkillChoice=true;if(['character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.optionalAezorghCharisma=true;if(['character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.aslanFamilyPresentation=true;if(['character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.educationResultPresentation=true;if(session.rulesRevision===RULES_REVISION)state.educationEventCheckpoints=true;const snapshots=[copy(state)],log=[];
+ let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(['character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.aezorghRoundUp=true;if(['character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.optionalImperialCharisma=true;if(['character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.optionalPsiRequiresTesting=true;if(['character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.aezorghBaseSkillChoice=true;if(['character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.optionalAezorghCharisma=true;if(['character-preview-2026-11-09.29','character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.aslanFamilyPresentation=true;if(['character-preview-2026-11-09.30',RULES_REVISION].includes(session.rulesRevision))state.educationResultPresentation=true;if(session.rulesRevision===RULES_REVISION)state.educationEventCheckpoints=true;const snapshots=[copy(state)],log=[],sheetTiming={};
  for(let i=0;i<session.events.length;i++){
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');
@@ -3305,7 +3306,7 @@ export function project(session) {
   expireCareerTransfers(state);
   if(event.rolls!==undefined)need(JSON.stringify(event.rolls)===JSON.stringify(rolls),'Roll audit mismatch at action '+(i+1)+'.');
   if(event.summary!==undefined)need(event.summary===summary,'Action summary mismatch at action '+(i+1)+'.');
-  log.push({number:i+1,id:event.id,type:event.command.type,summary,rolls,changes:characterChanges(snapshots[i].character,state.character)});snapshots.push(copy(state));
+  log.push({number:i+1,id:event.id,type:event.command.type,summary,rolls,changes:characterChanges(snapshots[i].character,state.character)});sheetTiming[i+1]=characterSheetTiming(prior,state);snapshots.push(copy(state));
  }
  for(const career of state.character.careers)if(career.pensionExitStatusBasis){const socialClass=state.character.stats.SOC>=11?'noble':state.character.stats.SOC===10?'intendant':'prole';career.pensionStatusReviewRequired=socialClass!==career.pensionExitStatusBasis.socialClass;}
  if(state.optionalPsiRequiresTesting||state.psiActivationRequiresTesting)state.psionicTestingOptions=psionicTestingOptions(state);
@@ -3381,19 +3382,24 @@ export function project(session) {
  const educationEventView=educationEventEvidence(educationEventCheckpointView(state),{state,log,snapshots,events:session.events,skillModifier:skillCheckDM});
  const activeEducation=state.character.educations?.[state.education];
  const educationStory=activeEducation&&!activeEducation.completed?educationEventText(activeEducation.event):null;
- return {state,log,revision:session.events.length,...(educationStory?{educationEventContext:educationStory}:{}),...(educationEventView?{educationEventView}:{}),...(state.stage==='precareer'?{educationAdmissionPreviews}:{}),...(educationResultView?{educationResultView}:{}),...(educationGraduationPreview?{educationGraduationPreview}:{})};
+ return withSheetTiming({state,log,revision:session.events.length,...(educationStory?{educationEventContext:educationStory}:{}),...(educationEventView?{educationEventView}:{}),...(state.stage==='precareer'?{educationAdmissionPreviews}:{}),...(educationResultView?{educationResultView}:{}),...(educationGraduationPreview?{educationGraduationPreview}:{})},sheetTiming);
 }
+// Presentation metadata is deliberately outside the enumerable historical projection.
+function withSheetTiming(result,timing){
+ Object.defineProperty(result,'characterSheetTiming',{value:timing,enumerable:false});return result;
+}
+function apiProjection(result){return {...result,characterSheetTiming:result.characterSheetTiming};}
 export function execute(session,command,{id,expectedRevision}={}) {
  const before=project(session);
  const actionId=id??'action-'+(before.revision+1);need(typeof actionId==='string'&&actionId.length<=120,'Invalid action ID.');
  const existing=session.events.find(e=>e.id===actionId);
- if(existing){need(JSON.stringify(existing.command)===JSON.stringify(command),'Action ID was already used for a different command.');return {session:copy(session),...before};}
+ if(existing){need(JSON.stringify(existing.command)===JSON.stringify(command),'Action ID was already used for a different command.');return withSheetTiming({session:copy(session),...before},before.characterSheetTiming);}
  if(expectedRevision!==undefined)need(expectedRevision===before.revision,'This character changed. Reload before applying the command.');
  need(session.events.length<LIMIT,'Action-log limit reached. Export this character before continuing.');
  const next=copy(session);next.events.push({id:actionId,command:copy(command)});
  const result=project(next);const last=result.log.at(-1);next.events.at(-1).rolls=last.rolls;next.events.at(-1).summary=last.summary;
  need(saveSize(next)<=MAX_SAVE_BYTES,'Save size limit reached. The action was not accepted. Export your current character before continuing.');
- return {session:next,...result};
+ return withSheetTiming({session:next,...result},result.characterSheetTiming);
 }
 export function importSession(raw) {
  need(typeof raw==='string'&&new TextEncoder().encode(raw).byteLength<=MAX_SAVE_BYTES,'Save is too large.');const session=JSON.parse(raw);project(session);return session;
@@ -3404,10 +3410,10 @@ export function developmentApi(request) {
  try {
  need(plain(request),'Invalid request.');
  if(request.operation==='catalog')return {ok:true,...catalog()};
- if(request.operation==='create'){const session=createSession(request.seed);return {ok:true,session,...project(session)};}
- if(request.operation==='project')return {ok:true,...project(request.session)};
- if(request.operation==='import'){const session=importSession(request.raw);return {ok:true,session,...project(session)};}
- if(request.operation==='command')return {ok:true,...execute(request.session,request.command,{id:request.id,expectedRevision:request.expectedRevision})};
+ if(request.operation==='create'){const session=createSession(request.seed);return {ok:true,session,...apiProjection(project(session))};}
+ if(request.operation==='project')return {ok:true,...apiProjection(project(request.session))};
+ if(request.operation==='import'){const session=importSession(request.raw);return {ok:true,session,...apiProjection(project(session))};}
+ if(request.operation==='command')return {ok:true,...apiProjection(execute(request.session,request.command,{id:request.id,expectedRevision:request.expectedRevision}))};
  throw new Error('Unknown API operation.');
  }catch(error){return {ok:false,error:{code:'INVALID_REQUEST',message:error.message}};}
 }
