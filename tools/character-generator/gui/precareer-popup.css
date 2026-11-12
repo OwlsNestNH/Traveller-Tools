@@ -157,3 +157,29 @@
  #precareer-dialog[data-panel="result"] .precareer-information-rows{margin-top:10px}
  #precareer-dialog[data-panel="result"] .precareer-information-rows button{min-height:54px;padding-block:12px}
 }
+/* Approved University event prompt: a modal review, never a new game step. */
+#precareer-dialog[data-panel="event"]{position:fixed;inset:0;width:min(968px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto}
+#precareer-dialog[data-panel="event"]::backdrop{background:#00111d99}
+#precareer-dialog[data-panel="event"] .step-count{display:none}
+#precareer-dialog[data-panel="event"] #step-title{font-size:21px;color:#ffd34b;margin:0 125px 22px 0}
+.education-event-heading{display:flex;align-items:center;gap:18px;margin:8px 0 28px}
+.education-event-heading .precareer-art{width:100px;height:88px;flex:none}
+#precareer-dialog .education-event-heading h3{font-size:36px;line-height:1.15;color:#f5f7fa;margin:0 0 10px}
+.education-event-heading p,.education-event-content p{font-size:23px;line-height:1.3;margin:10px 0}
+.education-event-content{border:2px solid #99edf1;border-radius:18px;padding:18px 20px;text-align:center}
+.education-event-content h4{font-size:29px;line-height:1.2;margin:0 0 12px;color:#f5f7fa}
+#precareer-dialog .education-event-roll{display:flex;align-items:center;justify-content:center;gap:20px;width:100%;min-height:92px;margin:24px 0 12px;padding:12px 20px;border:2px solid #ffe17e;border-radius:18px;background:linear-gradient(#ffe47e,#ffc719);color:#10120b;font-size:34px;font-weight:800;line-height:1.2}
+.education-event-agency{text-align:center;font-size:21px;line-height:1.3;margin:12px 0 24px}
+#precareer-dialog[data-panel="event"] .precareer-information-rows{display:flex;gap:20px;border-top:1px solid #79a7bb;margin-top:20px}
+#precareer-dialog[data-panel="event"] .precareer-information-rows button{border:0;min-height:58px;font-size:21px;padding:12px 0}
+@media(max-width:650px){
+ #precareer-dialog[data-panel="event"]{width:calc(100% - 16px);max-height:calc(100dvh - 16px)}
+ .education-event-heading{gap:10px;margin-bottom:18px;align-items:flex-start}
+ .education-event-heading .precareer-art{width:48px;height:52px}
+ #precareer-dialog .education-event-heading h3{font-size:27px;overflow-wrap:anywhere}
+ .education-event-heading p,.education-event-content p{font-size:19px}
+ .education-event-content{padding:16px 12px}.education-event-content h4{font-size:24px}
+ #precareer-dialog .education-event-roll{font-size:26px;gap:8px;padding:12px 8px;min-height:84px}
+ .education-event-agency{font-size:18px}
+ #precareer-dialog[data-panel="event"] .precareer-information-rows{display:block}
+}

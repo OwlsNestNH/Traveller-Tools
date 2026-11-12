@@ -23,6 +23,14 @@ export function preCareerChoicesView(state,catalog,{esc,button}){
 
 const signed=value=>value>=0?'+'+value:String(value);
 const diceArt='<svg class="admission-dice" viewBox="0 0 80 80" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><path d="M12 30 49 17 68 43 32 58Z M12 30l6 32 24 12 26-31 M32 58l10 16 M49 17l7 31 M5 18l-3-7 M67 18l7-8 M72 62l6 3"/><path d="M25 32h1 M42 28h1 M38 42h1 M24 49h1 M27 60h1 M50 60h1 M59 50h1" stroke-width="6"/></g></svg>';
+// This prompt changes presentation only; the existing command owns all event effects.
+export function educationEventModel(state){
+ return state?.stage==='education-event'&&state.character.educations?.[state.education]?.id==='core.university'?{name:'University'}:null;
+}
+export function educationEventView(){
+ return '<section class="education-event-prompt"><div class="education-event-heading">'+icon('core.university')+'<div><h3>University education event</h3><p>Your initial study skills and EDU gain are recorded.</p></div></div><section class="education-event-content"><h4>What happened during your studies?</h4><p>Roll 2D for one education event.</p><p>Resolve its outcome and any choices before graduation.</p></section><button type="button" data-action="education-event" class="education-event-roll">'+diceArt+'<span>Roll education event</span>'+diceArt+'</button><p class="education-event-agency">You choose when to roll. Nothing has been rolled yet.</p></section>';
+}
+
 export function admissionPreviewView(state,catalog,id,{esc,sourceLabel}){
  const choice=catalog.precareers.find(p=>p.id===id&&p.source==='core'),preview=state.educationAdmissionPreviews?.[id];
  if(!choice||!preview||educationUnavailable(state,choice))return '';
@@ -54,10 +62,10 @@ function previousStepView(projection,session,catalog,{esc}){
  return '<p class="precareer-readonly">Read only · Your character stays at Pre-Career.</p>'+(skills?'<h3>Background skills</h3><p>These were the skills you accepted.</p><ul>'+skills.map(name=>'<li>'+esc(name)+' 0</li>').join('')+'</ul>':result?'<h3>'+esc(record.event.type==='gm-replay'&&record.command.type==='roll-aslan-rite'?'Rite of passage':result.title)+'</h3>'+result.details.map(line=>'<p>'+esc(line)+'</p>').join(''):'<p>No previous completed step is recorded.</p>');
 }
 
-export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,sourceLabel,generation=0,resultModel=null}){
+export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,sourceLabel,generation=0,resultModel=null,eventModel=null}){
  const layout=root.querySelector('.layout'),workspace=root.querySelector('#workspace'),sheet=root.querySelector('#sheet');
  let dialog=root.querySelector('#precareer-dialog'),context=root.querySelector('#precareer-context'),info=root.querySelector('#precareer-information');
- if(state.stage!=='precareer'&&!resultModel){
+ if(state.stage!=='precareer'&&!resultModel&&!eventModel){
   if(dialog){layout.prepend(workspace);layout.append(sheet);dialog.remove();context.remove();info.remove();}
   layout.classList.remove('precareer-layout');return;
  }
@@ -74,7 +82,7 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
   info.addEventListener('cancel',event=>{event.preventDefault();closeInfo();});info.querySelector('#precareer-information-close').addEventListener('click',closeInfo);
   context.querySelector('#precareer-previous').addEventListener('click',event=>openInfo('previous','Previous step',event.currentTarget));
  }
- function open(){if(!dialog.open)dialog.show();context.querySelector('#precareer-resume').hidden=true;}
+ function open(){if(!dialog.open){if(dialog.dataset.panel==='event')dialog.showModal();else dialog.show();}context.querySelector('#precareer-resume').hidden=true;}
  function dismiss(){dialog.close();context.querySelector('#precareer-resume').hidden=false;context.querySelector('#precareer-resume').focus({preventScroll:true});}
  function openInfo(kind,title,trigger){info._opener=trigger;for(const name of ['result','rules','previous'])info.querySelector('#precareer-information-'+name).hidden=kind==='details'?name==='previous':name!==kind;info.querySelector('#precareer-information-title').textContent=title;if(!info.open)info.showModal();info.querySelector('#precareer-information-title').focus();}
  function closeInfo(){info.close();if(info._opener?.isConnected)info._opener.focus({preventScroll:true});}
@@ -88,7 +96,7 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  const sessionKey=JSON.stringify([generation,session.seed,session.events[0]?.id]);
  if(dialog._sessionKey!==sessionKey||projection.revision<dialog._revision){dialog.dataset.panel='standard';delete dialog.dataset.admission;}
  dialog._sessionKey=sessionKey;dialog._revision=projection.revision;
- if(!resultModel){
+ if(!resultModel&&!eventModel){
  if(dialog.dataset.panel==='result')dialog.dataset.panel='standard';
  const admission=root.createElement('div');admission.id='precareer-admission';workspace.querySelector('.precareer-skip').before(admission);
  const showPanel=panel=>{dialog.dataset.panel=panel;workspace.querySelector('.precareer-skip').hidden=panel!=='standard';const previousResult=workspace.querySelector('#precareer-result-open');if(previousResult)previousResult.hidden=panel==='additional';workspace.querySelector('#precareer-standard').hidden=panel!=='standard';workspace.querySelector('#precareer-extras').hidden=panel!=='additional';admission.hidden=panel!=='admission';title.textContent=panel==='additional'?'Additional Careers':'Pre-Career';dialog.scrollTop=0;if(dialog.open&&dialog.getBoundingClientRect().top<0)dialog.scrollIntoView({block:'start'});};
@@ -102,7 +110,7 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  workspace.querySelector('#precareer-additional').addEventListener('click',()=>{showPanel('additional');title.focus({preventScroll:true});});
  workspace.querySelector('#precareer-options-back').addEventListener('click',()=>{showPanel('standard');title.focus({preventScroll:true});});
  dialog._refreshPreCareerPanel=()=>{if(dialog.dataset.panel==='admission'&&!showAdmission(dialog.dataset.admission,false)){delete dialog.dataset.admission;showPanel('standard');}else showPanel(dialog.dataset.panel);};
- }else{dialog.dataset.panel='result';delete dialog.dataset.admission;dialog._openAdmission=null;dialog._refreshPreCareerPanel=null;}
+ }else{dialog.dataset.panel=eventModel?'event':'result';delete dialog.dataset.admission;dialog._openAdmission=null;dialog._refreshPreCareerPanel=null;}
  const result=workspace.querySelector('#last-action-result');info.querySelector('#precareer-information-result').replaceChildren(...(result?[result]:[]));
  info.querySelector('#precareer-information-rules').innerHTML=preCareerSourceView(state,catalog,{esc,sourceLabel});
  info.querySelector('#precareer-information-previous').innerHTML=previousStepView(projection,session,catalog,{esc});
@@ -120,5 +128,7 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
   if(id==='precareer-notes')notes.open=bar.open;
   bar.addEventListener('toggle',()=>{if(!bar.isConnected)return;if(id==='precareer-notes')notes.open=bar.open;if(bar.open){rail.dataset.openBar=id;for(const other of sheet.querySelectorAll(':scope > details'))if(other!==bar)other.open=false;}else if(rail.dataset.openBar===id)delete rail.dataset.openBar;});
  }
+ if(resultModel||eventModel)workspace.querySelector('#precareer-dismiss').textContent='Close';
+ if(eventModel){for(const small of workspace.querySelectorAll('.precareer-information-rows small'))small.remove();if(dialog.open&&!dialog.matches(':modal')){dialog.close();open();}}
  dialog._refreshPreCareerPanel?.();if(newlyCreated)open();
 }

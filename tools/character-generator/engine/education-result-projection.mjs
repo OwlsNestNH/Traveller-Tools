@@ -68,8 +68,8 @@ function futureBenefits(state,record,result){
  }
  const commissions=rules.commission.careers.map(id=>({id,result:check(id).commission})).filter(r=>r.result?.allowed);
  if(commissions.length){
-  const commission=commissions[0].result,scope=state.forcedCareer?careerName(state.forcedCareer):'an eligible military career';
-  out.push(commission.automatic?'Automatic commission before the first term in '+scope+'.':'Commission opportunity'+(commission.modifier?' '+signed(commission.modifier):'')+' before the first term in '+scope+'; requires a roll.');
+  const commission=commissions[0].result,scope=state.forcedCareer?careerName(state.forcedCareer):'military';
+  out.push(commission.automatic?'Automatic commission: first-career '+scope+', before term 1.':'First-career '+scope+' commission'+(commission.modifier?' '+signed(commission.modifier):' opportunity')+'; roll required before term 1.');
  }
  return out;
 }
@@ -99,12 +99,22 @@ export function educationResultProjection({state,log,snapshots,events}){
   return model;
  }
  model.years=completed.character.age-found.before.character.age;model.terms=completed.character.terms-found.before.character.terms;
- model.benefits=[...changes.map(c=>c.text),...futureBenefits(completed,record,result)];
+ const skillGains=changes.filter(c=>c.path.startsWith('skills.')).map(c=>c.text);
+ model.benefits=[...(skillGains.length?[skillGains.join(' · ')]:[]),...changes.filter(c=>!c.path.startsWith('skills.')).map(c=>c.text),...futureBenefits(completed,record,result)];
  if(completed.forcedCareer)model.details.push('Required next career: '+careerName(completed.forcedCareer)+'. It takes precedence over other education entry benefits.');
  if(!result.graduated){
-  model.retained=['Your existing skills, characteristics and resolved event gains are not removed by this failed graduation.'];
-  const selections=Object.values(record.selections??{});
-  for(const name of selections){const base=name.split(' (')[0],level=found.before.character.skills[name]??found.before.character.skills[base];if(Number.isFinite(level))model.retained.push(name+' '+level);}
+  model.retained=['Earlier skills and resolved event gains are not removed.'];
+  if(id==='core.university'){
+   const admission=evidence({id,kind:'admission',result:record.entry,index,term:record.term,state,log,snapshots,events,branch});
+   const initialEnd=admission&&branch.find(i=>i>=admission.i&&i<found.i&&snapshots[i+1]?.stage==='education-event'&&snapshots[i+1].education===index);
+   if(initialEnd!==undefined&&admission){
+    const initialEdu=sourcedGains({found:admission,endIndex:initialEnd,branch,events,snapshots,kind:'admission'}).find(c=>c.path==='stats.EDU'&&c.delta>0);
+    if(initialEdu)model.retained.push('Initial EDU '+signed(initialEdu.delta)+' is not removed by this result.');
+   }
+  }
+  const selections=Object.values(record.selections??{}),studySkills=[];
+  for(const name of selections){const base=name.split(' (')[0],level=found.before.character.skills[name]??found.before.character.skills[base];if(Number.isFinite(level))studySkills.push(name+' '+level);}
+  if(studySkills.length)model.retained.push(studySkills.join(' · '));
   model.missed=id==='core.university'?['No graduation skill increases or EDU award.','No graduate qualification or commission benefits.']:['No graduation EDU award or honours SOC award.','No graduate service-skill award or graduate commission benefit.'];
  }
  return model;

@@ -30,8 +30,8 @@ test('admission failure has no invented education record, awards or term',()=>{
 test('ordinary, honours and failed University results derive resolved gains and different rights',()=>{
  for(const [dice,outcome] of [[[3,4],'success'],[[5,5],'honours'],[[1,2],'failure']]){
   let r=graduate('core.university',dice),m=r.educationResultView;assert.equal(m.outcome,outcome);assert.equal(m.years,4);assert.equal(m.terms,1);assert.deepEqual(m.dice,dice);
-  if(outcome==='failure'){assert.deepEqual(m.actualAwardChanges,[]);assert.ok(m.retained.includes('Admin 0'));assert.ok(m.retained.includes('Medic 1'));assert.ok(m.missed.some(x=>x.includes('No graduation')));}
-  else {assert.ok(m.benefits.some(x=>x==='Admin 0 → 1'));assert.ok(m.benefits.some(x=>x==='Medic 1 → 2'));assert.ok(m.benefits.some(x=>x.startsWith('EDU +1')));assert.ok(m.benefits.some(x=>x.includes('Qualification DM +'+(outcome==='honours'?2:1))));}
+  if(outcome==='failure'){assert.deepEqual(m.actualAwardChanges,[]);assert.ok(m.retained.some(x=>x.includes('Admin 0')));assert.ok(m.retained.some(x=>x.includes('Medic 1')));assert.ok(m.missed.some(x=>x.includes('No graduation')));assert.ok(m.retained.includes('Initial EDU +1 is not removed by this result.'));}
+  else {assert.ok(m.benefits.some(x=>x.includes('Admin 0 → 1')));assert.ok(m.benefits.some(x=>x.includes('Medic 1 → 2')));assert.ok(m.benefits.some(x=>x.startsWith('EDU +1')));assert.ok(m.benefits.some(x=>x.includes('Qualification DM +'+(outcome==='honours'?2:1))));}
   const original=structuredClone(m);r=run(r,'gm-override',{field:'stat.EDU',value:15,reason:'Later correction must not rewrite resolved gains'});assert.deepEqual(r.educationResultView,original);
   r=run(r,'acknowledge-education-result');assert.equal(r.educationResultView,undefined);
  }
@@ -58,4 +58,10 @@ test('pending award completion excludes an intervening GM stat correction from g
  const log=[{id:'synthetic-graduation',rolls:[{label:'Graduation',kept:[3,4]}]},{id:'synthetic-correction',rolls:[]},{id:'synthetic-award',rolls:[]}];
  const model=educationResultProjection({state:end,events,log,snapshots:[before,pending,corrected,end]});
  assert.ok(model);assert.ok(model.benefits.some(x=>x.startsWith('EDU +1')));assert.equal(model.actualAwardChanges.some(c=>c.path==='stats.STR'),false);
+});
+
+test('failed result distinguishes verified initial EDU from later changes and current total',()=>{
+ let r=force(setup('retained-edu'),'precareer',{id:'core.university'},[6,6]);r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});
+ r=run(r,'gm-override',{field:'stat.EDU',value:3,reason:'Later correction is not an initial education award'});r=force(r,'education-event',{},[2,3]);r=force(r,'education-graduation',{},[1,2]);
+ assert.equal(r.state.character.stats.EDU,3);assert.ok(r.educationResultView.retained.includes('Initial EDU +1 is not removed by this result.'));assert.ok(!r.educationResultView.retained.some(x=>x.includes('EDU 8')||x.includes('EDU +4')));
 });

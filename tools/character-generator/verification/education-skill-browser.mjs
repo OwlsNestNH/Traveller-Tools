@@ -34,9 +34,9 @@ try{
    await page.locator('#education-subject').selectOption('Science');await page.locator('#education-skill').fill('Science (physics)');await page.locator('.education-study-continue').click();
    await page.getByRole('heading',{name:'Choose your second study skill'}).waitFor();assert.equal(await page.locator('#education-subject option[value=Science]').count(),0);
    await page.reload();await page.getByRole('heading',{name:'Choose your second study skill'}).waitFor();await page.locator('#education-subject').selectOption('Animals');await page.locator('#education-skill').fill('Animals (veterinary)');
-   await page.locator('.education-study-continue').evaluate(button=>{button.click();button.click();});await page.getByRole('heading',{name:'Your education term'}).waitFor();
+   await page.locator('.education-study-continue').evaluate(button=>{button.click();button.click();});await page.locator('.education-event-prompt').getByRole('heading',{name:'University education event',exact:true}).waitFor();
    const raw=await page.evaluate(key=>localStorage.getItem(key),key),result=project(JSON.parse(raw));assert.equal(result.state.character.skills.Science,0);assert.equal(result.state.character.skills['Animals (veterinary)'],1);assert.equal(result.revision,r.revision+2);
-   await page.reload();await page.getByRole('heading',{name:'Your education term'}).waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+   await page.reload();await page.locator('.education-event-prompt').getByRole('heading',{name:'University education event',exact:true}).waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
    console.log('University controls passed '+width+' '+(http?'HTTP':'static'));
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(knocks.session)});await page.reload();
    await page.getByRole('heading',{name:'Choose your education awards'}).waitFor();

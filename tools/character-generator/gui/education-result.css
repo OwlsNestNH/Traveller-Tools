@@ -47,16 +47,36 @@
  .education-result .education-result-die{width:clamp(36px,11vw,48px);height:clamp(36px,11vw,48px)}
  .education-result .education-result-roll p{font-size:19px;line-height:1.35;margin-top:8px}
  .education-result .education-result-details{font-size:19px}
- .education-result .education-result-benefits{display:block;padding:14px 12px;border-width:3px;border-radius:18px}
- .education-result .education-result-benefits h4{font-size:28px;margin-bottom:12px}
+ .education-result .education-result-benefits{display:block;position:relative;padding:14px 12px;border-width:3px;border-radius:18px}
+ .education-result .education-result-benefits h4{font-size:28px;margin-bottom:12px;padding-right:64px;min-height:68px}
  .education-result .education-result-benefits h5{font-size:21px}
  .education-result .education-result-benefits li{font-size:20px;line-height:1.35}
- .education-result .education-result-benefit-art{float:right;width:74px;height:83px;padding:0;margin:0 0 8px 8px}
- .education-result .education-result-benefit-art>.education-result-art{width:66px;height:66px}
- .education-result .education-result-benefit-art>.education-result-award{width:39px;height:39px;right:0;bottom:0}
+ .education-result .education-result-benefit-art{position:absolute;right:12px;top:14px;width:56px;height:66px;padding:0;margin:0}
+ .education-result .education-result-benefit-art>.education-result-art{width:52px;height:52px}
+ .education-result .education-result-benefit-art>.education-result-award{width:30px;height:30px;right:0;bottom:0}
  .education-result .education-result-term{font-size:19px;margin:12px 0}
  .education-result .education-result-study h4{font-size:28px}
  .education-result .education-result-study>p{font-size:21px}
  .education-result .education-result-study :is(select,input){font-size:20px;min-height:54px;padding:10px}
  .education-result .education-result-continue,.education-result .education-result-study button[data-action="education-skill"]{font-size:27px;min-height:64px;padding:12px;margin-top:14px}
 }
+/* Compact desktop rhythm leaves the source and details footer in view. */
+@media screen and (min-width:651px){
+ .education-result .education-result-heading .education-result-art{width:70px;height:62px}
+ .education-result .education-result-heading h3{font-size:36px}
+ .education-result .education-result-headline h4{font-size:40px}
+ .education-result .education-result-status{width:54px;height:54px}
+ .education-result .education-result-tagline{font-size:21px;margin-bottom:8px}
+ .education-result .education-result-roll{margin:8px 0;padding:7px 14px}
+ .education-result .education-result-die{width:64px;height:64px}
+ .education-result .education-result-benefits{padding:12px 18px;gap:16px;grid-template-columns:128px minmax(0,1fr)}
+ .education-result .education-result-benefits h4{font-size:31px;margin-bottom:7px}
+ .education-result .education-result-benefits li{font-size:21px;line-height:1.2;margin:5px 0}
+ .education-result .education-result-benefit-art>.education-result-art{width:125px;height:125px}
+ .education-result .education-result-term{margin:7px 0}
+ .education-result .education-result-continue{min-height:60px;font-size:31px;margin-top:8px}
+}
+.education-study-selector{display:flex;align-items:center;gap:14px}
+.education-study-selector>.education-result-art{width:62px;height:62px}
+.education-study-selector select{flex:1}
+@media(max-width:650px){.education-study-selector{gap:8px}.education-study-selector>.education-result-art{width:38px;height:45px}}

@@ -31,3 +31,7 @@ test('names, tagline, facts, and source are escaped without modifying the model'
 test('pure presentation imports no engine and has no RNG or persistence operations',()=>{
  const source=readFileSync(new URL('../gui/education-result-view.mjs',import.meta.url),'utf8');assert.doesNotMatch(source,/from ['"].*engine|Math\.random|localStorage|crypto\.randomUUID|fetch\(/);
 });
+test('study selector retains its native accessible control beside decorative cartoon book art',()=>{
+ const view=educationResultView({...base,kind:'admission',study:true,studyStep:1},{...helpers,studyHtml:'<label>Study subject<select id="education-subject"><option value="">Choose</option></select></label>'});
+ assert.match(view,/class="education-study-selector"/);assert.match(view,/<select id="education-subject">/);assert.match(view,/Study subject/);assert.equal((view.match(/id="education-subject"/g)??[]).length,1);
+});
