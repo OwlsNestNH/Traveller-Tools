@@ -6,12 +6,13 @@ import {createServer} from '../server.mjs';
 import {exportSession} from '../engine/session.mjs';
 import {buildAslanOriginFixture} from './aslan-origin-fixtures.mjs';
 import {finalSheetFixture} from './final-sheet-fixtures.mjs';
+import {educationReady} from './education-result-fixtures.mjs';
 const require=createRequire(import.meta.url),{chromium}=require(process.argv[2]||'playwright');
 const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const origin='http://127.0.0.1:'+server.address().port,key='traveller-character-generator.v1',out=new URL('./artifacts/',import.meta.url);
 await mkdir(out,{recursive:true});const browser=await chromium.launch({headless:true});const checks=[],errors=[];
 try{
- for(const width of [1440,390,320])for(const transport of ['static','http'])for(const [name,fixture] of [['aslan',buildAslanOriginFixture({stage:'precareer'})],['career',finalSheetFixture({finish:false})]]){
+ for(const width of [1440,390,320])for(const transport of ['static','http'])for(const [name,fixture] of [['aslan',buildAslanOriginFixture({stage:'precareer'})],['career',finalSheetFixture({finish:false})],['university',educationReady()]]){
   const raw=exportSession(fixture.session),context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage(),label=transport+'-'+width+'-'+name;
   page.on('pageerror',e=>errors.push(e.message));
   await context.addInitScript(({key,raw})=>localStorage.setItem(key,raw),{key,raw});
@@ -38,6 +39,12 @@ try{
    await dialog.locator('.final-sheet-export summary').click();
    assert.ok(await dialog.locator('[data-final-save]').isVisible());
    await dialog.locator('.final-sheet-export summary').click();
+   if(name==='university'){
+    const provenance=dialog.locator('.traveller-sheet-acquired').filter({hasText:'University skill'}).first();
+    assert.match(await provenance.textContent(),/University skill · Term 1 · (Gained )?Level\//);
+    await provenance.scrollIntoViewIfNeeded();
+    await dialog.screenshot({path:fileURLToPath(new URL('current-sheet-'+label+'-skills.png',out))});
+   }
    await dialog.evaluate(el=>el.scrollTop=0);
    await page.screenshot({path:fileURLToPath(new URL('current-sheet-'+label+'.png',out)),fullPage:true});
    await dialog.screenshot({path:fileURLToPath(new URL('current-sheet-'+label+'-dialog.png',out))});
