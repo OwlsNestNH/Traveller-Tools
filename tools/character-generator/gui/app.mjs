@@ -177,6 +177,7 @@ function persist(){
  catch{storageWarning='This browser could not save the draft. Use Save character & log to keep a backup.';}
 }
 function focusAfterAction(previousStage,focused){
+ if($('#aslan-rite-doubles-dialog')?.open){$('#aslan-rite-doubles-title')?.focus({preventScroll:true});return;}
  if($('#aslan-family-dialog')?.open){const target=$('#aslan-family-roll')??$('#aslan-family-title');if(target){if(target.tagName==='H2')target.tabIndex=-1;target.focus({preventScroll:true});}$('#aslan-family-dialog').scrollTop=0;return;}
  if($('#species-skill-dialog')?.open){$('#species-skill-search').focus();return;}
  if($('#equipment-dialog')?.open){$('#equipment-dialog-title').focus();return;}
@@ -532,7 +533,7 @@ function render(){
   if(index!==null){const option=model.choices[index];if(!option)return;if(!await send('choose-effect',{index:option.index}))throw new Error($('#message').textContent||'The skill choice could not be recorded.');}
   if(projection.state.stage==='aslan-family-result'&&!await send('acknowledge-aslan-family'))throw new Error($('#message').textContent||'Continue could not be recorded.');
  },onNameClan:async name=>{if(!await send('name-aslan-clan',{name}))throw new Error($('#message').textContent||'Clan name could not be recorded.');},onChooseClan:async payload=>{if(!await send('choose-aslan-clan',payload))throw new Error($('#message').textContent||'Clan could not be recorded.');},onToggleGM:async enabled=>{if(!await send('gm-mode',{enabled}))throw new Error($('#message').textContent||'GM setting could not be recorded.');const detail=$('#aslan-clan-record')?.closest('details');if(detail)detail.open=true;if(enabled)$('#aslan-clan-name')?.focus();}});
- mountAslanClanInformation(document);mountAslanPrideInformation(document);mountAslanBackgroundInformation(document);mountAslanRiteInformation(document);
+ mountAslanClanInformation(document);mountAslanPrideInformation(document);mountAslanBackgroundInformation(document);mountAslanRiteInformation(document,{resultKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id,projection.log.findLast(event=>event.type==='roll-aslan-rite')?.id,state.currentAslanOrigin?.rite?.dice,state.currentAslanOrigin?.rite?.statsBefore,state.currentAslanOrigin?.rite?.modifier,state.currentAslanOrigin?.rite?.additionalRolls])});
  mountEquipmentDialog(document,()=>send('cancel-deferred-equipment'));
 }
 function readEffects(){

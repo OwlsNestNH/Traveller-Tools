@@ -86,7 +86,7 @@
  #sheet>details[data-precareer-bar][open]>summary span::after{content:'−';font-size:22px}
  #sheet>details[data-precareer-bar]>*:not(summary){margin:12px;padding:0;border:0}
  #precareer-notes>#notes-connections>summary{display:none}
- #precareer-rail .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ #precareer-rail .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
  #precareer-rail .stat{padding:8px 4px}
  #precareer-rail .stat strong{font-size:25px}
 }
@@ -292,3 +292,9 @@
 
 /* Recorded event faces retain the gold identity of their unrolled dice. */
 .education-checkpoint .education-recorded-dice{color:#ffd34b}
+
+/* Give the live record a readable desktop width; mobile remains full width. */
+@media screen and (min-width:651px){#precareer-rail{width:clamp(320px,27vw,400px);min-width:320px}}
+@media screen{#precareer-aslan-origin>.aslan-origin-sheet>h3{display:none}#precareer-aslan-origin .aslan-origin-sheet{font-size:16px;line-height:1.5;overflow-wrap:anywhere}#precareer-aslan-origin>summary{font-weight:750;color:#ffdc67}#precareer-aslan-origin .aslan-origin-sheet p{margin:0 0 14px}}
+
+@media screen{#precareer-overview{padding:20px 22px;min-height:0}#precareer-overview h2{margin:10px 0}#precareer-overview p.sheet-meta{font-size:16px;line-height:1.45;overflow-wrap:anywhere}#precareer-overview .sheet-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0 0}#precareer-overview .sheet-facts>span{min-width:0;overflow-wrap:anywhere}#precareer-overview .sheet-facts strong{font-size:20px}}

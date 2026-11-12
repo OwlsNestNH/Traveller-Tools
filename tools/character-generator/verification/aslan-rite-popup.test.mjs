@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {api,exportSession} from '../engine/session.mjs';
 import {buildAslanOriginFixture as build,run,force,rejected} from './aslan-origin-fixtures.mjs';
-import {aslanRitePopupModel,aslanRitePopupView,riteEventSummary} from '../gui/aslan-rite-popup.mjs';
+import {aslanRitePopupModel,aslanRitePopupView,riteEventSummary,aslanRiteDoublesView} from '../gui/aslan-rite-popup.mjs';
 const round=r=>{const x=api({operation:'import',raw:exportSession(r.session)});assert.equal(x.ok,true,x.error?.message);assert.deepEqual(x.state,r.state);assert.deepEqual(x.log,r.log);};
 test('all36 Rite rolls preserve strict comparison and resolve doubles exactly once',()=>{
  for(const gender of ['male','female'])for(let a=1;a<=6;a++)for(let b=1;b<=6;b++){
@@ -29,4 +29,17 @@ test('two labelled information panels keep required actions and actual events on
  for(const values of [[3,4],[1,1],[2,2],[6,6]]){
   const r=force(build({stage:'aslan-rite'}),'roll-aslan-rite',{},values),model=aslanRitePopupModel(r.state),html=aslanRitePopupView(model,{esc:String}),main=html.split('</dialog>')[0];assert.match(main,/id="aslan-rite-info-open"/);assert.match(main,/id="aslan-rite-calculation-open"/);assert.match(html,/aria-labelledby="aslan-rite-calculation-title"/);assert.doesNotMatch(main,/rite-comparisons/);assert.ok(main.includes(riteEventSummary(model)));assert.ok(main.includes(values.join(' + ')+' = '+values.reduce((a,b)=>a+b)));assert.match(main,/id="aslan-family-continue"/);if(values[0]===1)assert.match(main,/Clan Share quantity/);if(values[0]===2)assert.match(main,/Record restricted credit/);assert.match(html,/Equal does not count/);
  }
+});
+
+test('doubles event is read-only, named and narrative-rich with no tagline for all genders and six outcomes',()=>{
+ for(const gender of ['male','female'])for(let die=1;die<=6;die++){
+  const r=force(build({stage:'aslan-rite',gender}),'roll-aslan-rite',{},[die,die]),before=structuredClone(r),model=aslanRitePopupModel(r.state),html=aslanRiteDoublesView({...model,tagline:'DO NOT SHOW'},{esc:String});
+  assert.match(html,/id="aslan-rite-doubles-dialog"/);assert.match(html,/aslan-family-narrative/);assert.match(html,/Continue to Rite result/);assert.ok(html.includes(riteEventSummary(model)));assert.doesNotMatch(html,/DO NOT SHOW|data-action=|aslan-family-continue|aslan-family-roll/);assert.deepEqual(r,before);
+  if(die===1){const extra=model.rite.additionalRolls[0];assert.ok(html.includes(extra.total+' Clan Shares'));assert.ok(html.includes(extra.values.join(' + ')+' = '+extra.total));}
+  if(die===2){assert.match(html,gender==='male'?/Decision still required/:/Cr5000 cash awarded/);if(gender==='male'){assert.match(html,/It is not cash/);const credited=run(r,'record-aslan-rite-equipment');assert.match(aslanRiteDoublesView(aslanRitePopupModel(credited.state),{esc:String}),/restricted equipment credit recorded/);}}
+ }
+ const ordinary=force(build({stage:'aslan-rite'}),'roll-aslan-rite',{},[3,4]);assert.equal(aslanRiteDoublesView(aslanRitePopupModel(ordinary.state),{esc:String}),'');assert.equal(aslanRiteDoublesView(aslanRitePopupModel(build({stage:'aslan-rite'}).state),{esc:String}),'');
+});
+test('doubles popup does not claim standard credit after a source ruling',()=>{
+ let r=force(build({stage:'aslan-rite'}),'roll-aslan-rite',{},[2,2]);r=run(r,'resolve-book',{confirmed:true,note:'Explicit referee source fixture.',effects:[{kind:'relationship',role:'Contact',name:'Source contact'}]});const html=aslanRiteDoublesView(aslanRitePopupModel(r.state),{esc:String});assert.match(html,/recorded referee ruling/);assert.doesNotMatch(html,/credit recorded|cash awarded|Decision still required/);
 });

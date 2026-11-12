@@ -125,12 +125,12 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
   context.querySelector('#precareer-previous').addEventListener('click',event=>openInfo('previous','Previous step',event.currentTarget));
  }
  function open(){if(!dialog.open){if(dialog.dataset.panel==='event')dialog.showModal();else dialog.show();}context.querySelector('#precareer-resume').hidden=true;}
- function dismiss(){dialog.close();context.querySelector('#precareer-resume').hidden=false;context.querySelector('#precareer-resume').focus({preventScroll:true});}
+ function dismiss(){if(dialog.dataset.panel==='additional'){workspace.querySelector('#precareer-options-back').click();return;}dialog.close();context.querySelector('#precareer-resume').hidden=false;context.querySelector('#precareer-resume').focus({preventScroll:true});}
  function openInfo(kind,title,trigger){info._opener=trigger;for(const name of ['result','rules','previous'])info.querySelector('#precareer-information-'+name).hidden=kind==='details'?name==='previous':name!==kind;info.querySelector('#precareer-information-title').textContent=title;if(!info.open)info.showModal();info.querySelector('#precareer-information-title').focus();}
  function closeInfo(){info.close();if(info._restoreResult!==undefined){info.querySelector('#precareer-information-result').innerHTML=info._restoreResult;delete info._restoreResult;}if(info._opener?.isConnected)info._opener.focus({preventScroll:true});}
  layout.classList.add('precareer-layout');dialog.dataset.educationKind=eventModel?.kind??'';
  const c=state.character,species=catalog.species.find(s=>s.id===c.species)?.name??c.species;
- const overview=context.querySelector('#precareer-overview');overview.innerHTML='<p class="precareer-eyebrow">YOUR TRAVELLER</p><h2>'+esc(c.name||'Your Traveller')+'</h2><p>'+esc(species)+' · Age '+esc(c.age)+'</p><p>'+esc(c.terms)+' completed terms</p>';
+ const overview=context.querySelector('#precareer-overview');overview.innerHTML='<p class="precareer-eyebrow">YOUR TRAVELLER</p><h2>'+esc(c.name||'Your Traveller')+'</h2>';
  const step=workspace.querySelector('.step-count');step.textContent=species.toUpperCase()+' · PRE-CAREER';
  const title=root.querySelector('#step-title');title.textContent='Pre-Career';
  step.insertAdjacentHTML('beforebegin','<button type="button" id="precareer-dismiss">Cancel</button>');
@@ -163,8 +163,9 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  // Move existing record nodes, never clone editors or their IDs. Each top-level
  // bar is part of one exclusive group, with a fallback for older browsers.
  const rail=context.querySelector('#precareer-rail'),previousBar=rail.dataset.openBar;
- const nodes=[...sheet.children],stats=nodes.find(n=>n.querySelector('.stats')),skills=nodes.find(n=>n.querySelector('h3')?.textContent==='Skills'),notes=nodes.find(n=>n.id==='notes-connections');
- const groups=[['precareer-characteristics','Characteristics',stats?[stats]:[]],['precareer-skills','Skills',skills?[skills]:[]],['precareer-notes','Notes & connections',notes?[notes]:[]],['precareer-more-record','More character details',nodes.filter(n=>![stats,skills,notes].includes(n)&&n.tagName!=='H2'&&!n.matches('.eyebrow'))]];
+ const nodes=[...sheet.children],stats=nodes.find(n=>n.querySelector('.stats')),skills=nodes.find(n=>n.querySelector('h3')?.textContent==='Skills'),notes=nodes.find(n=>n.id==='notes-connections'),origin=nodes.find(n=>n.matches('.aslan-origin-sheet'));
+ const headerNodes=nodes.filter(n=>n.matches('.sheet-meta,.sheet-facts'));overview.append(...headerNodes);
+ const groups=[['precareer-characteristics','Characteristics',stats?[stats]:[]],['precareer-aslan-origin','Aslan family and origin',origin?[origin]:[]],['precareer-skills','Skills',skills?[skills]:[]],['precareer-notes','Notes & connections',notes?[notes]:[]],['precareer-more-record','More character details',nodes.filter(n=>![stats,origin,skills,notes,...headerNodes].includes(n)&&n.tagName!=='H2'&&!n.matches('.eyebrow'))]];
  sheet.replaceChildren();
  for(const [id,label,contents] of groups){if(!contents.length)continue;const bar=root.createElement('details');bar.id=id;bar.dataset.precareerBar='';bar.name='precareer-record-bars';bar.innerHTML='<summary>'+label+' <span aria-hidden="true">+</span></summary>';bar.append(...contents);sheet.append(bar);bar.open=previousBar===id;
   if(id==='precareer-notes')notes.open=bar.open;
