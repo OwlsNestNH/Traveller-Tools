@@ -438,3 +438,8 @@ body[data-stage="background"] #message{max-width:var(--tool-content-width);margi
 #crow-rewind-dialog select{min-width:0;max-width:100%}#crow-rewind-dialog ol{padding-left:1.5rem}#crow-rewind-dialog input[type=checkbox]{width:24px;height:24px}
 #crow-rewind-dialog button{background:#185876;border-color:#78bbdc;color:#fff;min-height:48px}#crow-rewind-dialog .crow-assistance-info{min-width:44px;width:44px;min-height:44px;padding:0}
 #workspace .required-action-warning .crow-recovery-actions button{background:#185876;color:#fff;border:2px solid #78bbdc;font-size:1rem;padding:10px 16px;min-height:48px}
+
+/* Guidance costumes remain readable; technical failures use the original idle Crow. */
+.crow-assistance-image,.crow-error-dialog .crow-assistance-image{width:112px;height:128px;flex-basis:112px}.crow-assistance-image[hidden]{display:none}
+.crow-error-default-portrait{display:block;flex:0 0 96px;width:96px;height:104px;overflow:hidden}.crow-error-default-portrait[hidden]{display:none}
+.crow-error-dialog .crow-error-default-portrait img{display:block;width:768px;height:1144px;max-width:none;object-fit:fill;margin:0}

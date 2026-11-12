@@ -38,7 +38,7 @@ try{
    ['referee',lawyerFixture({cash:0}),async()=>{await p.locator('#lawyer-outcome').selectOption('hire');await p.locator('#lawyer-level').fill('0');},'[data-action=resolve-prisoner-lawyer]']
   ]){
    await p.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await p.reload();await p.locator(trigger).waitFor();await prepare();await p.locator(trigger).click();await p.locator('.required-action-warning:visible').waitFor();
-   await checkContrast(p);const portrait=p.locator('.required-action-warning .crow-assistance-image');await portrait.evaluate(n=>n.decode());assert.match(await portrait.getAttribute('src'),new RegExp('crow-'+name+'\\.png$'));assert.equal(await p.locator('.required-action-warning .crow-speech').count(),1);await p.screenshot({path:new URL('crow-review-'+name+'-'+width+'.png',out).pathname,fullPage:true});
+   await checkContrast(p);const portrait=p.locator('.required-action-warning .crow-assistance-image');await portrait.evaluate(n=>n.decode());assert.ok((await portrait.boundingBox()).width>=112,'Costume remains readable');assert.match(await portrait.getAttribute('src'),new RegExp('crow-'+name+'\\.png$'));assert.equal(await p.locator('.required-action-warning .crow-speech').count(),1);await p.screenshot({path:new URL('crow-review-'+name+'-'+width+'.png',out).pathname,fullPage:true});
   }
   checks.push({width,opening:true,information:true,warning:true,professor:true,referee:true,imageMaterialized:!!CROW_ASSISTANCE_IMAGE});await p.close();
  }

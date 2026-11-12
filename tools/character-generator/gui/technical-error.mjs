@@ -2,7 +2,7 @@
    rejected module graph. Recovery adapters provide explicit typed actions. */
 (()=>{
  if(window.CrowTechnicalError)return;
- const document=window.document;let dialog,trigger,lastControl,last='',provider=()=>({}),context={},actions=[];
+ const document=window.document;const portrait=document.querySelector('.crow-error-default-portrait img');if(portrait){const unavailable=()=>{portrait.hidden=true;portrait.parentElement.hidden=true;};portrait.addEventListener('error',unavailable);if(portrait.complete&&!portrait.naturalWidth)unavailable();}let dialog,trigger,lastControl,last='',provider=()=>({}),context={},actions=[];
  document.addEventListener('focusin',event=>{if(event.target.matches('button,input,select,textarea,a,[tabindex]')&&!event.target.closest('#crow-error-dialog'))lastControl=event.target;});
  document.addEventListener('pointerdown',event=>{const control=event.target.closest('button,input,select,textarea,a,[tabindex]');if(control&&!control.closest('#crow-error-dialog'))lastControl=control;},true);
  function refresh(){
