@@ -397,3 +397,38 @@ body[data-stage="background"] #message{max-width:var(--tool-content-width);margi
 
 /* Flavour remains ordinary readable text within the existing factual result. */
 .result-panel .outcome-tagline{font-style:italic;}
+
+/* Required actions: readable red feedback in the current workspace or modal. */
+.required-action-warning{background:#3b0b13;color:#fff4e8;border:2px solid #ff5964;box-shadow:inset 0 0 0 1px #d8b76a;border-radius:8px;padding:16px;margin:0 0 20px;overflow-wrap:anywhere;text-align:left;font-size:1rem;line-height:1.5}
+.required-action-warning strong{display:block;color:#ff7b85;font-weight:800;letter-spacing:.025em}
+.required-action-warning p{margin:.35em 0 0;color:#fff4e8}
+.required-action-warning[hidden]{display:none}
+[aria-invalid="true"]{outline:3px solid #e44851;outline-offset:3px}
+.crow-assistance{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:.8rem;font-weight:800;letter-spacing:.06em;flex-wrap:wrap}
+.crow-assistance-image{width:56px;height:56px;object-fit:contain;flex:0 0 56px}
+.required-action-warning .crow-assistance-info{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;width:44px;height:44px;padding:0;margin:0;border:2px solid #d8b76a;border-radius:50%;background:#4b111c;color:#fff4e8;font-size:1.1rem;font-weight:800;box-shadow:none}
+.required-action-warning .crow-assistance-help{margin-top:12px;border-top:1px solid #ff5964;padding-top:10px;font-size:.95rem}
+.crow-introduction{border:1px solid #ffd15a;border-radius:8px;padding:14px 16px;margin:18px 0;background:#0a2634;color:#fff0bf}
+.crow-introduction .crow-assistance{margin-bottom:6px}
+.crow-introduction>p{margin:0;line-height:1.5;font-size:.95rem}
+.crow-introduction .crow-assistance-info{min-width:44px;min-height:44px;width:44px;height:44px;padding:0;border:1px solid #ffd15a;border-radius:50%;background:#06202d;color:#ffe19a;box-shadow:none}
+.crow-introduction-dialog{width:min(640px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-sizing:border-box;overflow-y:auto;overflow-wrap:anywhere;background:#06202d;color:#fff1ce;border:2px solid #ffd15a;border-radius:12px;padding:24px;line-height:1.6}
+.crow-introduction-dialog::backdrop{background:rgb(0 0 0 / .75)}
+.crow-introduction-dialog h2{margin:0;color:#ffd15a}.crow-expansion{font-weight:700}.crow-series{font-size:.9rem}.crow-introduction-dialog blockquote{margin:20px 0;padding-left:16px;border-left:3px solid #ffd15a;color:#ffd15a;font-weight:700}
+#aslan-family-dialog .required-action-warning .crow-assistance-info{min-width:44px;min-height:44px;width:44px;height:44px;padding:0;border:2px solid #d8b76a;border-radius:50%;background:#4b111c;color:#fff4e8;font-size:1.1rem;box-shadow:none}
+#workspace #crow-introduction-title{font-size:1.7rem;line-height:1.3;margin:0;color:#ffd15a}#workspace #crow-introduction-title::before{display:none}
+.crow-assistance-sprite{display:inline-block;height:60.6667px;background-size:800% 1100%;background-position:0 0;background-repeat:no-repeat}
+.required-action-warning .crow-speech{position:relative;background:#4b111c;border:1px solid #ff5964;border-radius:9px;padding:12px;margin-top:8px}
+.required-action-warning .crow-speech::before{content:"";position:absolute;width:12px;height:12px;left:22px;top:-7px;transform:rotate(45deg);background:#4b111c;border-left:1px solid #ff5964;border-top:1px solid #ff5964}
+.required-action-warning .crow-speech strong{position:relative;font-size:1rem;line-height:1.4}
+.required-action-warning .crow-speech p{font-size:1rem;line-height:1.5}
+.crow-assistance-image{width:72px;height:72px;flex-basis:72px}.crow-assistance-sprite{height:78px}
+.required-action-warning .crow-assistance{color:#e6c978}
+
+/* Technical failures use clear recovery guidance, never required-choice jokes. */
+.crow-error-dialog{box-sizing:border-box;width:min(36rem,calc(100% - 2rem));max-height:calc(100dvh - 2rem);overflow:auto;background:#3b0b13;color:#fff4e8;border:2px solid #ff5964;border-top:3px solid #d8b76a;border-radius:14px;padding:1.5rem;overflow-wrap:anywhere}
+.crow-error-dialog::backdrop{background:rgb(0 0 0 / .7)}
+.crow-error-heading{display:flex;align-items:center;gap:.75rem}.crow-error-heading>div{min-width:0}.crow-error-heading h2{margin:.3rem 0}.crow-error-dialog img{object-fit:contain;flex:0 0 64px;width:64px;height:80px}.crow-error-heading .eyebrow{margin:0}
+.crow-error-dialog h2{color:#ff7b85}.crow-error-dialog .eyebrow{color:#d8b76a}
+.crow-error-dialog p{line-height:1.55}.crow-error-dialog button{clear:both}
+#crow-error-dialog button{background:#185876;border-color:#78bbdc;color:#fff;min-height:48px}

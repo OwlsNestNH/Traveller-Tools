@@ -1,3 +1,5 @@
+import {mountCrowIntroduction} from './crow-assistance.mjs';
+import {mountRequiredActions,clearRequiredActions} from './required-action.mjs';
 import {physicalSexSelectView} from './physical-sex-setup.mjs';
 import {shareAwardLabel,readableFutureCondition,readableTrait} from './species-record-labels.mjs';
 import {educationCheckpointModel,educationCheckpointView,educationEventStoryView} from './education-event-checkpoint-view.mjs';
@@ -34,7 +36,7 @@ import {equipmentCatalogueView,syncEquipmentCatalogue} from './equipment-catalog
 let aslanManualReviewKey=null;
 import {aslanEventOutcomesView,aslanEventOutcomesSheet} from './aslan-event-outcomes-view.mjs';
 import {skillAwardView,syncAwardBase,deferredAwardsView} from './skill-award-view.mjs';
-import {educationSkillTitle,educationSkillView,syncEducationSubject,syncEducationStudyContinue,companionSkillSuggestions} from './education-skill-view.mjs';
+import {educationStudySelectionValid,educationSkillTitle,educationSkillView,syncEducationSubject,syncEducationStudyContinue,companionSkillSuggestions} from './education-skill-view.mjs';
 import {createLogViewer} from './log-viewer.mjs';
 import {prisonerEscapeTitle,prisonerEscapeView} from './prisoner-escape-view.mjs';
 import {extraCharacteristicsView,gmControlsView,syncCorrectionField,syncReplacementDice,syncCorrectionTask,correctionPayload,replacementPayload} from './character-controls.mjs';
@@ -141,11 +143,11 @@ function syncClanShareControls(savedLot){
  const person=selected.contacts.find(c=>c.id===contact.value);$('#clan-share-contact-help').textContent=kind.value==='ally'&&person?person.name+' · Contact '+(p.contacts.findIndex(item=>item.id===person.id)+1)+' · '+person.clanName:'';
  $('[data-action=redeem-clan-shares]').disabled=!p.checkpointAvailable||!selected.choice?.available||!lot||kind.value==='ally'&&!person;
  const verifyLot=$('#clan-verify-lot'),verifyTarget=$('#clan-verify-target');
- if(verifyLot){const l=p.lots.find(l=>l.id===verifyLot.value);$('#clan-verify-lot-help').textContent=l?shareAwardLabel(l,projection.state)+'. '+l.available+' held. '+l.reason:'';const sourceOnly=verifyTarget.querySelector('[value="__source"]');sourceOnly.disabled=!l?.verificationRequired;if(sourceOnly.disabled&&verifyTarget.value==='__source')verifyTarget.value='';$('#clan-verify-target-help').textContent=verifyTarget.value==='__source'?'Source only; issuing clan remains unknown.':verifyTarget.value==='__new'?'Identify another issuing clan.':p.clans.find(c=>c.id===verifyTarget.value)?.name??'';const newClan=verifyTarget.value==='__new';$('#clan-verify-new-field').hidden=!newClan;$('#clan-verify-new').disabled=!newClan||!l?.canVerify;$('[data-action=verify-clan-share-lot]').disabled=!l?.canVerify||!verifyTarget.value;}
+ if(verifyLot){const l=p.lots.find(l=>l.id===verifyLot.value);$('#clan-verify-lot-help').textContent=l?shareAwardLabel(l,projection.state)+'. '+l.available+' held. '+l.reason:'';const sourceOnly=verifyTarget.querySelector('[value="__source"]');sourceOnly.disabled=!l?.verificationRequired;if(sourceOnly.disabled&&verifyTarget.value==='__source')verifyTarget.value='';$('#clan-verify-target-help').textContent=verifyTarget.value==='__source'?'Source only; issuing clan remains unknown.':verifyTarget.value==='__new'?'Identify another issuing clan.':p.clans.find(c=>c.id===verifyTarget.value)?.name??'';const newClan=verifyTarget.value==='__new';$('#clan-verify-new-field').hidden=!newClan;$('#clan-verify-new').disabled=!newClan||!l?.canVerify;$('[data-action=verify-clan-share-lot]').disabled=!l?.canVerify;}
  syncClanAssetControls();syncLandControls();
- const verifyContact=$('#clan-verify-contact');if(verifyContact){$('#clan-contact-clan-help').textContent=p.clans.find(c=>c.id===$('#clan-contact-clan').value)?.name??'';const c=p.contacts.find(c=>c.id===verifyContact.value);$('#clan-verify-contact-help').textContent=c?c.name+' · Contact '+(p.contacts.indexOf(c)+1)+' · '+c.clanName:'';$('[data-action=verify-clan-contact]').disabled=!c?.canVerify||!$('#clan-contact-clan').value;}
+ const verifyContact=$('#clan-verify-contact');if(verifyContact){$('#clan-contact-clan-help').textContent=p.clans.find(c=>c.id===$('#clan-contact-clan').value)?.name??'';const c=p.contacts.find(c=>c.id===verifyContact.value);$('#clan-verify-contact-help').textContent=c?c.name+' · Contact '+(p.contacts.indexOf(c)+1)+' · '+c.clanName:'';$('[data-action=verify-clan-contact]').disabled=!c?.canVerify;}
 }
-function notify(message,error=false,status='info',action=false){$('#message').style.overflowWrap='anywhere';$('#message').className=error?'error':'result-'+status+(action?' action-announcement':'');$('#message').textContent=message;const popupError=$('#species-skill-error');if(popupError)popupError.textContent=error?message:'';}
+function notify(message,error=false,status='info',action=false,context={}){$('#message').style.overflowWrap='anywhere';$('#message').className=error?'error':'result-'+status+(action?' action-announcement':'');$('#message').textContent=message;const popupError=$('#species-skill-error');if(popupError)popupError.textContent=error?message:'';if(error)window.CrowTechnicalError?.show(message,context);}
 function clearActionNotice(){if($('#message').classList.contains('action-announcement'))notify('');}
 function actionNotice(type,result){
  return statisticsRollFeedback(result.log.at(-1),result.state)??conciseResult(result.log.at(-1),result.state,catalog)?.text??'Action recorded.';
@@ -230,7 +232,7 @@ function syncRerollOptions(form){
 function syncIdentityOptions(form){
  const species=form.elements.species.value,culture=form.elements.culture,variant=form.elements.variant;
  const imperial=['aslan','vargr'].includes(species);$('#culture-choice').hidden=!imperial;culture.disabled=!imperial;if(!imperial)culture.value='native';
- form.elements.gender.required=!!projection.state.aslanFamilyPresentation&&species==='aslan'&&culture.value==='native';
+ form.elements.gender.required=species==='aslan';
  const strains=species==='vargr';$('#variant-choice').hidden=!strains;variant.disabled=!strains;if(!strains)variant.value='standard';const aezorgh=species==='aezorgh';$('#aezorgh-roll-choice').hidden=!aezorgh;form.elements.aezorghTwoDice.disabled=!aezorgh;syncPsiOptions(form);syncRerollOptions(form);
 }
 function statCards(state,pool=false){
@@ -249,7 +251,7 @@ function statisticsView(state){
  if(!state.pool.length)return introduction+statisticsCardsView(state,catalog,physicalDiceCards(state,{html:emptyStatisticsView(state,catalog,{esc}),esc}),{esc,infoButton:openingInfoButton})+'<div class="statistics-guidance"><strong>Start with your six characteristic rolls</strong><p>Roll the selected species dice, then review each score before continuing.</p></div>'+statisticsSummaryView(state,{esc})+'<div class="actions statistics-actions">'+button('Roll six characteristics','roll-statistics','statistics-primary')+'</div>'+controls;
  let html=introduction+statisticsCardsView(state,catalog,physicalDiceCards(state,{html:statCards(state,true),esc}),{esc,infoButton:openingInfoButton});
  if(state.statisticsComplete!==false&&(state.config.allocation||state.config.gm))html+='<div class="statistics-swap"><div class="inline-fields"><label>Swap this score<select id="swap-a">'+state.pool.map((p,i)=>'<option value="'+i+'">'+p.key+' · raw '+p.base+'</option>').join('')+'</select></label><label>With this score<select id="swap-b">'+state.pool.map((p,i)=>'<option value="'+i+'" '+(i===1?'selected':'')+'>'+p.key+' · raw '+p.base+'</option>').join('')+'</select></label>'+button('Swap scores','swap-statistics','quiet')+'</div><p class="tiny">'+(state.character.species==='aezorgh'&&!state.config.aezorghTwoDice?'Standard Aezorgh: swap one-die characteristics within their group, and DEX/INT separately. GM mode permits exceptions.':state.config.aezorghTwoDice?'Swap any raw 2D6 totals. Halving and species bonuses belong to the destination characteristic.':'Swap any of the six raw scores; species modifiers remain with their characteristics.')+(state.pool.some(p=>p.finalOverride!==undefined)?' GM-set final scores stay with their characteristics; rerolling starts a new set.':'')+'</p></div>';
- return html+statisticsSummaryView(state,{esc})+'<div class="actions statistics-actions">'+button('Keep these characteristics','accept-statistics','statistics-primary',state.pool.some(p=>p.base===null)?'disabled':'')+button(state.statisticsComplete===false?'Roll a computer set':'Reroll this set','roll-statistics','quiet',(!state.statisticsCanReroll&&state.statisticsComplete!==false?'disabled title="'+(state.config.minimumReroll?'The raw total meets the reroll threshold.':'Minimum-total rerolls are off.')+'"':''))+'</div>'+controls;
+ return html+statisticsSummaryView(state,{esc})+'<div class="actions statistics-actions">'+button('Keep these characteristics','accept-statistics','statistics-primary','')+button(state.statisticsComplete===false?'Roll a computer set':'Reroll this set','roll-statistics','quiet',(!state.statisticsCanReroll&&state.statisticsComplete!==false?'disabled title="'+(state.config.minimumReroll?'The raw total meets the reroll threshold.':'Minimum-total rerolls are off.')+'"':''))+'</div>'+controls;
 }
 function backgroundView(state){
  return backgroundSkillsView(state,backgroundDraft?.skills??[],catalog,{esc});
@@ -521,9 +523,10 @@ function render(){
  const sheetOpener=document.querySelector('[data-action="open-current-character-sheet"]');if(sheetOpener)$('#sheet').prepend(sheetOpener);
  const activePrecareerDialog=document.getElementById('precareer-dialog');if(activePrecareerDialog&&!activePrecareerDialog.querySelector('.popup-character-sheet-button')){const access=document.createElement('button');access.type='button';access.className='popup-character-sheet-button';access.dataset.action='open-current-character-sheet-popup';access.textContent='Character sheet';access.setAttribute('aria-haspopup','dialog');access.setAttribute('aria-controls','final-character-sheet');activePrecareerDialog.prepend(access);}
  const studyKey=JSON.stringify([operationGeneration,session.seed,state.education,state.pendingChoice?.selectionId]);$('#workspace').dataset.educationStudyKey=studyKey;
- if(nestedDraft?.key===studyKey&&nestedDraft.kind===eventModel?.kind){const select=$('.education-nested-label select');if(select&&[...select.options].some(o=>o.value===nestedDraft.value)){select.value=nestedDraft.value;$('.education-nested-prompt [data-action]').disabled=!select.value;}}
+ if(nestedDraft?.key===studyKey&&nestedDraft.kind===eventModel?.kind){const select=$('.education-nested-label select');if(select&&[...select.options].some(o=>o.value===nestedDraft.value)){select.value=nestedDraft.value;$('.education-nested-prompt [data-action]').disabled=false;}}
  if(educationModel?.study&&studyDraft?.key===studyKey&&[...$('#education-subject').options].some(o=>o.value===studyDraft.subject)){$('#education-subject').value=studyDraft.subject;syncEducationSubject(state,catalog,document,esc);$('#education-skill').value=studyDraft.skill;syncEducationStudyContinue(state,catalog,document);}
  $('#workspace').dataset.revision=projection.revision;
+ if(state.stage==='identity')mountCrowIntroduction(document);
  mountSpeciesSkillPopup(document);
  mountAslanFamilyPopup(document,{onRoll:async()=>{if(!await send(aslanRitePopupModel(projection.state)?'roll-aslan-rite':aslanPridePopupModel(projection.state)?'roll-aslan-pride':aslanClanPopupModel(projection.state)?'roll-aslan-clan':aslanBirthPopupModel(projection.state)?'roll-aslan-birth-order':'roll-aslan-family'))throw new Error($('#message').textContent||'The family roll could not be recorded.');},onContinue:async(index)=>{
   const rite=aslanRitePopupModel(projection.state);if(rite){if(!await send(rite.equipment?'record-aslan-rite-equipment':'acknowledge-aslan-rite'))throw new Error($('#message').textContent||'Rite continuation could not be recorded.');return;}
@@ -537,6 +540,10 @@ function render(){
  },onNameClan:async name=>{if(!await send('name-aslan-clan',{name}))throw new Error($('#message').textContent||'Clan name could not be recorded.');},onChooseClan:async payload=>{if(!await send('choose-aslan-clan',payload))throw new Error($('#message').textContent||'Clan could not be recorded.');},onToggleGM:async enabled=>{if(!await send('gm-mode',{enabled}))throw new Error($('#message').textContent||'GM setting could not be recorded.');const detail=$('#aslan-clan-record')?.closest('details');if(detail)detail.open=true;if(enabled)$('#aslan-clan-name')?.focus();}});
  mountAslanClanInformation(document);mountAslanPrideInformation(document);mountAslanBackgroundInformation(document);mountAslanRiteInformation(document,{resultKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id,projection.log.findLast(event=>event.type==='roll-aslan-rite')?.id,state.currentAslanOrigin?.rite?.dice,state.currentAslanOrigin?.rite?.statsBefore,state.currentAslanOrigin?.rite?.modifier,state.currentAslanOrigin?.rite?.additionalRolls])});
  mountEquipmentDialog(document,()=>send('cancel-deferred-equipment'));
+}
+function renderEffects(){
+ const list=$('#effect-list');clearRequiredActions(list.closest('dialog[open]')??$('#workspace'));
+ list.innerHTML=effects.map(effectView).join('');
 }
 function readEffects(){
  return [...document.querySelectorAll('[data-effect]')].map(row=>{
@@ -563,8 +570,8 @@ document.addEventListener('click',async event=>{
  if(['redeem-clan-shares','verify-clan-share-lot','verify-clan-contact','resolve-land-claim','activate-aslan-access','resolve-aslan-access-conflict'].includes(action)&&event.detail>1)return;
  if(action==='select-career'){selectedCareer=el.dataset.id;clearActionNotice();render();$('#step-title')?.focus();return;}
  if(action==='career-list'){selectedCareer='';clearActionNotice();render();$('#step-title')?.focus();return;}
- if(action==='add-effect'){effects=readEffects();effects.push({kind:projection.state.stage==='psionic-games-decisions'?'stat':'skill',name:'',value:1,mode:'increase',role:'Contact'});$('#effect-list').innerHTML=effects.map(effectView).join('');return;}
- if(action==='remove-effect'){effects=readEffects();effects.splice(Number(el.dataset.index),1);$('#effect-list').innerHTML=effects.map(effectView).join('');return;}
+ if(action==='add-effect'){effects=readEffects();effects.push({kind:projection.state.stage==='psionic-games-decisions'?'stat':'skill',name:'',value:1,mode:'increase',role:'Contact'});renderEffects();return;}
+ if(action==='remove-effect'){effects=readEffects();effects.splice(Number(el.dataset.index),1);renderEffects();return;}
  if(action==='clan-add-weapon'){const items=readClanWeaponItems();if(items.length<projection.state.clanShareOptions.assetRules.maxItems){renderClanWeaponItems([...items,{quantity:1}]);document.querySelectorAll('[data-weapon-row]')[items.length]?.querySelector('input')?.focus();}return;}
  if(action==='clan-remove-weapon'){const items=readClanWeaponItems(),index=Number(el.dataset.index);if(items.length>1&&Number.isInteger(index)&&index>=0&&index<items.length){renderClanWeaponItems(items.filter((_,i)=>i!==index));document.querySelectorAll('[data-weapon-row]')[Math.min(index,items.length-2)]?.querySelector('input')?.focus();}return;}
  if(action==='redeem-clan-shares'&&$('#clan-share-kind').value==='land')return send(action,landRedemptionPayload(projection.state,readLandRows(),readLandFields()));
@@ -670,7 +677,7 @@ document.addEventListener('change',event=>{
   if(event.target.id==='gm-academy-training')send('gm-academy-training',{enabled:event.target.checked});
    if(event.target.id==='gm-physical-dice')send('gm-physical-dice',{enabled:event.target.checked});
    if(event.target.id==='gm-toggle')send('gm-mode',{enabled:event.target.checked});
- if(event.target.matches('[data-field="kind"]')){effects=readEffects();$('#effect-list').innerHTML=effects.map(effectView).join('');}
+ if(event.target.matches('[data-field="kind"]')){effects=readEffects();renderEffects();}
 });
 document.addEventListener('submit',async event=>{
  if(event.target.id==='gm-restore-form'){
@@ -685,7 +692,7 @@ document.addEventListener('submit',async event=>{
  }
  if(event.target.id==='setup-form'){
   event.preventDefault();if(busy)return;const form=event.target;const values=new FormData(form);
-  if(projection.state.aslanFamilyPresentation&&values.get('species')==='aslan'&&(values.get('culture')??'native')==='native'&&!values.get('gender')){notify('Choose gender on this species selection screen before starting your Aslan.',true);form.elements.gender.focus();return;}
+  if(values.get('species')==='aslan'&&!['male','female'].includes(values.get('gender'))){notify('Choose Male or Female physical sex before starting your Aslan.',true);form.elements.gender.focus();return;}
    if(values.get('zhodaniPsi')&&(!values.get('gm')||values.get('species')!=='zhodani')){notify('The Zhodani PSI option needs GM mode and a Zhodani Traveller.',true);return;}
   if(!await send('configure',{...(values.get('physicalDice')||Object.hasOwn(projection.state.config,'physicalDice')?{physicalDice:!!values.get('physicalDice')}:{}),boons:Number(values.get('boons')),minimumReroll:!!values.get('minimumReroll'),minimumTotal:Number(values.get('minimumTotal')),allocation:!!values.get('allocation'),extras:values.getAll('extras'),...(values.get('psiGm')||Object.hasOwn(projection.state.config,'psiGm')?{psiGm:!!values.get('psiGm')}:{}),...(values.get('psiTestingWithoutEvent')||Object.hasOwn(projection.state.config,'psiTestingWithoutEvent')?{psiTestingWithoutEvent:!!values.get('psiTestingWithoutEvent')}:{}),...(values.get('flatLuck')||Object.hasOwn(projection.state.config,'flatLuck')?{flatLuck:!!values.get('flatLuck')}:{}),zhodaniPsi:!!values.get('zhodaniPsi'),aezorghTwoDice:values.get('species')==='aezorgh'&&!!values.get('aezorghTwoDice')}))return;
   if(projection.state.config.gm&&projection.state.config.academyServiceSkill&&!values.get('academyServiceSkill')&&!await send('gm-academy-training',{enabled:false}))return;
@@ -718,7 +725,7 @@ $('#print').onclick=async()=>{
 };
 const finalSheet=createFinalSheet({document,getRecord:state=>{const record=document.createElement('div');record.innerHTML=sheetView(state);return record;},onSave:()=>download('traveller-character.json',exportSession(session)),onPrint:()=>window.print(),onLog:()=>$('#log-download').onclick()});
 $('#recovery-save').onclick=()=>{if(recoveryRaw!==null)download('traveller-unreadable-draft-backup.json',recoveryRaw);};
-$('#recovery-inspect').onclick=()=>{if(recoveryRaw!==null){inspectHistory(recoveryRaw);$('#legacy-title').focus();}};
+$('#recovery-inspect').onclick=()=>{if(recoveryRaw!==null){inspectHistory(recoveryRaw);$('#legacy-title').focus();if(!inspectionHistory)notify($('#legacy-description').textContent,true);}};
 $('#legacy-save').onclick=()=>{if(inspectionOriginal!==null||inspectionRaw!==null)download('traveller-legacy-original.json',inspectionOriginal??inspectionRaw);};
 $('#legacy-text').onclick=()=>{if(inspectionHistory!==null)download('traveller-recorded-history.txt',recordedHistoryText(inspectionHistory),'text/plain');};
 $('#legacy-close').onclick=()=>{closeHistory();$('#import').focus();};
@@ -766,7 +773,7 @@ async function start(){
   if(!projection?.ok){const result=await call({operation:'create',seed:crypto.randomUUID()});if(!result.ok)throw new Error(result.error.message);session=result.session;projection=result;aslanManualReviewKey=null;}
   trainingTagline=await restoredAslanTrainingTagline(session,projection,call);
   updateRecovery();render();if(storageWarning)notify(storageWarning,true);
- }catch(error){notify('Unable to start the rules engine: '+error.message,true);}
+ }catch(error){notify('Unable to start the rules engine: '+error.message,true,'info',false,{startup:true});}
  finally{setBusy(false);}
 }
 start();
@@ -781,7 +788,7 @@ document.addEventListener('input',event=>{if(event.target.matches('[data-land-qu
 document.addEventListener('change',event=>{if(event.target.id==='aslan-access-route'){$('#aslan-access-confirmed').checked=false;syncAslanAccessControls();}});
 document.addEventListener('input',event=>{if(event.target.id==='aslan-access-destination')$('#aslan-access-confirmed').checked=false;});
 
-document.addEventListener('change',event=>{if(event.target.id==='aslan-access-decision'){const selected=projection.state.aslanAccessConflict?.choices.find(c=>c.id===event.target.value);$('#aslan-access-decision-help').textContent=selected?selected.name+'. '+selected.reason:'';$('[data-action=resolve-aslan-access-conflict]').disabled=!projection.state.config.gm||!selected;}});
+document.addEventListener('change',event=>{if(event.target.id==='aslan-access-decision'){const selected=projection.state.aslanAccessConflict?.choices.find(c=>c.id===event.target.value);$('#aslan-access-decision-help').textContent=selected?selected.name+'. '+selected.reason:'';$('[data-action=resolve-aslan-access-conflict]').disabled=!projection.state.config.gm;}});
 
 document.addEventListener('change',event=>{if(['life-outcome','life-funding'].includes(event.target.id))syncCoreLifeEventControls($);});
 
@@ -794,3 +801,5 @@ document.addEventListener('change',event=>{if(event.target.id==='benefit-item-id
 document.addEventListener('change',event=>{if(['credit-category','credit-item'].includes(event.target.id))syncCreditSelection(projection.state.pending,document,event.target.id==='credit-category');});
 
 document.addEventListener('input',event=>{if(event.target.id==='education-skill')syncEducationStudyContinue(projection.state,catalog,document);});
+
+mountRequiredActions({document,getState:()=>projection?.state??{},isBusy:()=>busy,backgroundSelection,studyValid:(state,value)=>educationStudySelectionValid(state,catalog,value)});

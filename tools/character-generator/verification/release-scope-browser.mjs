@@ -1,3 +1,4 @@
+import {dismissTechnicalError} from './technical-error-browser-assertions.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -21,7 +22,7 @@ try{
    // Both transports reject tampered persisted current-revision Zhodani saves,
    // retain their original bytes through reload, and expose only read-only history.
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.reload();await page.locator('#recovery-inspect').waitFor();
-   assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);await page.locator('#recovery-inspect').click();assert.equal(await page.locator('#legacy-actions>li').count(),1);
+   assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);await dismissTechnicalError(page);await page.locator('#recovery-inspect').click();assert.equal(await page.locator('#legacy-actions>li').count(),1);
    const pending=page.waitForEvent('download');await page.locator('#recovery-save').click();const download=await pending,stream=await download.createReadStream(),chunks=[];for await(const chunk of stream)chunks.push(chunk);assert.deepEqual(Buffer.concat(chunks),Buffer.from(raw));
    await page.reload();await page.locator('#recovery-inspect').waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);

@@ -1,3 +1,4 @@
+import {dismissTechnicalError} from './technical-error-browser-assertions.mjs';
 // Cancel replaces only the active draft after explicit confirmation.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -69,12 +70,12 @@ try{
   await page.locator('[name=name]').fill('Retained on failure');await page.getByRole('button',{name:'Begin character',exact:true}).click();await ready(page);const old=await stored(page);
   await page.route('**/api/v1',async route=>{const body=route.request().postDataJSON();if(body.operation==='create')await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,error:{message:'Synthetic create failure'}})});else await route.continue();});
   await show(page);await page.locator('#cancel-character-confirm').click();await ready(page);assert.equal(await stored(page),old);assert.match(await page.locator('#message').textContent(),/Could not start a new character/);await visibleNotice(page);assert.equal(await page.locator('body').getAttribute('data-stage'),'statistics');
-  await page.unroute('**/api/v1');
+  await dismissTechnicalError(page);await page.unroute('**/api/v1');
   let release;const blocked=new Promise(r=>release=r);let creates=0;await page.route('**/api/v1',async route=>{if(route.request().postDataJSON().operation==='create'){creates++;await blocked;}await route.continue();});
   await show(page);await page.locator('#cancel-character-confirm').evaluate(n=>{n.click();n.click();});await page.waitForFunction(()=>document.querySelector('#cancel-character').disabled);assert.equal(await stored(page),old);release();await ready(page);await page.locator('#setup-form').waitFor();assert.equal(creates,1);await page.close();
   for(const transport of ['static','http']){
-   const p=await browser.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(origin+(transport==='http'?'?api=local':''));await p.locator('#setup-form').waitFor();await p.evaluate(key=>{localStorage.setItem(key,'{protected unreadable draft');localStorage.setItem('other-tool','original');},key);await p.reload();await p.locator('#recovery').waitFor();await ready(p);
-   await p.locator('[name=name]').fill('Temporary active Traveller');await p.getByRole('button',{name:'Begin character',exact:true}).click();await ready(p);await airlock(p);assert.equal(await stored(p),'{protected unreadable draft');assert.equal(await p.locator('#recovery').isVisible(),true);assert.equal(await p.evaluate(()=>localStorage.getItem('other-tool')),'original');assert.equal(await p.locator('[name=name]').inputValue(),'');assert.match(await p.locator('#message').textContent(),/unreadable stored draft is preserved/);await visibleNotice(p);await p.close();
+   const p=await browser.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(origin+(transport==='http'?'?api=local':''));await p.locator('#setup-form').waitFor();await p.evaluate(key=>{localStorage.setItem(key,'{protected unreadable draft');localStorage.setItem('other-tool','original');},key);await p.reload();await p.locator('#recovery').waitFor();await ready(p);await dismissTechnicalError(p);
+   await p.locator('[name=name]').fill('Temporary active Traveller');await p.getByRole('button',{name:'Begin character',exact:true}).click();await ready(p);await dismissTechnicalError(p);await airlock(p);assert.equal(await stored(p),'{protected unreadable draft');assert.equal(await p.locator('#recovery').isVisible(),true);assert.equal(await p.evaluate(()=>localStorage.getItem('other-tool')),'original');assert.equal(await p.locator('[name=name]').inputValue(),'');assert.match(await p.locator('#message').textContent(),/unreadable stored draft is preserved/);await visibleNotice(p);await p.close();
   }
   for(const transport of ['static','http'])for(const action of ['toolbar','cancel']){
    const p=await browser.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(origin+(transport==='http'?'?api=local':''));await p.locator('#setup-form').waitFor();await ready(p);

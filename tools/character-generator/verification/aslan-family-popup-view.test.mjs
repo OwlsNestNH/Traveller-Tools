@@ -11,7 +11,7 @@ test('family introduction has an explicit roll and no fabricated outcome', () =>
 test('family result shows the exact die and requires an explicit skill choice', () => {
   const html=aslanFamilyPopupView({bandLabel:'Lower class',die:1,...familyNarrative('lower',1),choices:[{label:'Animals 0'},{label:'Profession 0'}]},{esc});
   assert.match(html,/You rolled 1/);assert.match(html,/You grew up in a labouring family/);
-  assert.match(html,/id="aslan-family-continue" disabled/);assert.equal((html.match(/type="radio"/g)??[]).length,2);
+  assert.doesNotMatch(html,/id="aslan-family-continue" disabled/);assert.equal((html.match(/type="radio"/g)??[]).length,2);
   assert.doesNotMatch(html,/id="aslan-family-roll"/);
 });
 test('all five family bands have six distinct source-derived narratives', () => {

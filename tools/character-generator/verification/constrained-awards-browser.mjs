@@ -1,3 +1,4 @@
+import {dismissTechnicalError} from './technical-error-browser-assertions.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -17,10 +18,10 @@ try{
    await page.goto('http://127.0.0.1:'+server.address().port+(apiMode?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture().session)});await page.reload();await page.locator('#award-skill').waitFor();
    const name='constrained-awards-'+scenario+'-'+width+(apiMode?'-http':'-static');await page.screenshot({path:fileURLToPath(new URL(name+'-pending.png',out)),fullPage:true});
-   await page.locator('#award-skill').fill('Technopathy');await page.locator('[data-action=choose-skill]').click();await page.waitForFunction(()=>!document.querySelector('#new').disabled);assert.equal(await page.locator('#award-skill').count(),1);
+   await page.locator('#award-skill').fill('Technopathy');await page.locator('[data-action=choose-skill]').click();await page.waitForFunction(()=>!document.querySelector('#new').disabled);assert.equal(await page.locator('#award-skill').count(),1);await dismissTechnicalError(page);
    await page.locator('[data-action=skill-award-source]').click();await page.locator('[data-action=retry-skill-choice]').waitFor();await page.locator('[data-action=retry-skill-choice]').click();await page.locator('#award-skill').waitFor();
    if(scenario==='vargr-non-psi'){
-    await page.locator('#award-skill').fill('Science (Telepathy)');await page.locator('[data-action=choose-skill]').click();await page.waitForFunction(()=>!document.querySelector('#new').disabled);assert.equal(await page.locator('#award-skill').count(),1);
+    await page.locator('#award-skill').fill('Science (Telepathy)');await page.locator('[data-action=choose-skill]').click();await page.waitForFunction(()=>!document.querySelector('#new').disabled);assert.equal(await page.locator('#award-skill').count(),1);await dismissTechnicalError(page);
     await page.locator('#award-skill').fill('Science (unclassified field)');await page.locator('[data-action=choose-skill]').click();await page.locator('[data-action=retry-skill-choice]').waitFor();
     const paused=project(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key)));assert.equal(paused.state.character.skills['Science (unclassified field)'],undefined);assert.equal(paused.state.pending.effect.scope,'non-psionic');
     await page.reload();await page.locator('[data-action=retry-skill-choice]').click();await page.locator('#award-skill').waitFor();

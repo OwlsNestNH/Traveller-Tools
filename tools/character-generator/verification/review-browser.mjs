@@ -1,3 +1,4 @@
+import {dismissTechnicalError} from './technical-error-browser-assertions.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {readFile} from 'node:fs/promises';
@@ -55,7 +56,7 @@ try {
  await check('unreadable stored draft survives new edits and can be downloaded intact',async page=>{
   const raw='{"format":"unknown-old-format","important":"original data"}';
   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.reload();
-  await page.locator('#recovery-save').waitFor();await begin(page,'Recovery candidate');
+  await page.locator('#recovery-save').waitFor();await dismissTechnicalError(page);await begin(page,'Recovery candidate');await dismissTechnicalError(page);
   assert.equal(await stored(page),raw);
   const downloadPromise=page.waitForEvent('download');await page.locator('#recovery-save').click();
   const download=await downloadPromise;assert.equal(await readFile(await download.path(),'utf8'),raw);
@@ -139,10 +140,10 @@ try {
   await page.evaluate(()=>Object.defineProperty(Storage.prototype,'setItem',{configurable:true,value(){throw new DOMException('test quota','QuotaExceededError');}}));
   page.on('dialog',dialog=>dialog.accept());await page.locator('#new').click();
   await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
-  assert.match(await page.locator('#message').textContent(),/could not save/);
+  assert.match(await page.locator('#message').textContent(),/could not save/);await dismissTechnicalError(page);
   await importFile(page,savedCharacter());
   await page.waitForFunction(()=>document.querySelector('#sheet h2').textContent==='Imported Traveller');
-  assert.match(await page.locator('#message').textContent(),/could not save/);
+  assert.match(await page.locator('#message').textContent(),/could not save/);await dismissTechnicalError(page);
  });
  assert.deepEqual(pageErrors,[]);
  console.log(JSON.stringify({checks,pageErrors},null,2));

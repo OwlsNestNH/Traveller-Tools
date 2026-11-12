@@ -21,7 +21,7 @@ export function educationSpecialities(state,catalog,base) {
 }
 export function educationSkillView(state,catalog,esc,button,{result=false}={}) {
  const e=state.pendingChoice,hobby=e.selectionId==='hobby',step=e.selectionId==='university-0'?1:e.selectionId==='university-1'?2:null;
- const continueButton=button(result?'Continue →':hobby?'Record hobby skill':step===1?'Record level 0 and choose level 1':'Record study skill','education-skill',result?'education-study-continue':'',result?'disabled':'');
+ const continueButton=button(result?'Continue →':hobby?'Record hobby skill':step===1?'Record level 0 and choose level 1':'Record study skill','education-skill',result?'education-study-continue':'','');
  const active=(result?'':step?'<h3>University skill '+step+' of 2: level '+e.value+'</h3><p>Choose two different skills: the first at level 0, the second at level 1.</p>':hobby?'<h3>Pre-career event 9: hobby skill</h3><p>Choose any allowed skill except Jack-of-all-Trades at level 0. This event applies to every pre-career path; it is not a University study award.</p>':'<h3>Study skill: level '+e.value+'</h3>')+
  '<label>'+(hobby?'Hobby skill':'Study subject')+'<select id="education-subject"><option value="">Choose a skill</option>'+educationSubjects(state).map(o=>'<option value="'+esc(o.name)+'">'+esc(o.name)+'</option>').join('')+'</select></label>'+
  '<p class="help" id="education-speciality-help"'+(result?' hidden':'')+'>'+(hobby?'Choose a base skill. No specialisation is needed at level 0.':'Choose a subject to see its allowed specialisations.')+'</p><label id="education-speciality-label"'+(result?' hidden':'')+'>'+(hobby?'Hobby skill':'Study skill or specialisation')+'<input id="education-skill" list="education-skills" maxlength="80" autocomplete="off"></label><datalist id="education-skills"></datalist>';
@@ -56,5 +56,5 @@ export function educationStudySelectionValid(state,catalog,value){
 }
 export function syncEducationStudyContinue(state,catalog,root){
  const button=root.querySelector('.education-study-continue'),input=root.querySelector('#education-skill');
- if(button&&input)button.disabled=!educationStudySelectionValid(state,catalog,input.value);
+ if(button&&input)button.disabled=!!button.dataset.busyDisabled;
 }

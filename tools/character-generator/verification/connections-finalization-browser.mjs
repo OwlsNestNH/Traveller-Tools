@@ -1,3 +1,4 @@
+import {dismissTechnicalError} from './technical-error-browser-assertions.mjs';
 // Temporary contexts and synthetic command histories only; never touches a user's browser draft.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -32,7 +33,7 @@ try{
    await page.goto(origin+(transport==='http'?'/?api=local':'/'));await page.locator('#setup-form').waitFor();await ready(page);await assertGate(page,false);
    const untouched=await stored(page);
    await page.evaluate(()=>{const button=document.createElement('button');button.id='synthetic-stale-connection';button.dataset.action='connection';button.textContent='Synthetic stale connection';document.querySelector('#sheet').append(button);});
-   await page.locator('#synthetic-stale-connection').click();assert.match(await page.locator('#message').innerText(),/Connections are available at finalization/);assert.equal(await stored(page),untouched);await page.locator('#synthetic-stale-connection').evaluate(button=>button.remove());
+   await page.locator('#synthetic-stale-connection').click();assert.match(await page.locator('#message').innerText(),/Connections are available at finalization/);assert.equal(await stored(page),untouched);await dismissTechnicalError(page);await page.locator('#synthetic-stale-connection').evaluate(button=>button.remove());
    await page.locator('#notes-connections > summary').focus();await page.keyboard.press('Enter');
    await page.locator('#character-notes').fill('Synthetic opening draft '+label);
    await page.getByRole('button',{name:'Begin character',exact:true}).click();await page.locator('[data-action="roll-statistics"]').waitFor();await ready(page);

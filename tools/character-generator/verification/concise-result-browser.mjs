@@ -1,3 +1,4 @@
+import {dismissTechnicalError} from './technical-error-browser-assertions.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -56,7 +57,7 @@ try{
    assert.equal(await page.locator('#gm-restore-form').isVisible(),true);assert.match(await downloadedActionLog(page),/Restored|restore/i);
    // Storage errors are never cleared or visually suppressed by career navigation.
    await load(fixtures.career.before);await page.locator('#notes-connections').locator('summary').click();await page.locator('#character-notes').fill('Synthetic unsaved storage warning');
-   await page.evaluate(()=>{Storage.prototype.setItem=()=>{throw Error('Synthetic storage failure');};});await page.getByRole('button',{name:'Save notes',exact:true}).click();await page.locator('#message.error').waitFor();await page.locator('[data-action=select-career][data-id="core.rogue"]').click();assert.match(await page.locator('#message.error').innerText(),/could not save/);assert.equal(await page.locator('#message').evaluate(el=>el.classList.contains('action-announcement')),false);
+   await page.evaluate(()=>{Storage.prototype.setItem=()=>{throw Error('Synthetic storage failure');};});await page.getByRole('button',{name:'Save notes',exact:true}).click();await page.locator('#message.error').waitFor();await dismissTechnicalError(page);await page.locator('[data-action=select-career][data-id="core.rogue"]').click();assert.match(await page.locator('#message.error').innerText(),/could not save/);assert.equal(await page.locator('#message').evaluate(el=>el.classList.contains('action-announcement')),false);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));if(transport==='http')assert.deepEqual(engineRequests,[]);checks.push(name);
   }finally{await context.close();}
  }

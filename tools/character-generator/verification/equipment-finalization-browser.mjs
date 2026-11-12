@@ -1,3 +1,4 @@
+import {assertRequiredWarning} from './required-action-browser-assertions.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -17,7 +18,7 @@ try{
   await page.getByRole('button',{name:'Finish character',exact:true}).click();await page.getByRole('heading',{name:'Assets & benefits',exact:true}).waitFor();
   const first=page.locator('[data-action="choose-deferred-equipment"][data-id="equipment-1"]');await first.click();const dialog=page.locator('#equipment-dialog');await dialog.waitFor({state:'visible'});assert.equal(await dialog.getAttribute('aria-labelledby'),'equipment-dialog-title');
   await page.locator('#benefit-item-id').selectOption('core.rifle');await page.keyboard.press('Escape');await dialog.waitFor({state:'detached'});assert.equal(await first.evaluate(e=>e===document.activeElement),true);assert.equal(project(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key))).state.character.assets,undefined);
-  await first.click();await page.locator('#benefit-item-id').selectOption('core.rifle');await page.locator('#book-confirm').check();await page.getByRole('button',{name:'Record outcome and continue'}).click();await page.locator('#message').filter({hasText:'equipment source'}).waitFor();assert.equal(await dialog.isVisible(),true);assert.equal(await page.locator('#benefit-item-id').inputValue(),'core.rifle');
+  await first.click();await page.locator('#benefit-item-id').selectOption('core.rifle');await page.locator('#book-confirm').check();await page.getByRole('button',{name:'Record outcome and continue'}).click();await assertRequiredWarning(page,'#book-note',/equipment source decision/);assert.equal(await dialog.isVisible(),true);assert.equal(await page.locator('#benefit-item-id').inputValue(),'core.rifle');
   await page.locator('#book-note').fill('Verified Core p. 126 Rifle and award limits.');await page.locator('#book-confirm').check();
   const controls=dialog.locator('button,input,select,textarea').filter({visible:true});await dialog.getByRole('button',{name:'Cancel',exact:true}).focus();await page.keyboard.press('Tab');assert.equal(await dialog.locator(':focus').count(),1);
   await page.screenshot({path:new URL('equipment-popup-'+width+'-'+(transport?'http':'static')+'.png',out).pathname.replace(/^\/([A-Za-z]:)/,'$1'),fullPage:true});

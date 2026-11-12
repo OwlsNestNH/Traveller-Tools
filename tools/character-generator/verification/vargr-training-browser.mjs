@@ -1,3 +1,4 @@
+import {dismissTechnicalError} from './technical-error-browser-assertions.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -20,7 +21,7 @@ try{
    await page.locator('#award-base').selectOption('Engineer');
    const values=await page.locator('#award-skill-options option').evaluateAll(nodes=>nodes.map(n=>n.value));assert.ok(values.includes('Engineer (power)'));assert.ok(!values.includes('Medic'));
    const name='vargr-training-'+width+(apiMode?'-http':'-static');await page.screenshot({path:fileURLToPath(new URL(name+'-pending.png',out)),fullPage:true});
-   await page.locator('#award-skill').fill('Medic');await page.locator('[data-action=choose-skill]').click();await page.waitForFunction(()=>!document.querySelector('#new').disabled);assert.equal(await page.locator('#training-award-options').count(),1);
+   await page.locator('#award-skill').fill('Medic');await page.locator('[data-action=choose-skill]').click();await page.waitForFunction(()=>!document.querySelector('#new').disabled);assert.equal(await page.locator('#training-award-options').count(),1);await dismissTechnicalError(page);
    await page.locator('[data-action=skill-award-source]').click();await page.locator('[data-action=retry-skill-choice]').waitFor();await page.locator('[data-action=retry-skill-choice]').click();await page.locator('#training-award-options').waitFor();
    await page.locator('#award-skill').fill('Engineer (power)');await page.locator('[data-action=choose-skill]').click();await page.locator('[data-action=advancement]').waitFor();
    const before=project(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key)));assert.equal(before.state.character.skills['Engineer (power)'],1);await page.reload();await page.locator('[data-action=advancement]').waitFor();assert.deepEqual(project(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key))),before);
