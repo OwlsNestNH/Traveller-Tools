@@ -230,7 +230,7 @@ function syncRerollOptions(form){
 function syncIdentityOptions(form){
  const species=form.elements.species.value,culture=form.elements.culture,variant=form.elements.variant;
  const imperial=['aslan','vargr'].includes(species);$('#culture-choice').hidden=!imperial;culture.disabled=!imperial;if(!imperial)culture.value='native';
- form.elements.gender.required=!!projection.state.aslanFamilyPresentation&&species==='aslan'&&culture.value==='native';
+ form.elements.gender.required=species==='aslan';
  const strains=species==='vargr';$('#variant-choice').hidden=!strains;variant.disabled=!strains;if(!strains)variant.value='standard';const aezorgh=species==='aezorgh';$('#aezorgh-roll-choice').hidden=!aezorgh;form.elements.aezorghTwoDice.disabled=!aezorgh;syncPsiOptions(form);syncRerollOptions(form);
 }
 function statCards(state,pool=false){
@@ -685,7 +685,7 @@ document.addEventListener('submit',async event=>{
  }
  if(event.target.id==='setup-form'){
   event.preventDefault();if(busy)return;const form=event.target;const values=new FormData(form);
-  if(projection.state.aslanFamilyPresentation&&values.get('species')==='aslan'&&(values.get('culture')??'native')==='native'&&!values.get('gender')){notify('Choose gender on this species selection screen before starting your Aslan.',true);form.elements.gender.focus();return;}
+  if(values.get('species')==='aslan'&&!['male','female'].includes(values.get('gender'))){notify('Choose Male or Female physical sex before starting your Aslan.',true);form.elements.gender.focus();return;}
    if(values.get('zhodaniPsi')&&(!values.get('gm')||values.get('species')!=='zhodani')){notify('The Zhodani PSI option needs GM mode and a Zhodani Traveller.',true);return;}
   if(!await send('configure',{...(values.get('physicalDice')||Object.hasOwn(projection.state.config,'physicalDice')?{physicalDice:!!values.get('physicalDice')}:{}),boons:Number(values.get('boons')),minimumReroll:!!values.get('minimumReroll'),minimumTotal:Number(values.get('minimumTotal')),allocation:!!values.get('allocation'),extras:values.getAll('extras'),...(values.get('psiGm')||Object.hasOwn(projection.state.config,'psiGm')?{psiGm:!!values.get('psiGm')}:{}),...(values.get('psiTestingWithoutEvent')||Object.hasOwn(projection.state.config,'psiTestingWithoutEvent')?{psiTestingWithoutEvent:!!values.get('psiTestingWithoutEvent')}:{}),...(values.get('flatLuck')||Object.hasOwn(projection.state.config,'flatLuck')?{flatLuck:!!values.get('flatLuck')}:{}),zhodaniPsi:!!values.get('zhodaniPsi'),aezorghTwoDice:values.get('species')==='aezorgh'&&!!values.get('aezorghTwoDice')}))return;
   if(projection.state.config.gm&&projection.state.config.academyServiceSkill&&!values.get('academyServiceSkill')&&!await send('gm-academy-training',{enabled:false}))return;
