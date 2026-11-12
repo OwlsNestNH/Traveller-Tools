@@ -1,3 +1,5 @@
+import {mountCrowIntroduction} from './crow-assistance.mjs';
+import {mountRequiredActions} from './required-action.mjs';
 import {physicalSexSelectView} from './physical-sex-setup.mjs';
 import {shareAwardLabel,readableFutureCondition,readableTrait} from './species-record-labels.mjs';
 import {educationCheckpointModel,educationCheckpointView,educationEventStoryView} from './education-event-checkpoint-view.mjs';
@@ -34,7 +36,7 @@ import {equipmentCatalogueView,syncEquipmentCatalogue} from './equipment-catalog
 let aslanManualReviewKey=null;
 import {aslanEventOutcomesView,aslanEventOutcomesSheet} from './aslan-event-outcomes-view.mjs';
 import {skillAwardView,syncAwardBase,deferredAwardsView} from './skill-award-view.mjs';
-import {educationSkillTitle,educationSkillView,syncEducationSubject,syncEducationStudyContinue,companionSkillSuggestions} from './education-skill-view.mjs';
+import {educationStudySelectionValid,educationSkillTitle,educationSkillView,syncEducationSubject,syncEducationStudyContinue,companionSkillSuggestions} from './education-skill-view.mjs';
 import {createLogViewer} from './log-viewer.mjs';
 import {prisonerEscapeTitle,prisonerEscapeView} from './prisoner-escape-view.mjs';
 import {extraCharacteristicsView,gmControlsView,syncCorrectionField,syncReplacementDice,syncCorrectionTask,correctionPayload,replacementPayload} from './character-controls.mjs';
@@ -141,9 +143,9 @@ function syncClanShareControls(savedLot){
  const person=selected.contacts.find(c=>c.id===contact.value);$('#clan-share-contact-help').textContent=kind.value==='ally'&&person?person.name+' · Contact '+(p.contacts.findIndex(item=>item.id===person.id)+1)+' · '+person.clanName:'';
  $('[data-action=redeem-clan-shares]').disabled=!p.checkpointAvailable||!selected.choice?.available||!lot||kind.value==='ally'&&!person;
  const verifyLot=$('#clan-verify-lot'),verifyTarget=$('#clan-verify-target');
- if(verifyLot){const l=p.lots.find(l=>l.id===verifyLot.value);$('#clan-verify-lot-help').textContent=l?shareAwardLabel(l,projection.state)+'. '+l.available+' held. '+l.reason:'';const sourceOnly=verifyTarget.querySelector('[value="__source"]');sourceOnly.disabled=!l?.verificationRequired;if(sourceOnly.disabled&&verifyTarget.value==='__source')verifyTarget.value='';$('#clan-verify-target-help').textContent=verifyTarget.value==='__source'?'Source only; issuing clan remains unknown.':verifyTarget.value==='__new'?'Identify another issuing clan.':p.clans.find(c=>c.id===verifyTarget.value)?.name??'';const newClan=verifyTarget.value==='__new';$('#clan-verify-new-field').hidden=!newClan;$('#clan-verify-new').disabled=!newClan||!l?.canVerify;$('[data-action=verify-clan-share-lot]').disabled=!l?.canVerify||!verifyTarget.value;}
+ if(verifyLot){const l=p.lots.find(l=>l.id===verifyLot.value);$('#clan-verify-lot-help').textContent=l?shareAwardLabel(l,projection.state)+'. '+l.available+' held. '+l.reason:'';const sourceOnly=verifyTarget.querySelector('[value="__source"]');sourceOnly.disabled=!l?.verificationRequired;if(sourceOnly.disabled&&verifyTarget.value==='__source')verifyTarget.value='';$('#clan-verify-target-help').textContent=verifyTarget.value==='__source'?'Source only; issuing clan remains unknown.':verifyTarget.value==='__new'?'Identify another issuing clan.':p.clans.find(c=>c.id===verifyTarget.value)?.name??'';const newClan=verifyTarget.value==='__new';$('#clan-verify-new-field').hidden=!newClan;$('#clan-verify-new').disabled=!newClan||!l?.canVerify;$('[data-action=verify-clan-share-lot]').disabled=!l?.canVerify;}
  syncClanAssetControls();syncLandControls();
- const verifyContact=$('#clan-verify-contact');if(verifyContact){$('#clan-contact-clan-help').textContent=p.clans.find(c=>c.id===$('#clan-contact-clan').value)?.name??'';const c=p.contacts.find(c=>c.id===verifyContact.value);$('#clan-verify-contact-help').textContent=c?c.name+' · Contact '+(p.contacts.indexOf(c)+1)+' · '+c.clanName:'';$('[data-action=verify-clan-contact]').disabled=!c?.canVerify||!$('#clan-contact-clan').value;}
+ const verifyContact=$('#clan-verify-contact');if(verifyContact){$('#clan-contact-clan-help').textContent=p.clans.find(c=>c.id===$('#clan-contact-clan').value)?.name??'';const c=p.contacts.find(c=>c.id===verifyContact.value);$('#clan-verify-contact-help').textContent=c?c.name+' · Contact '+(p.contacts.indexOf(c)+1)+' · '+c.clanName:'';$('[data-action=verify-clan-contact]').disabled=!c?.canVerify;}
 }
 function notify(message,error=false,status='info',action=false){$('#message').style.overflowWrap='anywhere';$('#message').className=error?'error':'result-'+status+(action?' action-announcement':'');$('#message').textContent=message;const popupError=$('#species-skill-error');if(popupError)popupError.textContent=error?message:'';}
 function clearActionNotice(){if($('#message').classList.contains('action-announcement'))notify('');}
@@ -249,7 +251,7 @@ function statisticsView(state){
  if(!state.pool.length)return introduction+statisticsCardsView(state,catalog,physicalDiceCards(state,{html:emptyStatisticsView(state,catalog,{esc}),esc}),{esc,infoButton:openingInfoButton})+'<div class="statistics-guidance"><strong>Start with your six characteristic rolls</strong><p>Roll the selected species dice, then review each score before continuing.</p></div>'+statisticsSummaryView(state,{esc})+'<div class="actions statistics-actions">'+button('Roll six characteristics','roll-statistics','statistics-primary')+'</div>'+controls;
  let html=introduction+statisticsCardsView(state,catalog,physicalDiceCards(state,{html:statCards(state,true),esc}),{esc,infoButton:openingInfoButton});
  if(state.statisticsComplete!==false&&(state.config.allocation||state.config.gm))html+='<div class="statistics-swap"><div class="inline-fields"><label>Swap this score<select id="swap-a">'+state.pool.map((p,i)=>'<option value="'+i+'">'+p.key+' · raw '+p.base+'</option>').join('')+'</select></label><label>With this score<select id="swap-b">'+state.pool.map((p,i)=>'<option value="'+i+'" '+(i===1?'selected':'')+'>'+p.key+' · raw '+p.base+'</option>').join('')+'</select></label>'+button('Swap scores','swap-statistics','quiet')+'</div><p class="tiny">'+(state.character.species==='aezorgh'&&!state.config.aezorghTwoDice?'Standard Aezorgh: swap one-die characteristics within their group, and DEX/INT separately. GM mode permits exceptions.':state.config.aezorghTwoDice?'Swap any raw 2D6 totals. Halving and species bonuses belong to the destination characteristic.':'Swap any of the six raw scores; species modifiers remain with their characteristics.')+(state.pool.some(p=>p.finalOverride!==undefined)?' GM-set final scores stay with their characteristics; rerolling starts a new set.':'')+'</p></div>';
- return html+statisticsSummaryView(state,{esc})+'<div class="actions statistics-actions">'+button('Keep these characteristics','accept-statistics','statistics-primary',state.pool.some(p=>p.base===null)?'disabled':'')+button(state.statisticsComplete===false?'Roll a computer set':'Reroll this set','roll-statistics','quiet',(!state.statisticsCanReroll&&state.statisticsComplete!==false?'disabled title="'+(state.config.minimumReroll?'The raw total meets the reroll threshold.':'Minimum-total rerolls are off.')+'"':''))+'</div>'+controls;
+ return html+statisticsSummaryView(state,{esc})+'<div class="actions statistics-actions">'+button('Keep these characteristics','accept-statistics','statistics-primary','')+button(state.statisticsComplete===false?'Roll a computer set':'Reroll this set','roll-statistics','quiet',(!state.statisticsCanReroll&&state.statisticsComplete!==false?'disabled title="'+(state.config.minimumReroll?'The raw total meets the reroll threshold.':'Minimum-total rerolls are off.')+'"':''))+'</div>'+controls;
 }
 function backgroundView(state){
  return backgroundSkillsView(state,backgroundDraft?.skills??[],catalog,{esc});
@@ -521,9 +523,10 @@ function render(){
  const sheetOpener=document.querySelector('[data-action="open-current-character-sheet"]');if(sheetOpener)$('#sheet').prepend(sheetOpener);
  const activePrecareerDialog=document.getElementById('precareer-dialog');if(activePrecareerDialog&&!activePrecareerDialog.querySelector('.popup-character-sheet-button')){const access=document.createElement('button');access.type='button';access.className='popup-character-sheet-button';access.dataset.action='open-current-character-sheet-popup';access.textContent='Character sheet';access.setAttribute('aria-haspopup','dialog');access.setAttribute('aria-controls','final-character-sheet');activePrecareerDialog.prepend(access);}
  const studyKey=JSON.stringify([operationGeneration,session.seed,state.education,state.pendingChoice?.selectionId]);$('#workspace').dataset.educationStudyKey=studyKey;
- if(nestedDraft?.key===studyKey&&nestedDraft.kind===eventModel?.kind){const select=$('.education-nested-label select');if(select&&[...select.options].some(o=>o.value===nestedDraft.value)){select.value=nestedDraft.value;$('.education-nested-prompt [data-action]').disabled=!select.value;}}
+ if(nestedDraft?.key===studyKey&&nestedDraft.kind===eventModel?.kind){const select=$('.education-nested-label select');if(select&&[...select.options].some(o=>o.value===nestedDraft.value)){select.value=nestedDraft.value;$('.education-nested-prompt [data-action]').disabled=false;}}
  if(educationModel?.study&&studyDraft?.key===studyKey&&[...$('#education-subject').options].some(o=>o.value===studyDraft.subject)){$('#education-subject').value=studyDraft.subject;syncEducationSubject(state,catalog,document,esc);$('#education-skill').value=studyDraft.skill;syncEducationStudyContinue(state,catalog,document);}
  $('#workspace').dataset.revision=projection.revision;
+ if(state.stage==='identity')mountCrowIntroduction(document);
  mountSpeciesSkillPopup(document);
  mountAslanFamilyPopup(document,{onRoll:async()=>{if(!await send(aslanRitePopupModel(projection.state)?'roll-aslan-rite':aslanPridePopupModel(projection.state)?'roll-aslan-pride':aslanClanPopupModel(projection.state)?'roll-aslan-clan':aslanBirthPopupModel(projection.state)?'roll-aslan-birth-order':'roll-aslan-family'))throw new Error($('#message').textContent||'The family roll could not be recorded.');},onContinue:async(index)=>{
   const rite=aslanRitePopupModel(projection.state);if(rite){if(!await send(rite.equipment?'record-aslan-rite-equipment':'acknowledge-aslan-rite'))throw new Error($('#message').textContent||'Rite continuation could not be recorded.');return;}
@@ -781,7 +784,7 @@ document.addEventListener('input',event=>{if(event.target.matches('[data-land-qu
 document.addEventListener('change',event=>{if(event.target.id==='aslan-access-route'){$('#aslan-access-confirmed').checked=false;syncAslanAccessControls();}});
 document.addEventListener('input',event=>{if(event.target.id==='aslan-access-destination')$('#aslan-access-confirmed').checked=false;});
 
-document.addEventListener('change',event=>{if(event.target.id==='aslan-access-decision'){const selected=projection.state.aslanAccessConflict?.choices.find(c=>c.id===event.target.value);$('#aslan-access-decision-help').textContent=selected?selected.name+'. '+selected.reason:'';$('[data-action=resolve-aslan-access-conflict]').disabled=!projection.state.config.gm||!selected;}});
+document.addEventListener('change',event=>{if(event.target.id==='aslan-access-decision'){const selected=projection.state.aslanAccessConflict?.choices.find(c=>c.id===event.target.value);$('#aslan-access-decision-help').textContent=selected?selected.name+'. '+selected.reason:'';$('[data-action=resolve-aslan-access-conflict]').disabled=!projection.state.config.gm;}});
 
 document.addEventListener('change',event=>{if(['life-outcome','life-funding'].includes(event.target.id))syncCoreLifeEventControls($);});
 
@@ -794,3 +797,5 @@ document.addEventListener('change',event=>{if(event.target.id==='benefit-item-id
 document.addEventListener('change',event=>{if(['credit-category','credit-item'].includes(event.target.id))syncCreditSelection(projection.state.pending,document,event.target.id==='credit-category');});
 
 document.addEventListener('input',event=>{if(event.target.id==='education-skill')syncEducationStudyContinue(projection.state,catalog,document);});
+
+mountRequiredActions({document,getState:()=>projection?.state??{},isBusy:()=>busy,backgroundSelection,studyValid:(state,value)=>educationStudySelectionValid(state,catalog,value)});

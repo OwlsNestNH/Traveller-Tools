@@ -20,8 +20,8 @@ try{
    for(const selector of ['header','.layout','footer','.toolbar','#background-orientation'])assert.ok(Math.abs((await page.locator(selector).boundingBox()).width-expectedWidth)<1,selector+' shared width at '+label);
    assert.equal(await page.locator('#background-actions').count(),0);
    for(const selector of ['#export','.file-button','#print','#simple-log-view','#log-view','#log-download','#new'])assert.equal(await page.locator(selector).isVisible(),true,selector+' remains visible');
-   const boxes=page.locator('#background-form [name=skills]'),accept=page.locator('#background-form [type=submit]');assert.equal(await accept.isDisabled(),true);
-   await boxes.nth(0).focus();await page.keyboard.press('Space');assert.equal(await boxes.nth(0).isChecked(),true);assert.equal(await boxes.nth(0).evaluate(el=>getComputedStyle(el.closest('label')).outlineStyle),'solid');assert.equal(await page.locator('.background-chips li').count(),1);assert.equal(await accept.isDisabled(),required!==1);
+   const boxes=page.locator('#background-form [name=skills]'),accept=page.locator('#background-form [type=submit]');assert.equal(await accept.isDisabled(),false);
+   await boxes.nth(0).focus();await page.keyboard.press('Space');assert.equal(await boxes.nth(0).isChecked(),true);assert.equal(await boxes.nth(0).evaluate(el=>getComputedStyle(el.closest('label')).outlineStyle),'solid');assert.equal(await page.locator('.background-chips li').count(),1);assert.equal(await accept.isDisabled(),false);
    const sheetPanel=page.locator('#background-record'),selectionPanel=page.locator('#background-selection');
    const savedBeforePanels=await page.evaluate(key=>localStorage.getItem(key),key),sheetBeforePanels=await page.locator('#sheet').textContent();
    const openPanelCount=()=>page.locator('#background-rail > details[open]').count();
@@ -43,8 +43,8 @@ try{
    // A real command rerenders the UI; pending selections remain separate from the saved record.
    await page.locator('#background-record').evaluate(el=>el.open=true);await page.locator('#gm-controls').evaluate(el=>el.open=true);await page.locator('#gm-toggle').check();await ready(page);assert.equal(await boxes.nth(0).isChecked(),true);assert.equal(await sheetPanel.evaluate(el=>el.open),true);assert.equal(await selectionPanel.evaluate(el=>el.open),false);
    for(let i=1;i<required;i++)await boxes.nth(i).check();assert.equal(await accept.isEnabled(),true);
-   await boxes.nth(required).check();assert.equal(await accept.isDisabled(),true);assert.match(await page.locator('#background-status').textContent(),/Remove 1/);await boxes.nth(required).uncheck();assert.equal(await accept.isEnabled(),true);
-   await boxes.nth(0).uncheck();assert.equal(await accept.isDisabled(),true);await boxes.nth(0).check();
+   await boxes.nth(required).check();assert.equal(await accept.isDisabled(),false);assert.match(await page.locator('#background-status').textContent(),/Remove 1/);await boxes.nth(required).uncheck();assert.equal(await accept.isEnabled(),true);
+   await boxes.nth(0).uncheck();assert.equal(await accept.isDisabled(),false);await boxes.nth(0).check();
    assert.equal(await page.locator('.background-grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),width>=1440?3:1);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
    await page.locator('#gm-controls').evaluate(el=>el.open=false);await page.locator('#background-record').evaluate(el=>el.open=false);

@@ -6,7 +6,7 @@ import {createServer} from '../server.mjs';
 import {createSession,execute,project,exportSession} from '../engine/session.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));
-const browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_EXECUTABLE?{executablePath:process.env.CHARACTER_BROWSER_EXECUTABLE}:{}),...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
+const browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
 const key='traveller-character-generator.v1',origin='http://127.0.0.1:'+server.address().port,out=new URL('./artifacts/',import.meta.url),errors=[];await mkdir(out,{recursive:true});
 function fixture(species){let s=createSession('popup-ui-'+species);for(const type of ['setup','roll-statistics','accept-statistics'])s=execute(s,{type,payload:type==='setup'?{species,...(species==='aslan'?{gender:'male'}:{}),name:'Your Traveller'}:{}}).session;return s;}
 try{
@@ -14,7 +14,7 @@ try{
   const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   await context.addInitScript(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture('aezorgh'))});
   await page.goto(origin+(http?'/?api=local':'/'));assert.match(await page.locator('#background-orientation').textContent(),/3 Pre-Career/);const dialog=page.locator('#species-skill-dialog');await dialog.waitFor();assert.equal(await dialog.evaluate(e=>e.matches(':modal')),true);
-  const confirm=dialog.getByRole('button',{name:'Confirm',exact:true});assert.equal(await confirm.isDisabled(),true);
+  const confirm=dialog.getByRole('button',{name:'Confirm',exact:true});assert.equal(await confirm.isDisabled(),false);
   assert.equal(await page.locator('#species-skill-search').evaluate(e=>e===document.activeElement),true);
   assert.equal(await dialog.locator('.species-skill-options').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length),width>760?3:1);if(width>760){assert.equal(await dialog.locator('.species-skill-options').evaluate(e=>e.scrollHeight<=e.clientHeight+1),true);assert.equal(await dialog.evaluate(e=>e.scrollHeight<=e.clientHeight+1),true);}const labels=await dialog.locator('.background-tile span').allTextContents();assert.deepEqual(labels,[...labels].sort((a,b)=>a.localeCompare(b)));
   for(const name of ['Athletics','Mechanic','Recon','Stealth','Independence','Tolerance','Rites','Jack-of-all-Trades','Telepathy','Clairvoyance','Telekinesis','Awareness','Teleportation','Technopathy'])assert.ok(!labels.includes(name));

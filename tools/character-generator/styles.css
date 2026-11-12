@@ -397,3 +397,23 @@ body[data-stage="background"] #message{max-width:var(--tool-content-width);margi
 
 /* Flavour remains ordinary readable text within the existing factual result. */
 .result-panel .outcome-tagline{font-style:italic;}
+
+/* Required actions: readable red feedback in the current workspace or modal. */
+.required-action-warning{background:#fff0f0;color:#8b1018;border:2px solid #c42b35;border-radius:8px;padding:16px;margin:0 0 20px;overflow-wrap:anywhere;text-align:left;font-size:1rem;line-height:1.5}
+.required-action-warning strong{display:block;color:#8b1018;font-weight:800;letter-spacing:.025em}
+.required-action-warning p{margin:.35em 0 0;color:#8b1018}
+.required-action-warning[hidden]{display:none}
+[aria-invalid="true"]{outline:3px solid #e44851;outline-offset:3px}
+.crow-assistance{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:.8rem;font-weight:800;letter-spacing:.06em;flex-wrap:wrap}
+.crow-assistance-image{width:56px;height:56px;object-fit:contain;flex:0 0 56px}
+.required-action-warning .crow-assistance-info{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;width:44px;height:44px;padding:0;margin:0;border:2px solid #8b1018;border-radius:50%;background:#fff;color:#8b1018;font-size:1.1rem;font-weight:800;box-shadow:none}
+.required-action-warning .crow-assistance-help{margin-top:12px;border-top:1px solid #c42b35;padding-top:10px;font-size:.95rem}
+.crow-introduction{border:1px solid #ffd15a;border-radius:8px;padding:14px 16px;margin:18px 0;background:#0a2634;color:#fff0bf}
+.crow-introduction .crow-assistance{margin-bottom:6px}
+.crow-introduction>p{margin:0;line-height:1.5;font-size:.95rem}
+.crow-introduction .crow-assistance-info{min-width:44px;min-height:44px;width:44px;height:44px;padding:0;border:1px solid #ffd15a;border-radius:50%;background:#06202d;color:#ffe19a;box-shadow:none}
+.crow-introduction-dialog{width:min(640px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-sizing:border-box;overflow-y:auto;overflow-wrap:anywhere;background:#06202d;color:#fff1ce;border:2px solid #ffd15a;border-radius:12px;padding:24px;line-height:1.6}
+.crow-introduction-dialog::backdrop{background:rgb(0 0 0 / .75)}
+.crow-introduction-dialog h2{margin:0;color:#ffd15a}.crow-expansion{font-weight:700}.crow-series{font-size:.9rem}.crow-introduction-dialog blockquote{margin:20px 0;padding-left:16px;border-left:3px solid #ffd15a;color:#ffd15a;font-weight:700}
+#aslan-family-dialog .required-action-warning .crow-assistance-info{min-width:44px;min-height:44px;width:44px;height:44px;padding:0;border:2px solid #8b1018;border-radius:50%;background:#fff;color:#8b1018;font-size:1.1rem;box-shadow:none}
+#workspace #crow-introduction-title{font-size:1.7rem;line-height:1.3;margin:0;color:#ffd15a}#workspace #crow-introduction-title::before{display:none}

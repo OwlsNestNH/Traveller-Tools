@@ -29,7 +29,7 @@ try{
   await species.selectOption('aslan');await page.locator('#setup-culture').selectOption(culture);
   // A synthetic invalid option must also be rejected by the submit handler before configure.
   await gender.evaluate(n=>{n.add(new Option('Invalid','other'));n.value='other';n.form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));});
-  assert.match(await page.locator('#message').innerText(),/Choose Male or Female/);
+  assert.match(await page.locator('.required-action-warning:visible').innerText(),/Choose Male or Female/);
   assert.equal(await page.evaluate(k=>localStorage.getItem(k),key),before);
   await gender.evaluate(n=>{n.querySelector('[value="other"]').remove();n.selectedIndex=0;});
   if(transport==='static'&&culture==='native'&&sex==='male'&&width!==320){

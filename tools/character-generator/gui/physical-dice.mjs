@@ -1,3 +1,4 @@
+import {showRequiredAction} from './required-action.mjs';
 export function physicalDiceSetting(state,{setup=false}={}){
  return '<label class="check"><input '+(setup?'name="physicalDice"':'id="gm-physical-dice"')+' type="checkbox"'+(state.config?.physicalDice?' checked':'')+'><span>Allow physical dice score entry<small>Enter dice totals in the six starting score boxes, before species modifiers. Manual entries are flagged on the character sheet and in both logs.</small></span></label>';
 }
@@ -36,7 +37,7 @@ export function mountPhysicalDiceEditor({document,getProjection,canOpen,onSave,g
  }
  async function save(focusCode){
   if(!active||saving||!canOpen())return;const {card,code}=active,input=card.querySelector('input'),error=card.querySelector('.physical-stat-error');
-  if(input.value===''||!input.validity.valid){input.setAttribute('aria-invalid','true');error.textContent='Use '+input.min+'-'+input.max+'.';error.hidden=false;return;}
+  if(input.value===''||!input.validity.valid){input.setAttribute('aria-invalid','true');showRequiredAction(document,{control:input,type:'rolls',detail:'Enter a whole raw dice total from '+input.min+' to '+input.max+'.',key:'physical-dice-'+code});return;}
   const old=getProjection().state.pool.find(p=>p.key===code),value=Number(input.value);
   if(old?.base===value&&old.physicalDiceEntered&&old.finalOverride===undefined){close();cardFor(focusCode||code)?.focus({preventScroll:true});return true;}
   saving=true;try{const ok=await onSave({code,value});if(ok){active=null;cardFor(focusCode||code)?.focus({preventScroll:true});}else if(card.isConnected){error.textContent=getError()||'Not saved.';error.hidden=false;}return ok;}finally{saving=false;nextCode=null;}
