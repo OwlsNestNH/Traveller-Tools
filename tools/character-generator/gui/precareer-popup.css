@@ -267,3 +267,12 @@
  .education-recorded-dice{gap:9px}.education-recorded-dice .aslan-family-die{width:54px;height:54px}
  .education-checkpoint-choices{display:block}
 }
+
+/* Compact original-roll evidence; the event name is already in the heading. */
+.education-checkpoint-record{display:flex;align-items:center;justify-content:space-between;gap:18px;padding-block:12px}
+.education-checkpoint-record h4{margin:0}
+.education-checkpoint-record .education-recorded-dice{margin:0;flex-wrap:nowrap;flex:none}
+@media(max-width:650px){
+ .education-checkpoint-record{flex-direction:column;align-items:flex-start;gap:10px}
+ .education-checkpoint-record .education-recorded-dice{align-self:center}
+}

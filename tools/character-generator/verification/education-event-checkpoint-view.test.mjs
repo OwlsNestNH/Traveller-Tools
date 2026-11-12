@@ -43,3 +43,7 @@ test('academy and source-assisted entry never acquire the University checkpoint 
  const academy=forceEducation(educationReady('core.academy-army'),'education-event',{},[2,3]);assert.equal(educationCheckpointModel(academy),null);
  for(const species of ['vargr','aezorgh']){const r=command(educationSetup('fallback-'+species,species),'precareer',{id:'core.university'});assert.equal(educationCheckpointModel(r),null);assert.equal(r.state.stage,'book-step');}
 });
+
+test('compact original-roll strip preserves faces without duplicating the event heading',()=>{
+ for(const row of [2,10]){const model=educationCheckpointModel(eventFixture(row)),html=educationCheckpointView(model,helpers),strip=html.match(/<section class="education-checkpoint-record">(.*?)<\/section>/s)[1];assert.match(strip,/Recorded education event/);assert.doesNotMatch(strip,new RegExp(model.eventName));assert.equal((strip.match(/data-recorded-face=/g)||[]).length,2);assert.ok(html.includes('Event '+row+' · '+model.eventName));}
+});
