@@ -18,6 +18,13 @@ export function characterSheetHistoryView(projection,session,catalog){
  const rows=characterSheetEventRows(projection,session,catalog);
  return '<section class="traveller-sheet-history"><h3>Results &amp; decisions</h3><p class="traveller-sheet-help">Recorded outcomes, with their term and source. Superseded branches stay in the full log.</p>'+(rows.length?'<ol class="traveller-sheet-timeline">'+rows.map(row=>'<li><div class="traveller-sheet-entry-heading"><span class="traveller-sheet-when">'+esc(row.termLabel)+'</span><strong>'+esc(row.title)+'</strong></div>'+(row.summary?'<p>'+esc(row.summary)+'</p>':'')+(row.details?.length?'<ul>'+row.details.map(detail=>'<li>'+esc(detail)+'</li>').join('')+'</ul>':'')+(row.rolls?.length?'<p class="traveller-sheet-rolls">'+row.rolls.map(roll=>esc(roll.label+': ['+(roll.values??roll.kept??[]).join(', ')+']'+(roll.kept&&JSON.stringify(roll.kept)!==JSON.stringify(roll.values)?' → keep ['+roll.kept.join(', ')+']':'')+(Number.isFinite(roll.modifier)&&roll.modifier?' '+sign(roll.modifier):'')+' = '+roll.total)).join(' · ')+'</p>':'')+(row.sourceLabel?'<small class="traveller-sheet-source">'+esc(row.sourceLabel)+'</small>':'')+'</li>').join('')+'</ol>':'<p>No results or decisions recorded yet.</p>')+completedTermsView(projection.state,catalog)+'</section>';
 }
+// Derive provenance only from recorded changes on the current branch.
+export function characterSheetSkillAcquisitions(rows,name){
+ return rows.flatMap(row=>(row.changes??[]).filter(change=>change.path==='skills.'+name).map(change=>{
+  const progression=Number.isInteger(change.after)?(Number.isInteger(change.before)?'Level/'+change.before+' → Level/'+change.after:'Gained Level/'+change.after):'Level change recorded';
+  return row.title+' · '+row.termLabel+' · '+progression;
+ }));
+}
 export function renderCharacterSheet({document,projection,session,catalog,record}){
  // Preserve the canonical live record's species, source-assisted and asset
  // sections. Its interactive controls have already been removed by the host.
@@ -28,14 +35,22 @@ export function renderCharacterSheet({document,projection,session,catalog,record
  const skillSection=[...record.querySelectorAll('.sheet-section')].find(section=>section.querySelector('h3')?.textContent==='Skills');
  for(const [index,li] of [...(skillSection?.querySelectorAll('li')??[])].entries()){
   const name=skills[index]?.[0];if(!name)continue;
-  const last=rows.findLast(row=>row.changes?.some(change=>change.path==='skills.'+name));
-  const badge=document.createElement('small');badge.className='traveller-sheet-acquired';badge.textContent=last?'Last changed: '+last.termLabel:'Acquisition not recorded';li.append(badge);
+  const acquisitions=characterSheetSkillAcquisitions(rows,name);
+  for(const label of acquisitions.length?acquisitions:['Acquisition not recorded']){
+   const badge=document.createElement('small');badge.className='traveller-sheet-acquired';badge.textContent=label;li.append(badge);
+  }
  }
  const heading=document.createElement('h3');heading.textContent='Current results';record.prepend(heading);
  record.classList.add('traveller-sheet-current');
  const root=document.createElement('div');root.className='traveller-sheet';
- root.innerHTML=characterSheetHeader(projection.state,catalog)+'<div class="traveller-sheet-columns"></div>';
+ root.innerHTML='<nav class="traveller-sheet-jumps" aria-label="Character sheet sections"><a href="#traveller-sheet-current">Current</a><a href="#traveller-sheet-history">History</a></nav>'+characterSheetHeader(projection.state,catalog)+'<div class="traveller-sheet-columns"></div>';
  const history=document.createElement('div');history.innerHTML=characterSheetHistoryView(projection,session,catalog);
+ root.querySelector('.traveller-sheet-overview').id='traveller-sheet-current';
+ history.firstElementChild.id='traveller-sheet-history';
+ for(const link of root.querySelectorAll('.traveller-sheet-jumps a'))link.addEventListener('click',event=>{
+  event.preventDefault();const target=root.querySelector(link.getAttribute('href'));
+  target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start'});
+ });
  root.querySelector('.traveller-sheet-columns').append(record,history.firstElementChild);
  return root;
 }

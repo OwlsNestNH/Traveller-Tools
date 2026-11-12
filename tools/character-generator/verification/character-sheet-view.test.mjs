@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {characterSheetHeader,characterSheetHistoryView} from '../gui/character-sheet-view.mjs';
+import {characterSheetHeader,characterSheetHistoryView,characterSheetSkillAcquisitions} from '../gui/character-sheet-view.mjs';
 import {api,exportSession} from '../engine/session.mjs';
 import {buildAslanOriginFixture} from './aslan-origin-fixtures.mjs';
 import {finalSheetFixture} from './final-sheet-fixtures.mjs';
@@ -21,4 +21,13 @@ test('history is available before finish and preserves medical decisions and com
 test('header preserves variant, readable partial years and configured untested PSI',()=>{
  const r=api({operation:'create',seed:'sheet-variant'});r.state.stage='precareer';r.state.character.species='vargr';r.state.character.variant='test-strain';r.state.character.age=18.5;r.state.config.extras=['PSI'];
  const html=characterSheetHeader(r.state,catalog);assert.match(html,/test-strain/);assert.match(html,/Untested/);assert.doesNotMatch(html,/Age 18\.5/);
+});
+
+test('skill provenance uses recorded source, timing and progression only',()=>{
+ const rows=[{title:'Background skills',termLabel:'Before Term 1',changes:[{path:'skills.Medic',before:null,after:0}]},{title:'University skill',termLabel:'Term 1',changes:[{path:'skills.Medic',before:0,after:1}]},{title:'Training',termLabel:'Term 2',changes:[{path:'skills.Pilot',before:null,after:0}]}];
+ const before=JSON.stringify(rows);
+ assert.deepEqual(characterSheetSkillAcquisitions(rows,'Medic'),['Background skills · Before Term 1 · Gained Level/0','University skill · Term 1 · Level/0 → Level/1']);
+ assert.deepEqual(characterSheetSkillAcquisitions(rows,'Admin'),[]);
+ assert.equal(JSON.stringify(rows),before);
+ assert.deepEqual(characterSheetSkillAcquisitions([{title:'Skill choice',termLabel:'Timing not recorded',changes:[{path:'skills.Medic',after:1}]}],'Medic'),['Skill choice · Timing not recorded · Gained Level/1']);
 });

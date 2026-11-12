@@ -331,3 +331,14 @@
 @media screen and (min-width:1101px){
  body[data-education-popup="true"] #precareer-dialog[data-panel="result"] #workspace{padding-top:16px;padding-bottom:12px}
 }
+
+/* Clan Share forms: explicit paired colors in every stage, not inherited pale
+   ink on the baseline white input background. No eligibility/rule changes. */
+@media screen {
+ #clan-share-panel :is(input:not([type=checkbox]):not([type=file]),select,textarea){background:#082536;color:#f5f7fa;border:2px solid #99edf1;color-scheme:dark}
+ #clan-share-panel :is(input,textarea)::placeholder{color:#bdd3df;opacity:1}
+ #clan-share-panel :is(input,select,textarea):disabled{background:#173341;color:#c5d6df;border-color:#7893a1;opacity:1;cursor:not-allowed}
+ #clan-share-panel option{background:#082536;color:#f5f7fa}
+ #clan-share-panel option:disabled{color:#bdd3df}
+ #clan-share-panel :is(input,select,textarea):focus-visible{outline:3px solid #ffd34b;outline-offset:3px}
+}

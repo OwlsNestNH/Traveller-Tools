@@ -121,3 +121,6 @@
 
 /* Leave outer-panel clearance while retaining full-size stacked study controls. */
 @media screen and (min-width:1101px){.university-study-pair{gap:4px}}
+
+/* Match the recorded gold Rite dice without changing the recorded faces. */
+.education-result .education-result-die{color:#ffd34b}
