@@ -1,3 +1,4 @@
+import {dismissTechnicalError} from './technical-error-browser-assertions.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {createServer} from '../server.mjs';
@@ -44,8 +45,8 @@ try{
    const fields=page.locator('[data-companion-skill]');
    await fields.nth(0).fill('Melee (unarmed)');await fields.nth(1).fill('Stealth');
    await page.getByRole('button',{name:'Record these choices',exact:true}).click();
-   await page.getByText('Level-zero awards use the base skill.',{exact:true}).waitFor();
-   assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),exportSession(knocks.session));
+   await page.locator('#crow-error-detail').getByText('Level-zero awards use the base skill.',{exact:true}).waitFor();
+   assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),exportSession(knocks.session));await dismissTechnicalError(page);
    await fields.nth(0).fill('Melee');
    await page.getByRole('button',{name:'Record these choices',exact:true}).evaluate(button=>{button.click();button.click();});
    await page.getByRole('heading',{name:'Your education term'}).waitFor();
