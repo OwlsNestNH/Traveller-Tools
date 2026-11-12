@@ -532,7 +532,7 @@ function render(){
  if(state.stage==='statistics')syncCharacterPortrait(state.character.species,(state.character.identityGender??state.character.gender)==='female'?'female':'male');
  syncCorrectionField(state,$);syncReplacementDice(projection.log,$,esc);syncCorrectionTask($);if(state.stage==='identity')syncRerollOptions($('#setup-form'));
  if(state.stage!=='precareer'&&!educationModel&&!eventModel)cancelCharacter.placeButton();
- mountCareerTemplate(document,careerTemplateModel(state,catalog,selectedCareer),{esc});
+ mountCareerTemplate(document,careerTemplateModel(state,catalog,selectedCareer),{esc,event:projection.log.at(-1),showDice:!!armyResultTagline(projection.log.at(-1),lastRollResult,state)});
  if(state.stage!=='precareer'&&!educationModel&&!eventModel)mountPreCareerPopup(document,{state});
  mountBackgroundLayout(document,state,backgroundDraft?.skills??[],catalog,{esc});
  if(state.stage==='precareer'||educationModel||eventModel)mountPreCareerPopup(document,{state,catalog,projection,session,esc,sourceLabel,generation:operationGeneration,resultModel:educationModel,eventModel});

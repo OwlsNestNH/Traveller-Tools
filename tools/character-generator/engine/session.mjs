@@ -3405,7 +3405,7 @@ export function importSession(raw) {
  need(typeof raw==='string'&&new TextEncoder().encode(raw).byteLength<=MAX_SAVE_BYTES,'Save is too large.');const session=JSON.parse(raw);project(session);return session;
 }
 export function exportSession(session) {project(session);return JSON.stringify(session,null,2);}
-export function catalog() {return {apiVersion:API_VERSION,sources:SOURCES,sourceDiscrepancies:SOURCE_DISCREPANCIES,species:SPECIES,careers:CAREERS,precareers:PRECAREERS,extraStats:EXTRA_STATS,skills:SKILLS,skillSpecialities:SPECIALITIES,backgroundSkills:BACKGROUND_SKILLS};}
+export function catalog() {return {apiVersion:API_VERSION,careerPresentation:{'core.army':{ranks:Object.fromEntries(Object.entries(RULE_PACK['core.army'].ranks).map(([track,rows])=>[track,rows.map(row=>({rank:row.rank,title:row.title,reward:careerOutcomeSummary(row.effects)+row.effects.filter(e=>e.kind==='stat'&&e.minimum!==undefined).map(e=>' Minimum '+e.name+' '+e.minimum+'.').join('')}))]))}},sources:SOURCES,sourceDiscrepancies:SOURCE_DISCREPANCIES,species:SPECIES,careers:CAREERS,precareers:PRECAREERS,extraStats:EXTRA_STATS,skills:SKILLS,skillSpecialities:SPECIALITIES,backgroundSkills:BACKGROUND_SKILLS};}
 export function developmentApi(request) {
  try {
  need(plain(request),'Invalid request.');

@@ -45,3 +45,6 @@ export function educationResultView(model,{esc,button,sourceLabel,studyHtml=''}=
  const source=model.source?'<p class="education-result-source">'+esc(sourceLabel(model.source.id,model.source.page))+'</p>':'';
  return '<section class="education-result" data-education-result="'+model.kind+'" data-education-outcome="'+model.outcome+'">'+heading+roll+details+panel+term+study+source+'</section>';
 }
+
+// Reuse the approved gold pip design for other recorded-result presentations.
+export {die as educationResultDie};

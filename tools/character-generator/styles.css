@@ -449,3 +449,6 @@ body[data-stage="background"] #message{max-width:var(--tool-content-width);margi
 @media(max-width:480px){.career-pilot-header,.career-pilot-guidance,.career-pilot-body{padding:14px}.career-pilot-header h2{font-size:1.5rem}.career-journey{gap:6px}}
 
 .career-pilot-header{color:#fff0bf}.career-pilot-header .source,.career-pilot-header .help,.career-pilot-header .eyebrow{color:#e6d29a}.career-journey li{color:#fff0bf}.career-journey [aria-current=step]{color:#081a24}.career-pilot-guidance[hidden]{display:none}.career-pilot-guidance .crow-assistance-info{background:#185876;color:#fff;border:2px solid #78bbdc;min-width:44px;width:44px;min-height:44px;padding:0}
+
+.army-recorded-dice{background:#062536;color:#fff4e8;border:1px solid #d8b76a;border-radius:10px;padding:12px;margin:12px 0}.army-recorded-dice p{color:#fff4e8}.army-dice-faces{display:flex;flex-wrap:wrap;gap:12px;color:#ffd34b}.army-dice-faces .education-result-die{width:56px;height:56px;flex:none}
+.career-pilot .result-panel .outcome-tagline{background:#062536;color:#ffe19a;padding:12px;border-radius:6px}
