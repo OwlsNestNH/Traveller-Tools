@@ -543,7 +543,7 @@ function render(){
  if(educationModel?.study&&studyDraft?.key===studyKey&&[...$('#education-subject').options].some(o=>o.value===studyDraft.subject)){$('#education-subject').value=studyDraft.subject;syncEducationSubject(state,catalog,document,esc);$('#education-skill').value=studyDraft.skill;syncEducationStudyContinue(state,catalog,document);}
  $('#workspace').dataset.revision=projection.revision;
  if(state.stage==='identity')mountCrowIntroduction(document);
- mountCareerTemplate(document,careerTemplateModel(state,catalog,selectedCareer),{esc,event:projection.log.at(-1),showDice:!!armyResultTagline(projection.log.at(-1),lastRollResult,state),state,sessionKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id])});
+ mountCareerTemplate(document,careerTemplateModel(state,catalog,selectedCareer),{esc,event:projection.log.at(-1),resultStatus:lastRollResult?.status,showDice:!!armyResultTagline(projection.log.at(-1),lastRollResult,state),state,sessionKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id])});
  mountSpeciesSkillPopup(document);
  mountAslanFamilyPopup(document,{onRoll:async()=>{if(!await send(aslanRitePopupModel(projection.state)?'roll-aslan-rite':aslanPridePopupModel(projection.state)?'roll-aslan-pride':aslanClanPopupModel(projection.state)?'roll-aslan-clan':aslanBirthPopupModel(projection.state)?'roll-aslan-birth-order':'roll-aslan-family'))throw new Error($('#message').textContent||'The family roll could not be recorded.');},onContinue:async(index)=>{
   const rite=aslanRitePopupModel(projection.state);if(rite){if(!await send(rite.equipment?'record-aslan-rite-equipment':'acknowledge-aslan-rite'))throw new Error($('#message').textContent||'Rite continuation could not be recorded.');return;}

@@ -47,5 +47,5 @@ export function mountCrowIntroduction(document){
 }
 
 export function openCrowInformation(dialog,trigger){
- if(!dialog)return;dialog._crowTrigger=trigger;dialog.showModal();dialog.querySelector('#crow-introduction-title').focus({preventScroll:true});dialog.scrollTop=0;
+ if(!dialog)return;dialog._crowTrigger=trigger;dialog.showModal();dialog.querySelector('[tabindex="-1"]')?.focus({preventScroll:true});dialog.scrollTop=0;
 }

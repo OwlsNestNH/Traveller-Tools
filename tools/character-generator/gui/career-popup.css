@@ -52,7 +52,7 @@
  #army-career-dialog .crow-assistance{justify-content:center;gap:8px;margin:0;font-size:11px;align-self:center}
  #army-career-dialog .crow-assistance-image{width:112px;height:128px;flex-basis:112px}
  #army-career-dialog .crow-assistance-info{width:44px;min-width:44px;height:44px;min-height:44px;padding:0;font-size:15px;background:#185876;border:1px solid #78bbdc;color:#fff;box-shadow:none}
- #army-career-dialog .career-crow-bubble{padding:12px 16px;border:2px solid #ff5964;border-top:3px solid #d8b76a;border-radius:10px;background:#3b0b13}
+ #army-career-dialog .career-crow-bubble{padding:12px 16px;border:2px solid #9cdbed;border-top:3px solid #d8b76a;border-radius:10px;background:#061b29}
  #army-career-dialog .career-crow-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;font-weight:800;letter-spacing:.06em;color:#e6c978}
  #army-career-dialog .career-crow-speech{border:0;padding:0;margin:6px 0 0;color:#fff4e8;font-size:21px;line-height:1.45}
  #army-career-dialog .career-pilot-guidance .crow-assistance-help{grid-column:1/-1;grid-row:2;margin:0}
@@ -99,7 +99,12 @@
 @media screen{#army-career-dialog .army-dice-calculation{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px}#army-career-dialog .army-dice-equation{font-size:44px;font-weight:800;line-height:1.2;color:#f1f5f8}}
 @media screen and (max-width:850px){#army-career-dialog .army-dice-equation{font-size:30px}#army-career-dialog .army-dice-calculation{gap:8px}}
 
-@media screen{.army-mobile-sheet{display:none}#army-career-dialog[data-career-template="career-selection"] .choice-list{max-height:360px;overflow:auto;padding:2px 8px 2px 2px;scrollbar-color:#79a7bb #071d2a}#army-career-dialog[data-career-template="career-selection"] .career-choice-row .choice{min-height:76px;font-size:20px}}
+@media screen{.army-mobile-sheet{display:none}#army-career-dialog[data-career-template="career-selection"] .choice-list{grid-template-columns:repeat(4,minmax(0,1fr));max-height:none;overflow:visible;padding:2px}#army-career-dialog[data-career-template="career-selection"] .career-choice-row .choice{min-height:76px;font-size:20px}}
 @media screen and (max-width:850px){#army-career-dialog #workspace{padding-top:78px}#army-career-dialog .army-mobile-sheet{display:inline-flex;position:absolute;top:0;right:0;min-height:52px;padding:10px 18px;font-size:20px}#army-career-close{top:76px}#army-career-dialog[data-career-template="career-selection"] .career-choice-row .choice{min-height:70px;font-size:20px}}
 
 @media screen{#army-career-dialog #step-title:focus{outline:none}}
+
+@media screen{#army-career-dialog .career-pilot-guidance[data-tone="success"] .career-crow-bubble{background:#103824;border-color:#78d49a;border-top-color:#d8b76a}#army-career-dialog .career-pilot-guidance[data-tone="failure"] .career-crow-bubble{background:#3b0b13;border-color:#ff5964;border-top-color:#d8b76a}#army-career-dialog .career-crow-tone{color:#fff;font-size:12px;margin-left:auto}#army-career-dialog[data-career-template="career-selection"] .career-choice-row .choice{font-size:18px;min-height:76px;padding:10px 6px}}
+@media screen and (max-width:850px){#army-career-dialog[data-career-template="career-selection"] .choice-list{grid-template-columns:repeat(2,minmax(0,1fr))}#army-career-dialog[data-career-template="career-selection"] .career-choice-row .choice{font-size:17px;min-height:88px}#army-career-dialog .career-crow-heading{flex-wrap:wrap}}
+
+@media screen{#army-rule-information{width:min(620px,calc(100vw - 32px));box-sizing:border-box;max-height:calc(100dvh - 32px);overflow:auto;background:#061b29;color:#f5f7fa;border:2px solid #9cdbed;border-radius:14px;padding:24px}#army-rule-information::backdrop{background:#000a}#army-rule-information h2{color:#ffd34b;font-size:26px}#army-rule-information p{font-size:18px;line-height:1.5}#army-rule-information a{color:#9cdbed;display:inline-flex;align-items:center;min-height:44px}#army-rule-information .army-rule-aside{font-style:italic}#army-rule-information button{display:block;margin-top:16px;min-height:48px}#army-rule-information h2:focus{outline:none}}
