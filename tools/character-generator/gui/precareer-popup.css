@@ -193,3 +193,7 @@
  .education-graduation-prompt .education-event-heading>.education-prompt-info{margin-left:56px}
  .education-graduation-prompt .graduation-formula{font-size:clamp(27px,8vw,36px)}
 }
+.education-potential-label{color:#ffd34b;font-weight:750}
+#precareer-dialog .education-potential-rules{display:inline-flex;gap:12px;align-items:center;justify-content:center;min-height:48px;font-size:22px;border:0;background:transparent;color:#f5f7fa;padding:6px 12px}
+#precareer-dialog .education-potential-decline{display:block;width:100%;min-height:60px;padding:10px 16px;border:2px solid #99edf1;border-radius:16px;background:#082536;color:#f5f7fa;font-size:29px;font-weight:750}
+@media(max-width:650px){#precareer-dialog .education-potential-rules{font-size:19px}#precareer-dialog .education-potential-decline{font-size:25px}}

@@ -25,9 +25,22 @@ const signed=value=>value>=0?'+'+value:String(value);
 const diceArt='<svg class="admission-dice" viewBox="0 0 80 80" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><path d="M12 30 49 17 68 43 32 58Z M12 30l6 32 24 12 26-31 M32 58l10 16 M49 17l7 31 M5 18l-3-7 M67 18l7-8 M72 62l6 3"/><path d="M25 32h1 M42 28h1 M38 42h1 M24 49h1 M27 60h1 M50 60h1 M59 50h1" stroke-width="6"/></g></svg>';
 // This prompt changes presentation only; the existing command owns all event effects.
 export function educationEventModel(state,projection){
+ const potential=educationPotentialModel(state);if(potential)return potential;
  if(projection?.educationGraduationPreview)return {name:'University',kind:'graduation',preview:projection.educationGraduationPreview};
  return state?.stage==='education-event'&&state.character.educations?.[state.education]?.id==='core.university'?{name:'University'}:null;
 }
+export function educationPotentialModel(state){
+ const record=state?.character.educations?.[state.education],choice=state?.pendingChoice,options=choice?.options,effects=options?.[0]?.effects;
+ if(state?.pending||state?.effectsQueue?.length||state?.effectNext!=='education-graduation'||state?.character.psionicLoss?.permanent||record?.graduationAllowed!==true)return null;
+ if(state?.stage!=='effect-choice'||record?.id!=='core.university'||record.completed||record.event!==2||record.entry?.success!==true||record.entry?.manual||choice?.kind!=='choice'||choice.source?.id!=='core'||choice.source?.page!==17||options?.length!==2||effects?.length!==2||options[0].available===false||options[1].available===false||options[1].effects?.length!==0)return null;
+ if(Object.keys(effects[0]).length!==3||Object.keys(effects[1]).length!==4||options[0].label!=='Test potential'||options[1].label!=='Decline')return null;
+ if(effects[0].kind!=='psionic-test'||effects[0].termPenalty!=='completed-career-terms'||effects[1].kind!=='career-permission'||effects[1].career!=='core.psion'||effects[1].scope!=='future-terms'||effects.some(e=>e.source?.id!=='core'||e.source?.page!==17))return null;
+ return {name:'University',kind:'potential',recorded:Object.hasOwn(state.character.stats,'PSI')};
+}
+export function educationPotentialView(model){
+ return '<section class="education-event-prompt education-potential-prompt"><div class="education-event-heading">'+icon('core.university')+'<h3>University education event</h3></div><section class="education-event-content"><p class="education-potential-label">Event 2 · Psionic potential</p><h4>'+(model.recorded?'Use your recorded psionic potential?':'Test your psionic potential?')+'</h4><p>'+(model.recorded?'Use your recorded PSI without another roll.':'Roll 2D to determine PSI.')+' Accepting permits a future Psion career attempt, not admission or training.</p><button type="button" class="education-potential-rules" data-education-info="potential"><span class="precareer-info-icon" aria-hidden="true">i</span> Rules and consequences</button></section><button type="button" data-action="choose-effect" data-index="0" class="education-event-roll">'+(model.recorded?icon('core.university'):diceArt)+'<span>'+(model.recorded?'Use recorded PSI':'Test potential · Roll 2D')+'</span>'+(model.recorded?'':diceArt)+'</button><button type="button" data-action="choose-effect" data-index="1" class="education-potential-decline">Decline</button><p class="education-event-agency">'+(model.recorded?'Your recorded PSI is kept. No potential test is rolled.':'No potential test is rolled until you choose Test.')+'</p></section>';
+}
+
 export function educationEventView(){
  return '<section class="education-event-prompt"><div class="education-event-heading">'+icon('core.university')+'<div><h3>University education event</h3><p>Your initial study skills and EDU gain are recorded.</p></div></div><section class="education-event-content"><h4>What happened during your studies?</h4><p>Roll 2D for one education event.</p><p>Resolve its outcome and any choices before graduation.</p></section><button type="button" data-action="education-event" class="education-event-roll">'+diceArt+'<span>Roll education event</span>'+diceArt+'</button><p class="education-event-agency">You choose when to roll. Nothing has been rolled yet.</p></section>';
 }
@@ -139,6 +152,11 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  info._restoreResult=info.querySelector('#precareer-information-result').innerHTML;
  info.querySelector('#precareer-information-result').innerHTML=calculation?'<p>Roll two dice and add your current '+esc(p.stat)+' characteristic modifier ('+esc(signed(p.modifier))+'). Graduation requires '+esc(p.target)+'+; honours requires '+esc(p.honoursTarget)+'+.</p>':'<p>Your initial awards and education event are already recorded. Successful graduation adds the existing study-skill and EDU awards, plus the applicable graduate career benefits. Honours improves the applicable career benefits.</p><p>If you do not graduate, your initial awards and resolved event gains are not removed by this result.</p>';
  openInfo('result',calculation?'How graduation is calculated':'What graduation changes',trigger);
+ });
+ if(eventModel?.kind==='potential')workspace.querySelector('[data-education-info="potential"]').addEventListener('click',event=>{
+ info._restoreResult=info.querySelector('#precareer-information-result').innerHTML;
+ info.querySelector('#precareer-information-result').innerHTML='<p>Without recorded PSI, Test potential rolls 2D and reduces the result by completed career terms, not education terms. Recorded PSI is reused without another roll.</p><p>Accepting also permits a future Psion career attempt. It does not grant admission, training or talents. Declining grants neither a potential test nor that permission. Graduation remains separate.</p><p>Core Rulebook Update 2022 · p. 17</p>';
+ openInfo('result','Rules and consequences',event.currentTarget);
  });
  if(resultModel||eventModel)workspace.querySelector('#precareer-dismiss').textContent='Close';
  if(eventModel){for(const small of workspace.querySelectorAll('.precareer-information-rows small'))small.remove();if(dialog.open&&!dialog.matches(':modal')){dialog.close();open();}}

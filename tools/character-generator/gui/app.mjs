@@ -1,4 +1,4 @@
-import {educationEventModel,educationEventView,educationGraduationView} from './precareer-popup.mjs';
+import {educationEventModel,educationEventView,educationGraduationView,educationPotentialModel,educationPotentialView} from './precareer-popup.mjs';
 import {educationResultModel} from './education-result-model.mjs';
 import {educationResultView} from './education-result-view.mjs';
 import {aslanRitePopupModel,aslanRitePopupView,mountAslanRiteInformation,riteTagKey} from './aslan-rite-popup.mjs';
@@ -437,7 +437,7 @@ function stageView(state,insideEquipmentDialog=false){
  case 'failed-entry':return fallbackView(state,{esc,button});
  case 'book-step':return state.pending?.kind==='aslan-origin-source'?aslanOriginSourceView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-historical-entry'?aslanHistoricalDecisionView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-outlaw-restoration'?aslanOutlawRestorationView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-restoration'?aslanRestorationView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-officer-status'?aslanOfficerStatusView(state,{esc,button,sourceLabel}):bookView(state);
  case 'benefit-wager':return benefitWagerView(state,{esc,button,sourceLabel});
- case 'effect-choice':if(state.prisonerEscape)return prisonerEscapeView(state.prisonerEscape,{esc,button});return (state.lifeEventPresentation?'<h3>'+esc(state.lifeEventPresentation.title)+'</h3>':'')+'<p>'+esc(trainingContext(state)?.description??(isBasicTrainingChoice(state)?'Choose one skill at level 0.':state.lifeEventPresentation?.description??state.pendingChoice.label??'Choose the outcome you want to apply.'))+'</p>'+'<div class="choice-list">'+state.pendingChoice.options.map((option,index)=>option.available===false?'<p class="help">'+esc(option.label)+': '+esc(option.reason)+'</p>':option.information?trainingChoiceView(choiceLabel(option),option.information,'choose-effect','data-index="'+index+'"',{esc,button}):button(esc(state.lifeEventPresentation?.optionLabels?.[index]??choiceLabel(option)),'choose-effect','choice','data-index="'+index+'"')).join('')+'</div>'+(state.pendingChoice.unavailableOptions??[]).map(option=>'<p class="help">'+esc(option.label)+': '+esc(option.reason)+'</p>').join('');
+ case 'effect-choice':if(educationPotentialModel(state))return educationPotentialView(educationPotentialModel(state));if(state.prisonerEscape)return prisonerEscapeView(state.prisonerEscape,{esc,button});return (state.lifeEventPresentation?'<h3>'+esc(state.lifeEventPresentation.title)+'</h3>':'')+'<p>'+esc(trainingContext(state)?.description??(isBasicTrainingChoice(state)?'Choose one skill at level 0.':state.lifeEventPresentation?.description??state.pendingChoice.label??'Choose the outcome you want to apply.'))+'</p>'+'<div class="choice-list">'+state.pendingChoice.options.map((option,index)=>option.available===false?'<p class="help">'+esc(option.label)+': '+esc(option.reason)+'</p>':option.information?trainingChoiceView(choiceLabel(option),option.information,'choose-effect','data-index="'+index+'"',{esc,button}):button(esc(state.lifeEventPresentation?.optionLabels?.[index]??choiceLabel(option)),'choose-effect','choice','data-index="'+index+'"')).join('')+'</div>'+(state.pendingChoice.unavailableOptions??[]).map(option=>'<p class="help">'+esc(option.label)+': '+esc(option.reason)+'</p>').join('');
  case 'skill-choice':return skillAwardView(state,catalog,{esc,button,sourceLabel,skillChoiceProgress});
 
  case 'training':return '<p>'+esc(trainingContext(state)?.description??'Choose an available training table. The rules engine will roll and apply its result.')+'</p><div class="choice-list">'+state.trainingOptions.map(t=>trainingChoiceView(t.name,t.information,'training','data-table="'+esc(t.id)+'"',{esc,button})).join('')+'</div>';
@@ -597,7 +597,7 @@ document.addEventListener('click',async event=>{
  }
   if(action==='injury-loss')return send(action,{index:Number(el.dataset.index)});
   if(action==='injury-treatment')return send(action,{restore:Object.fromEntries([...document.querySelectorAll('[data-injury-restore]')].map(input=>[input.dataset.injuryRestore,Number(input.value)])),inService:$('#injury-in-service').checked});
-  if(action==='choose-effect')return send(action,{index:Number(el.dataset.index)});
+  if(action==='choose-effect'){if(educationPotentialModel(projection.state)&&(event.detail>1||el.disabled))return;return send(action,{index:Number(el.dataset.index)});}
  if(action==='allocate-specializations')return send(action);
  if(action==='choose-skill')return send(action,{name:$('#award-skill').value});
  if(['education-event','education-graduation'].includes(action)){if(event.detail>1||el.disabled)return;return send(action);}

@@ -71,6 +71,16 @@ try{
    const afterEventRaw=await saved(p),afterEvent=JSON.parse(afterEventRaw),eventCommand={type:'education-event',payload:{}};assert.equal(afterEvent.events.length,eventSession.events.length+1);assert.deepEqual(afterEvent.events.at(-1).command,eventCommand);
    const expectedEvent=execute(eventSession,eventCommand,{id:afterEvent.events.at(-1).id,expectedRevision:eventSession.events.length});assert.equal(afterEventRaw,exportSession(expectedEvent.session),'Explicit Roll must preserve the complete existing event command, including secondary mechanics, without duplicate rolls or awards');if(transport==='http')assert.equal(requests.length,eventRequestCount+1);
 
+   // Approved Event 2 choice: explicit test or recorded PSI, never automatic training.
+   for(const recorded of [false,true]){
+    let potential=forceEducation(educationReady(),'education-event',{},[1,1]);if(recorded)potential=command(potential,'gm-override',{field:'stat.PSI',value:8,reason:'Synthetic recorded PSI'});
+    for(const index of [0,1]){await load(p,potential);await p.locator('.education-potential-prompt').waitFor();const potentialRaw=await saved(p);assert.match(await p.locator('.education-potential-prompt').innerText(),recorded?/Use recorded PSI/:/Test potential · Roll 2D/);
+     await p.locator('[data-education-info=potential]').click();await p.locator('#precareer-information-close').click();await dismiss(p);await resume(p);await p.reload();await ready(p);await p.locator('.education-potential-prompt').waitFor();assert.equal(await saved(p),potentialRaw);await fit(p);if(index===0)await shot(p,'university-potential-'+(recorded?'recorded':'test')+'-'+transport,width);
+     await p.locator('.education-potential-prompt [data-index="'+index+'"]').evaluate(el=>{el.click();el.click();});await p.waitForFunction(({key,n})=>JSON.parse(localStorage.getItem(key)).events.length===n+1&&!document.querySelector('#export').disabled,{key,n:potential.session.events.length});
+     const afterRaw=await saved(p),after=JSON.parse(afterRaw),choiceCommand={type:'choose-effect',payload:{index}};assert.deepEqual(after.events.at(-1).command,choiceCommand);assert.equal(afterRaw,exportSession(execute(potential.session,choiceCommand,{id:after.events.at(-1).id,expectedRevision:potential.session.events.length}).session));if(recorded||index===1)assert.equal(project(after).state.rng,potential.state.rng);
+    }
+   }
+
    // Graduation preview is current evidence, never a roll or award on navigation.
    let graduation=forceEducation(educationReady(),'education-event',{},[2,3]);graduation=command(graduation,'gm-override',{field:'stat.INT',value:8,reason:'Synthetic preview INT'});await load(p,graduation);await p.locator('.education-graduation-prompt').waitFor();const graduationRaw=await saved(p);
    assert.match(await p.locator('.graduation-formula').innerText(),/Roll 2D \+ 0/);assert.match(await p.locator('.education-graduation-prompt').innerText(),/INT 8/);
