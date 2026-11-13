@@ -1,3 +1,5 @@
+import {academyTrainingModel} from './academy-training-model.mjs';
+export {academyTrainingModel} from './academy-training-model.mjs';
 import {educationCheckpointModel} from './education-event-checkpoint-view.mjs';
 import {aslanFamilyDie} from './aslan-family-popup.mjs';
 import {currentActionNumbers} from './final-sheet-history.mjs';
@@ -27,6 +29,7 @@ export function preCareerChoicesView(state,catalog,{esc,button}){
 const signed=value=>value>=0?'+'+value:String(value);
 // This prompt changes presentation only; the existing command owns all event effects.
 export function educationEventModel(state,projection){
+ const training=academyTrainingModel(state);if(training)return training;
  const checkpoint=educationCheckpointModel(projection);
  const potential=educationPotentialModel(state);if(potential)return potential;
  const nested=educationNestedChoiceModel(state);if(nested)return nested;

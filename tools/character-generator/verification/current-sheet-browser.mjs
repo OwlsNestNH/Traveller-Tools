@@ -33,6 +33,11 @@ try{
    await dialog.getByRole('link',{name:'History',exact:true}).click();
    assert.equal(await page.evaluate(()=>document.activeElement.id),'traveller-sheet-history');
    assert.ok(await dialog.locator('.traveller-sheet-history').evaluate(el=>{const r=el.getBoundingClientRect(),d=el.closest('dialog').getBoundingClientRect();return r.top>=d.top&&r.top<d.bottom;}));
+   const termGroups=dialog.locator('.traveller-sheet-term');assert.ok(await termGroups.count()>0);assert.equal(await termGroups.evaluateAll(ns=>ns.every(n=>!n.open)),true);
+   const firstGroup=termGroups.first(),firstSummary=firstGroup.locator('summary');await firstSummary.focus();await page.keyboard.press('Enter');assert.equal(await firstGroup.evaluate(n=>n.open),true);assert.equal(await firstGroup.locator('.traveller-sheet-timeline').isVisible(),true);assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),before);
+   await dialog.screenshot({path:fileURLToPath(new URL('current-sheet-'+label+'-history-expanded.png',out))});
+   await page.keyboard.press('Space');assert.equal(await firstGroup.evaluate(n=>n.open),false);
+   await page.evaluate(()=>window.dispatchEvent(new Event('beforeprint')));assert.equal(await termGroups.evaluateAll(ns=>ns.every(n=>n.open)),true);await page.evaluate(()=>window.dispatchEvent(new Event('afterprint')));assert.equal(await termGroups.evaluateAll(ns=>ns.every(n=>!n.open)),true);
    await dialog.screenshot({path:fileURLToPath(new URL('current-sheet-'+label+'-history.png',out))});
    await dialog.getByRole('link',{name:'Current',exact:true}).click();
    assert.equal(await page.evaluate(()=>document.activeElement.id),'traveller-sheet-current');

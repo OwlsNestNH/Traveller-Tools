@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {createServer} from '../server.mjs';
+import {api,exportSession} from '../engine/session.mjs';
+import {educationSetup,forceEducation} from './education-result-fixtures.mjs';
+import {assignmentSetup,run} from './assignment-fixtures.mjs';
+const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
+const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const browser=await chromium.launch({headless:true}),base='http://127.0.0.1:'+server.address().port+'/',key='traveller-character-generator.v1',out=new URL('./artifacts/',import.meta.url);await mkdir(out,{recursive:true});
+const fixture=run(assignmentSetup('imperial-template-review',10),'skip-precareer'),errors=[],checks=[];
+const idle=p=>p.waitForFunction(()=>!document.getElementById('export').disabled);
+try{for(const width of [1440,390]){const p=await browser.newPage({viewport:{width,height:1000}});p.on('pageerror',e=>errors.push(e.message));await p.goto(base);await p.locator('#setup-form').waitFor();await p.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await p.reload();await idle(p);const raw=await p.evaluate(k=>localStorage.getItem(k),key);
+ for(const id of ['core.navy','core.agent','core.citizen','core.drifter','core.entertainer','core.marine','core.merchant','core.noble','core.rogue','core.scholar','core.scout']){
+  await p.locator('[data-action=select-career][data-id="'+id+'"]').click();const career=api({operation:'catalog'}).careers.find(c=>c.id===id);assert.equal(await p.locator('body').getAttribute('data-career-shell'),'imperial');assert.equal(await p.getByRole('radiogroup',{name:career.name+' specialty',exact:true}).getByRole('radio').count(),career.assignments.length);assert.equal(await p.locator('.career-pilot table').count(),0);
+  for(const assignment of career.assignments){await p.locator('[data-army-specialty="'+assignment.id+'"]').click();assert.equal(await p.locator('#career-assignment').inputValue(),assignment.id);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);assert.ok(await p.locator('.army-specialty-skills li').count()>0);await p.getByRole('button',{name:career.name+' rules and source information',exact:true}).click();const info=p.locator('#army-rule-information');await info.waitFor({state:'visible'});assert.match(await info.innerText(),new RegExp('p\\. '+career.page));assert.equal(await info.locator('.army-rule-specialty h3').innerText(),assignment.name);assert.equal(await info.locator('img').getAttribute('src'),'./assets/crow-technician.png');const close=info.getByRole('button',{name:'Close '+career.name+' rule information',exact:true});await info.evaluate(n=>n.scrollTop=n.scrollHeight);const box=await close.boundingBox();assert.ok(box.y>=0&&box.y+box.height<=1000);
+   if(id==='core.navy'){await p.screenshot({path:new URL('imperial-navy-'+assignment.id+'-info-'+width+'.png',out).pathname});}
+   await p.keyboard.press('Escape');assert.equal(await p.getByRole('button',{name:career.name+' rules and source information',exact:true}).evaluate(n=>n===document.activeElement),true);
+   if(id==='core.navy'){await p.locator('img:visible').evaluateAll(ns=>Promise.all(ns.map(n=>n.decode().catch(()=>{}))));await p.screenshot({path:new URL('imperial-navy-'+assignment.id+'-choice-'+width+'.png',out).pathname,fullPage:true});}
+  }
+  await p.locator('#army-career-close').click();await p.locator('#army-career-resume').click();assert.equal(await p.locator('#career-assignment').inputValue(),career.assignments.at(-1).id);await p.locator('[data-action=career-list]').click();assert.equal(await p.evaluate(k=>localStorage.getItem(k),key),raw);checks.push({width,id,specialties:career.assignments.length,preserved:true,info:true});
+ }
+ const academy=forceEducation(educationSetup('academy-crow-review'),'precareer',{id:'core.academy-army'},[6,6]);
+ for(const [index,name,other] of [[0,'Drive','Vacc Suit'],[1,'Vacc Suit','Drive']]){
+  await p.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(academy.session)});await p.reload();await idle(p);
+  assert.equal(await p.locator('body').getAttribute('data-education-popup'),'true');assert.equal(await p.locator('#precareer-dialog').evaluate(n=>n.matches(':modal')),true);assert.match(await p.locator('.academy-training-crow').innerText(),/Crow says.*training skill at level 0/s);assert.equal(await p.locator('#workspace').getByText('choose an event outcome',{exact:false}).count(),0);assert.deepEqual(await p.locator('[data-action=choose-effect]').allTextContents(),['Drive','Vacc Suit']);
+  await p.locator('.academy-training-crow img').evaluate(n=>n.decode());if(index===0)await p.screenshot({path:new URL('imperial-academy-training-'+width+'.png',out).pathname});
+  const before=JSON.parse(await p.evaluate(k=>localStorage.getItem(k),key));await p.getByRole('button',{name,exact:true}).evaluate(n=>{n.click();n.click();});await idle(p);const accepted=await p.evaluate(k=>localStorage.getItem(k),key),after=api({operation:'import',raw:accepted});assert.equal(after.session.events.length,before.events.length+1);assert.equal(after.state.character.skills[name],0);assert.equal(after.state.character.skills[other],undefined);assert.equal(await p.locator('.education-result-crow img').count(),1);assert.match(await p.locator('.education-result-crow').innerText(),/Crow says/);
+  if(index===0)await p.screenshot({path:new URL('imperial-academy-admission-crow-'+width+'.png',out).pathname});await p.reload();await idle(p);assert.equal(await p.evaluate(k=>localStorage.getItem(k),key),accepted);checks.push({width,academyChoice:name,repeated:true,reload:true,crow:true});
+ }
+ await p.close();}
+ assert.deepEqual(errors,[]);await writeFile(new URL('imperial-template-status.json',out),JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({checks,errors}));}finally{await browser.close();server.closeAllConnections();await new Promise(r=>server.close(r));}

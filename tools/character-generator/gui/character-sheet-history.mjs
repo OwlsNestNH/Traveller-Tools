@@ -40,3 +40,15 @@ export function characterSheetEventRows(projection,session,catalog){
   return {number:event.number,title,summary,details,rolls:event.rolls??[],termLabel:characterSheetTermLabel(projection.characterSheetTiming?.[event.number]),timing:projection.characterSheetTiming?.[event.number]??null,sourceLabel:sources.join(' · '),changes:event.changes??[]};
  }).filter(row=>row.summary||row.details.length||row.rolls.length);
 }
+
+// Group only by recorded timing. Unknown timing stays explicit rather than
+// being guessed from a later career or the character's current term.
+export function characterSheetTermGroups(rows){
+ const groups=new Map();
+ for(const row of rows){
+  const timing=row.timing,known=Number.isInteger(timing?.term)&&timing.term>0&&['before','term','after'].includes(timing.phase);
+  const label=!known?'Timing not recorded':timing.phase==='before'&&timing.term===1?'Pre-Term':'Term '+timing.term;
+  if(!groups.has(label))groups.set(label,{label,rows:[]});groups.get(label).rows.push(row);
+ }
+ return [...groups.values()];
+}

@@ -1,3 +1,4 @@
+import {crowSpeakingPanel} from './crow-speaking-panel.mjs';
 // Pure presentation. The caller supplies verified recorded results and benefits.
 // No rule imports, random selection, state transitions, or fabricated dice.
 const outlines={
@@ -26,7 +27,7 @@ export function educationResultView(model,{esc,button,sourceLabel,studyHtml=''}=
  const target=honours&&Number.isInteger(model.honoursTarget)?'Honours '+model.honoursTarget+'+':'Target '+model.target+'+';
  const modifier=(model.modifier<0?'− ':'+ ')+Math.abs(model.modifier);
  const diceLabel=dice.join(' + ')+' '+modifier+' = '+model.total;
- const heading='<div class="education-result-heading">'+icon('cap')+'<h3>'+esc(model.name)+' '+model.kind+'</h3></div><div class="education-result-headline">'+icon(honours?'honours':failed?'failure':'success','education-result-status')+'<h4>'+headline+'</h4></div>'+(model.tagline?'<p class="education-result-tagline">'+esc(model.tagline)+'</p>':'');
+ const heading='<div class="education-result-heading">'+icon('cap')+'<h3>'+esc(model.name)+' '+model.kind+'</h3></div><div class="education-result-headline">'+icon(honours?'honours':failed?'failure':'success','education-result-status')+'<h4>'+headline+'</h4></div>'+(model.tagline?crowSpeakingPanel({message:model.tagline,type:'skills',tone:failed?'failure':'success',className:'education-result-crow education-result-tagline'}):'');
  const roll='<div class="education-result-roll"><div class="education-result-equation" role="img" aria-label="'+esc(diceLabel)+'">'+die(dice[0])+'<span aria-hidden="true">+</span>'+die(dice[1])+'<span class="education-result-equation-tail" aria-hidden="true">'+modifier+' = '+esc(model.total)+'</span></div><p>Total '+esc(model.total)+' · '+esc(target)+' · '+status+'</p></div>';
  const details=(model.details??[]).length?'<div class="education-result-details">'+rows(model.details,esc)+'</div>':'';
  let panel='';

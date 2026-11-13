@@ -102,3 +102,11 @@ test('lawyer appeals classify recorded decisions, not cash spending, declined of
  const before=lawyerFixture({cash:36000}),after=lawyerRun(before,'resolve-prisoner-lawyer',{outcome:'hire',level:6});
  assert.equal(rollResult(after.log.at(-1),after.state,{}).status,'success');assert.match(rollResult(after.log.at(-1),after.state,{}).text,/Lawyer appeal.*succeeded/);
 });
+
+test('native consequence checks require canonical recorded dice and consistent outcome evidence',async()=>{
+ const {recordedConsequenceCheck}=await import('../gui/check-outcome.mjs');
+ const event={type:'roll-borrowed-event',summary:'EDU check result 8. 9 against 8+: succeeded.',rolls:[{label:'EDU check',values:[5,3],total:8}]};
+ assert.deepEqual(recordedConsequenceCheck(event),{label:'EDU check',natural:8,total:9,target:8,success:true});
+ for(const altered of [{...event,type:'resolve-book'},{...event,summary:'A note: '+event.summary},{...event,summary:'EDU check result 8. 7 against 8+: succeeded.'},{...event,rolls:[{values:[6,3],total:8}]},{...event,rolls:[...event.rolls,...event.rolls]}])assert.equal(recordedConsequenceCheck(altered),null);
+ assert.equal(recordedConsequenceCheck({...event,summary:'EDU check result 8. 7 against 8+: failed.'}).success,false);
+});

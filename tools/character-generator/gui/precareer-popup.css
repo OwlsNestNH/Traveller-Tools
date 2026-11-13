@@ -342,3 +342,25 @@
  #clan-share-panel option:disabled{color:#bdd3df}
  #clan-share-panel :is(input,select,textarea):focus-visible{outline:3px solid #ffd34b;outline-offset:3px}
 }
+.education-result-crow{display:flex;gap:18px;align-items:center;margin:16px 0}
+.education-result-crow img{width:144px;height:144px;object-fit:contain;flex:0 0 144px}
+.education-result-crow .education-result-tagline{margin:0;padding:14px;border:1px solid #9cdbed;border-radius:10px;color:#f5f7fa;background:#061b29}
+.education-result-tagline>span{display:block;color:#ffd34b;font-size:13px;font-weight:700;margin-bottom:8px}
+#precareer-dialog[data-education-kind="academy-training"] .choice-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#precareer-dialog[data-education-kind="academy-training"] .choice-list .choice{min-height:56px;font-size:20px}
+@media(max-width:600px){.education-result-crow{gap:10px}.education-result-crow img{width:112px;height:128px;flex-basis:112px}.education-result-crow .education-result-tagline{padding:10px}}
+.academy-training-crow{display:flex;gap:18px;align-items:center;margin:16px 0}
+.academy-training-crow img{width:144px;height:144px;object-fit:contain;flex:0 0 144px}
+.academy-training-crow blockquote{margin:0;padding:16px;border:1px solid #9cdbed;border-radius:10px;background:#061b29;color:#f5f7fa}
+.academy-training-crow blockquote>strong{color:#ffd34b}
+@media(max-width:600px){.academy-training-crow{gap:10px}.academy-training-crow img{width:112px;height:128px;flex-basis:112px}.academy-training-crow blockquote{padding:10px}}
+.crow-speaking-panel{display:flex;gap:18px;align-items:center;margin:16px 0}
+.crow-speaking-panel>img{width:144px;height:144px;object-fit:contain;flex:0 0 144px}
+.crow-speaking-panel>blockquote{margin:0;min-width:0;padding:16px;border:1px solid #9cdbed;border-radius:10px;background:#061b29;color:#f5f7fa}
+.crow-speaking-panel>blockquote>strong{display:block;color:#ffd34b;font-size:13px}
+.crow-speaking-panel>blockquote p{margin:8px 0 0}
+.crow-speaking-panel[data-tone="failure"]>blockquote{background:#300a12;border-color:#ff6475}
+.crow-speaking-panel[data-tone="success"]>blockquote{background:#07321f;border-color:#73dfa1}
+.crow-speaking-aside{font-style:italic}
+@media(max-width:600px){.crow-speaking-panel{gap:10px}.crow-speaking-panel>img{width:112px;height:128px;flex-basis:112px}.crow-speaking-panel>blockquote{padding:10px}}
+.crow-speaking-panel>img{filter:drop-shadow(0 0 1px #fff0bd) drop-shadow(0 0 5px #72c4df55)}

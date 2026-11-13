@@ -6,12 +6,20 @@ function checked(label,check){
  return {status:check.success?'success':'failure',text:label+(check.automatic===true?(check.success?' succeeded automatically.':' failed.'):': '+check.total+(finite(check.target)?' against '+check.target+'+':'')+'; '+(check.success?'succeeded.':'failed.'))};
 }
 const auditLabels={careerTransitions:'Qualification',assignmentChanges:'Assignment qualification',aslanOfficerOffers:'Officer qualification',aslanCareerAccess:'Career qualification',aslanHistoricalEntries:'Career qualification',aslanRestorations:'Career qualification',benefitWagers:'Benefit wager'};
+export function recordedConsequenceCheck(event){
+ if(event?.type!=='roll-borrowed-event'||event.rolls?.length!==1)return null;
+ const m=event.summary?.match(/^(.+?) result (-?\d+)\. (-?\d+) against (\d+)\+: (succeeded|failed)\./),roll=event.rolls[0];
+ if(!m||roll.values?.length!==2||!roll.values.every(n=>Number.isInteger(n)&&n>=1&&n<=6)||roll.values.reduce((a,b)=>a+b,0)!==roll.total||Number(m[2])!==roll.total||!['EDU check','INT check','SOC check','STR check','DEX check','END check','PSI check','CHA check','FOL check','Skill check'].includes(roll.label))return null;
+ if(m[1]!==roll.label&&!(roll.label==='Skill check'&&/^[A-Za-z][A-Za-z ()/–-]* check$/.test(m[1])))return null;
+ const total=Number(m[3]),target=Number(m[4]),success=m[5]==='succeeded';if(!Number.isFinite(total)||!Number.isFinite(target)||success!==(total>=target))return null;
+ return {label:m[1],natural:roll.total,total,target,success};
+}
 export function checkOutcome(event){
  // Restoring/replaying a snapshot can change old check records without making
  // those checks again. Replay-specific summary helpers remain responsible for
  // their own verified result; never infer one from historical audit deltas.
  if(['restore','gm-replay'].includes(event?.type))return null;
- const summary=event?.summary??'',evidence=[];
+ const summary=event?.summary??'',evidence=[],consequence=recordedConsequenceCheck(event);if(consequence)evidence.push(checked(consequence.label,consequence));
  // Exact engine summaries are replay-validated. Restrict to known commands so
  // a referee note that mentions a check cannot itself assert an outcome.
  const patterns={

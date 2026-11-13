@@ -64,3 +64,15 @@ test('native injury table, severity and multi-roll selection wait for separate a
   assert.equal(s.stage,'injury-loss');assert.equal(s.character.injuries.length,1);
  }
 });
+test('Companion event checkpoints are versioned without reinterpreting .32 histories',()=>{
+ const current=createSession('companion-checkpoint-gate'),legacy={...current,rulesRevision:'character-preview-2026-11-13.32'};
+ const old=project(legacy),now=project(current);assert.equal(old.state.nativeEventRollCheckpoints,true);assert.equal(old.state.companionEventRollCheckpoints,undefined);assert.equal(now.state.companionEventRollCheckpoints,true);
+ assert.equal(old.state.careerEntryBasicOnly,true);assert.equal(old.state.protectedSourceAwards,true);
+});
+test('Companion nested checks retain source and require one deliberate action',()=>{
+ for(const id of ['companion.truther','companion.believer']){
+  const s=state(id);s.character.careers[0].assignment=id.endsWith('truther')?'truther':'mainstream';s.nativeEventContext.source={id:'companion',page:id.endsWith('truther')?37:40};const rng=s.rng,rolls=[];
+  a.queueEffects(s,[{kind:'check',stat:'EDU',target:8,success:[],failure:[]}],'after-event',rolls);assert.equal(s.stage,'borrowed-event-roll');assert.equal(s.rng,rng);assert.equal(rolls.length,0);assert.equal(s.pendingBorrowedRoll.source.id,'companion');
+  const pendingId=s.pendingBorrowedRoll.id;a.apply(s,{type:'roll-borrowed-event',payload:{pendingId}},rolls);assert.equal(rolls.length,1);assert.equal(s.pendingBorrowedRoll,undefined);assert.throws(()=>a.apply(s,{type:'roll-borrowed-event',payload:{pendingId}},[]),/No borrowed/);
+ }
+});

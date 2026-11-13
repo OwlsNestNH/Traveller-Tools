@@ -1,3 +1,4 @@
+import {academyTrainingModel} from './academy-training-model.mjs';
 import {eventResultDetails} from './event-result-view.mjs';
 // Player-facing presentation only. Never alter summaries, audit records or mechanics.
 import {checkOutcome} from './check-outcome.mjs';
@@ -153,7 +154,7 @@ export function rollResult(event,state,catalog,options={}){
  if(specialized)details.unshift(...specialized.details);
  const choice=state?.pendingChoice;
  if(choice&&typeof state?.lifeEventPresentation?.description==='string')details.push('Pending: '+state.lifeEventPresentation.description);
- if(choice&&['effect-choice','skill-choice','relationship-loss','relationship-event','injury-loss'].includes(state.stage))details.push('Pending: '+(choice.label??(state.stage==='skill-choice'?'choose a skill or specialisation':'choose an event outcome'))+'.');
+ if(choice&&['effect-choice','skill-choice','relationship-loss','relationship-event','injury-loss'].includes(state.stage))details.push('Pending: '+(choice.label??(academyTrainingModel(state)?'choose the required academy training skill':state.stage==='skill-choice'?'choose a skill or specialisation':'choose an event outcome'))+'.');
  if(state?.stage==='injury-loss')details.push('Pending: choose the injury losses.');
  if(state?.pending&&(state.stage==='book-step'||state.stage?.includes('source')))details.push('Pending source resolution: '+(state.pending.label??state.pending.description??'confirm the outcome before its effects can be applied')+'.');
  const sourcePending=state?.stage==='book-step'||(typeof event.summary==='string'&&/requires? source resolution|source decisions are required|requires? source decisions|source resolution for/.test(event.summary));
