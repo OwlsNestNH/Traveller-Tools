@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {createServer} from '../server.mjs';
+const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
+const out=new URL('./artifacts/',import.meta.url);await mkdir(out,{recursive:true});
+const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const origin='http://127.0.0.1:'+server.address().port,browser=await chromium.launch({headless:true}),checks=[];
+try{for(const variant of ['scholar','agent'])for(const width of [1440,390]){
+const label=variant==='scholar'?'Scholar':'Agent',description=variant==='scholar'?'Spectacles, ivory lab coat, teal shirt and pocket pens.':'Tan trench coat and fedora, teal hat band and tie, silver badge.';
+const page=await browser.newPage({viewport:{width,height:1000}});await page.goto(origin);
+await page.setContent(`<!doctype html><html lang="en"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${label} Crow — review draft</title><style>body{margin:20px;background:#061522;color:#f5f7fa;font:16px/1.4 system-ui}h1{font-size:24px;color:#ffd34b}main{display:flex;align-items:center;justify-content:center;gap:48px;padding:20px;border:1px solid #86d8eb;border-radius:10px;background:#081f30}figure{margin:0;text-align:center}img{object-fit:contain;filter:drop-shadow(0 0 1px #fff0bd) drop-shadow(0 0 5px #72c4df55)}figcaption{margin-top:12px}.phone{width:112px;height:128px}.large{width:256px;height:292px}@media(max-width:600px){main{flex-direction:column;gap:24px}}</style><h1>${label} Crow — review draft</h1><p>${description}</p><p>For visual review only; not used by the application. Technical errors keep default Crow.</p><main><figure><img class="phone" src="${origin}/verification/review-assets/crow-${variant}-draft.png" alt="${label} Crow at phone portrait size"><figcaption>Actual phone portrait<br>112 × 128</figcaption></figure><figure><img class="large" src="${origin}/verification/review-assets/crow-${variant}-draft.png" alt="${label} Crow enlarged for outfit detail"><figcaption>Larger detail view</figcaption></figure></main></html>`);
+await page.locator('img').evaluateAll(ns=>Promise.all(ns.map(n=>n.decode())));assert.equal(await page.locator('img').count(),2);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);const box=await page.locator('.phone').boundingBox();assert.equal(box.width,112);assert.equal(box.height,128);
+await page.screenshot({path:new URL('additional-crow-'+variant+'-draft-'+width+'.png',out).pathname,fullPage:true});checks.push({variant,width,phonePortraitSize:[112,128],productionMapping:false,horizontalOverflow:false});await page.close();}
+await writeFile(new URL('additional-crow-status.json',out),JSON.stringify({checks},null,2));console.log(JSON.stringify({checks}));}finally{await browser.close();server.closeAllConnections();await new Promise(r=>server.close(r));}
