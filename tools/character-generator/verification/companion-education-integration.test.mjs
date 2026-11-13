@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createSession,execute,project,importSession,exportSession,catalog} from '../engine/session.mjs';
 const url=new URL('../engine/session.mjs',import.meta.url);
-let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,url).href));
+let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,url).href));
 source+='\nexport const companionAudit={apply,queueEffects,educationRights,skillLevel,skillCheckDM,gainSkill,rulesCheck,asBasic};';
 const {companionAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const run=(r,type,payload={},opts)=>execute(r.session??r,{type,payload},opts);

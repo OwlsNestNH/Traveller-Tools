@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {nativeEventRollPending} from '../engine/native-event-roll-checkpoints.mjs';
 import {createSession,project} from '../engine/session.mjs';
 const url=new URL('../engine/session.mjs',import.meta.url);
-let source=(await readFile(url,'utf8')).replace(/from\s+'(\.\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));
+let source=(await readFile(url,'utf8')).replace(/from\s+'(\.\.?\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));
 source+='\nexport const audit={initial,queueEffects,apply,enterCareer,findCareer};';
 const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 function state(id='core.army'){
@@ -62,5 +62,29 @@ test('native injury table, severity and multi-roll selection wait for separate a
    s._override={index:rolls.length,values:[1]};a.apply(s,{type:'roll-borrowed-event',payload:{pendingId:pending.id}},rolls);delete s._override;assert.equal(rolls.length,i+1);
   }
   assert.equal(s.stage,'injury-loss');assert.equal(s.character.injuries.length,1);
+ }
+});
+test('Companion event checkpoints are versioned without reinterpreting .32 histories',()=>{
+ const current=createSession('companion-checkpoint-gate'),legacy={...current,rulesRevision:'character-preview-2026-11-13.32'};
+ const old=project(legacy),now=project(current);assert.equal(old.state.nativeEventRollCheckpoints,true);assert.equal(old.state.companionEventRollCheckpoints,undefined);assert.equal(now.state.companionEventRollCheckpoints,true);
+ assert.equal(old.state.careerEntryBasicOnly,true);assert.equal(old.state.protectedSourceAwards,true);
+});
+test('Companion nested checks retain source and require one deliberate action',()=>{
+ for(const id of ['companion.truther','companion.believer']){
+  const s=state(id);s.character.careers[0].assignment=id.endsWith('truther')?'truther':'mainstream';s.nativeEventContext.source={id:'companion',page:id.endsWith('truther')?37:40};const rng=s.rng,rolls=[];
+  a.queueEffects(s,[{kind:'check',stat:'EDU',target:8,success:[],failure:[]}],'after-event',rolls);assert.equal(s.stage,'borrowed-event-roll');assert.equal(s.rng,rng);assert.equal(rolls.length,0);assert.equal(s.pendingBorrowedRoll.source.id,'companion');
+  const pendingId=s.pendingBorrowedRoll.id;a.apply(s,{type:'roll-borrowed-event',payload:{pendingId}},rolls);assert.equal(rolls.length,1);assert.equal(s.pendingBorrowedRoll,undefined);assert.throws(()=>a.apply(s,{type:'roll-borrowed-event',payload:{pendingId}},[]),/No borrowed/);
+ }
+});
+
+test('later Companion entry follows the chosen basic-only policy without altering legacy behavior',()=>{
+ for(const id of ['companion.truther','companion.believer'])for(const modern of [false,true]){
+  const s=state(id);s.companionBasicEntryOnly=modern;s.active=null;s.stage='career';delete s.nativeEventContext;s.character.careers=[{id:'core.drifter',assignment:'wanderer',terms:1,rank:0,exit:'voluntary',exitGenerationTerms:1}];s.character.terms=1;s.character.age=22;
+  const rolls=[];a.enterCareer(s,a.findCareer(id),id.endsWith('truther')?'truther':'mainstream',rolls);
+  for(let i=0;i<10&&['effect-choice','skill-choice'].includes(s.stage);i++){
+   if(s.stage==='effect-choice')a.apply(s,{type:'choose-effect',payload:{index:0}},rolls);
+   else a.apply(s,{type:'choose-skill',payload:{name:'Profession (construction)'}},rolls);
+  }
+  assert.equal(s.stage,modern?'survival':'training',id+' '+modern);assert.equal(rolls.length,0);
  }
 });

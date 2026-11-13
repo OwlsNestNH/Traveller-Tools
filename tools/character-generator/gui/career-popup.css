@@ -1,33 +1,33 @@
 /* The approved Education/Background shell, scoped to career selection and Army. */
 @media screen{
- body[data-career-template="core.army"]{color-scheme:dark;--ink:#f1f5f8;--muted:#bed0dd;--blue:#ffd052;--line:#79a7bb;--paper:#061b29;--wash:#081f2d;--focus:#fff1ae;--accent:#142e3c;background:radial-gradient(ellipse at 50% 30%,#092536 0%,#03131f 80%);color:var(--ink)}
- body[data-career-template="core.army"]>header{padding:8px 0 18px;min-height:0}
- body[data-career-template="core.army"]>header .eyebrow{display:none}
- body[data-career-template="core.army"]>header h1{color:#ffd34b;font-size:clamp(30px,3.8vw,52px);font-weight:800;letter-spacing:.01em;margin:0 0 4px;text-shadow:0 3px 10px #0008}
- body[data-career-template="core.army"]>header .lead{color:#edf4f8;letter-spacing:.3em;font-size:17px;line-height:1.2}
- body[data-career-template="core.army"] :is(#workspace,#sheet,.log-section){background:linear-gradient(140deg,#062536ef,#03121deb);border-color:#79a7bb;box-shadow:0 8px 30px #0007}
- body[data-career-template="core.army"] :is(.status,.tag,.career-rank-summary){background:#071c2b;color:#f1f5f8;border-color:#79a7bb}
- body[data-career-template="core.army"] button,body[data-career-template="core.army"] .button{background:linear-gradient(#ffd64d,#efb921);color:#071018;border:1px solid #ffd34b;box-shadow:inset 0 1px 7px #ffe89b,0 2px 4px #0005;background-color:#efb921}
- body[data-career-template="core.army"] :is(.quiet,.choice,.toolbar button,.toolbar .button){color:#f4f6f8;background:linear-gradient(140deg,#0b2b3c,#061a28);border:1px solid #a4d4e7;box-shadow:inset 0 1px 8px #294353,0 2px 4px #0005;background-color:#061a28}
- body[data-career-template="core.army"] :is(.quiet,.choice,.toolbar button,.toolbar .button):hover{background:#183c4d;filter:none}
- body[data-career-template="core.army"] :is(input:not([type=checkbox]):not([type=file]),select,textarea){background:#071c2b;color:#f1f5f8;border-color:#8db1c4}
- body[data-career-template="core.army"] :is(.help,.source,.sheet-meta,footer){color:#bed0dd}
- body[data-career-template="core.army"] .beta-notice-trigger{background:#061b29;color:#ffd34b;border-color:#ffd34b;box-shadow:none}
- body[data-career-template="core.army"] a{color:#ffdc67}
- body[data-career-template="core.army"] :is(.result-panel,#message){background:#062536;color:#f1f5f8;border-color:#79a7bb}
- body[data-career-template="core.army"] :is(.result-panel,#message).result-success{border-color:#88d9a2}
- body[data-career-template="core.army"] .result-success .result-status{color:#b4efbc}
- body[data-career-template="core.army"] :is(.result-panel,#message).result-failure{border-color:#ff5964;color:#fff4e8}
- body[data-career-template="core.army"] .result-failure .result-status{color:#ff7b85}
- body[data-career-template="core.army"] :is(.result-panel,#message).result-pending{border-color:#ffd34b}
- body[data-career-template="core.army"] :is(.warning,.notice){background:#372e15;color:#fff0c4;border-color:#ffd34b}
- body[data-career-template="core.army"] #crow-error-dialog button,body[data-career-template="core.army"] #crow-rewind-dialog button,body[data-career-template="core.army"] .required-action-warning .crow-recovery-actions button{background:#185876;border-color:#78bbdc;color:#fff;box-shadow:none}
- body[data-career-template="core.army"] .toolbar{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:stretch;grid-auto-rows:58px}
- body[data-career-template="core.army"] .toolbar>*,body[data-career-template="core.army"] .toolbar button{width:100%;min-width:0;font-size:16px;line-height:1.2;padding:9px 8px;min-height:58px}
- body[data-career-template="core.army"] .toolbar>.log-switch{display:grid;grid-template-rows:1fr 1fr;padding:0;gap:0}
- body[data-career-template="core.army"] .toolbar .log-switch button{height:29px;min-height:29px;padding:3px 8px;border-radius:0}
- body[data-career-template="core.army"] .toolbar .log-switch button:first-child{border-radius:9px 9px 0 0}
- body[data-career-template="core.army"] .toolbar .log-switch>.opening-info-trigger{width:28px;height:28px;min-height:28px;padding:0;border:1px solid #eac746;border-radius:50%;font-size:18px;color:#ffdd68;background:#071c2a;box-shadow:none}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]){color-scheme:dark;--ink:#f1f5f8;--muted:#bed0dd;--blue:#ffd052;--line:#79a7bb;--paper:#061b29;--wash:#081f2d;--focus:#fff1ae;--accent:#142e3c;background:radial-gradient(ellipse at 50% 30%,#092536 0%,#03131f 80%);color:var(--ink)}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"])>header{padding:8px 0 18px;min-height:0}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"])>header .eyebrow{display:none}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"])>header h1{color:#ffd34b;font-size:clamp(30px,3.8vw,52px);font-weight:800;letter-spacing:.01em;margin:0 0 4px;text-shadow:0 3px 10px #0008}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"])>header .lead{color:#edf4f8;letter-spacing:.3em;font-size:17px;line-height:1.2}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(#workspace,#sheet,.log-section){background:linear-gradient(140deg,#062536ef,#03121deb);border-color:#79a7bb;box-shadow:0 8px 30px #0007}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.status,.tag,.career-rank-summary){background:#071c2b;color:#f1f5f8;border-color:#79a7bb}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) button,body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .button{background:linear-gradient(#ffd64d,#efb921);color:#071018;border:1px solid #ffd34b;box-shadow:inset 0 1px 7px #ffe89b,0 2px 4px #0005;background-color:#efb921}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.quiet,.choice,.toolbar button,.toolbar .button){color:#f4f6f8;background:linear-gradient(140deg,#0b2b3c,#061a28);border:1px solid #a4d4e7;box-shadow:inset 0 1px 8px #294353,0 2px 4px #0005;background-color:#061a28}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.quiet,.choice,.toolbar button,.toolbar .button):hover{background:#183c4d;filter:none}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(input:not([type=checkbox]):not([type=file]),select,textarea){background:#071c2b;color:#f1f5f8;border-color:#8db1c4}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.help,.source,.sheet-meta,footer){color:#bed0dd}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .beta-notice-trigger{background:#061b29;color:#ffd34b;border-color:#ffd34b;box-shadow:none}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) a{color:#ffdc67}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.result-panel,#message){background:#062536;color:#f1f5f8;border-color:#79a7bb}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.result-panel,#message).result-success{border-color:#88d9a2}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .result-success .result-status{color:#b4efbc}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.result-panel,#message).result-failure{border-color:#ff5964;color:#fff4e8}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .result-failure .result-status{color:#ff7b85}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.result-panel,#message).result-pending{border-color:#ffd34b}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.warning,.notice){background:#372e15;color:#fff0c4;border-color:#ffd34b}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) #crow-error-dialog button,body:is([data-career-shell="imperial"],[data-completion-shell="true"]) #crow-rewind-dialog button,body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .required-action-warning .crow-recovery-actions button{background:#185876;border-color:#78bbdc;color:#fff;box-shadow:none}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:stretch;grid-auto-rows:58px}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar>*,body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar button{width:100%;min-width:0;font-size:16px;line-height:1.2;padding:9px 8px;min-height:58px}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar>.log-switch{display:grid;grid-template-rows:1fr 1fr;padding:0;gap:0}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar .log-switch button{height:29px;min-height:29px;padding:3px 8px;border-radius:0}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar .log-switch button:first-child{border-radius:9px 9px 0 0}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar .log-switch>.opening-info-trigger{width:28px;height:28px;min-height:28px;padding:0;border:1px solid #eac746;border-radius:50%;font-size:18px;color:#ffdd68;background:#071c2a;box-shadow:none}
  #army-creation-overview{display:flex;justify-content:space-between;gap:12px;padding:0;margin:12px 0 22px;list-style:none;color:#a9bfcd;font-size:16px}
  #army-creation-overview [aria-current=step]{color:#ffd34b;font-weight:800}
  .layout.army-career-layout{grid-template-columns:minmax(0,2.45fr) minmax(290px,1fr);align-items:start}
@@ -48,9 +48,9 @@
  #army-career-rail summary{min-height:30px;color:#d5e3eb}
  #army-career-rail .army-record-section summary::after{content:'+';float:right;color:#ffd34b}
  #army-career-rail .army-record-section[open] summary::after{content:'−'}
- #army-career-dialog .career-pilot-guidance{display:grid;grid-template-columns:112px minmax(0,1fr);gap:16px;align-items:center;border:0;padding:0 0 18px;background:none;margin:0 0 16px;color:#f5f7fa}
+ #army-career-dialog .career-pilot-guidance{display:grid;grid-template-columns:160px minmax(0,1fr);gap:16px;align-items:center;border:0;padding:0 0 18px;background:none;margin:0 0 16px;color:#f5f7fa}
  #army-career-dialog .crow-assistance{justify-content:center;gap:8px;margin:0;font-size:11px;align-self:center}
- #army-career-dialog .crow-assistance-image{width:112px;height:128px;flex-basis:112px}
+ #army-career-dialog .crow-assistance-image{width:160px;height:128px;flex-basis:160px;object-fit:cover;object-position:50% 60%}
  #army-career-dialog .crow-assistance-info{width:44px;min-width:44px;height:44px;min-height:44px;padding:0;font-size:15px;background:#185876;border:1px solid #78bbdc;color:#fff;box-shadow:none}
  #army-career-dialog .career-crow-bubble{padding:12px 16px;border:2px solid #9cdbed;border-top:3px solid #d8b76a;border-radius:10px;background:#061b29}
  #army-career-dialog .career-crow-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;font-weight:800;letter-spacing:.06em;color:#e6c978}
@@ -79,8 +79,8 @@
 @media screen and (max-width:850px){
  .layout.army-career-layout{grid-template-columns:minmax(0,1fr)}#army-career-rail{grid-area:auto}#army-career-dialog,#army-career-context{grid-area:1/1}
  #army-career-dialog #workspace{padding:20px 18px}#army-career-dialog #step-title{font-size:30px;margin-right:80px}#army-career-close{right:16px;top:18px;font-size:17px;padding:8px 12px}
- #army-creation-overview{font-size:12px;gap:8px;flex-wrap:wrap}body[data-career-template="core.army"] .toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
- #army-career-dialog .career-pilot-guidance{grid-template-columns:80px minmax(0,1fr);gap:10px}#army-career-dialog .crow-assistance-image{width:80px;height:92px;flex-basis:80px}
+ #army-creation-overview{font-size:12px;gap:8px;flex-wrap:wrap}body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #army-career-dialog .career-pilot-guidance{grid-template-columns:112px minmax(0,1fr);gap:10px}#army-career-dialog .crow-assistance-image{width:112px;height:128px;flex-basis:112px}
  #army-career-dialog .career-crow-bubble{padding:10px}#army-career-dialog .career-crow-speech{font-size:18px}#army-career-dialog .career-crow-heading{font-size:10px;letter-spacing:.02em}
  #army-career-dialog .army-career-back{font-size:14px;padding:8px}#army-career-dialog .step-count{margin-right:80px;font-size:15px}
  #army-career-dialog .choice-list{grid-template-columns:1fr}#army-career-dialog .choice-list .choice{font-size:20px;min-height:70px}
@@ -109,7 +109,7 @@
 
 @media screen{#army-rule-information{width:min(620px,calc(100vw - 32px));box-sizing:border-box;max-height:calc(100dvh - 32px);overflow:auto;background:#061b29;color:#f5f7fa;border:2px solid #9cdbed;border-radius:14px;padding:24px}#army-rule-information::backdrop{background:#000a}#army-rule-information h2{color:#ffd34b;font-size:26px}#army-rule-information p{font-size:18px;line-height:1.5}#army-rule-information a{color:#9cdbed;display:inline-flex;align-items:center;min-height:44px}#army-rule-information .army-rule-aside{font-style:italic}#army-rule-information button{display:block;margin-top:16px;min-height:48px}#army-rule-information h2:focus{outline:none}}
 
-@media screen{#army-career-dialog .army-specialty-native{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}#army-career-dialog .army-specialty-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:20px 0}#army-career-dialog .army-specialty-choices button{min-width:0;min-height:52px;padding:10px;font-size:20px}#army-career-dialog .army-specialty-choices [aria-checked="true"]{background:#f7c91f linear-gradient(#ffe265,#f7c91f);color:#071b29;border:2px solid #ffe78a}#army-career-dialog .army-specialty-information{border:1px solid #9cdbed;border-radius:12px;padding:16px;background:#061b29}#army-career-dialog .army-specialty-information h3,#army-career-dialog .army-specialty-information h4{color:#ffd34b;margin:0 0 10px}#army-career-dialog .army-specialty-requirements{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 12px}#army-career-dialog .army-specialty-requirements dt{grid-row:1;font-weight:700}#army-career-dialog .army-specialty-requirements dd{grid-row:2;margin:0}#army-career-dialog .army-specialty-skills{display:flex;flex-wrap:wrap;gap:6px 18px;padding-left:18px}#army-career-dialog .army-specialty-information .help,#army-career-dialog .army-specialty-information .source{font-size:15px}}
+@media screen{#army-career-dialog .army-specialty-native{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}#army-career-dialog .army-specialty-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:20px 0}#army-career-dialog .army-specialty-choices button{min-width:0;white-space:normal;overflow-wrap:anywhere;min-height:52px;padding:10px;font-size:20px}#army-career-dialog .army-specialty-choices [aria-checked="true"]{background:#f7c91f linear-gradient(#ffe265,#f7c91f);color:#071b29;border:2px solid #ffe78a}#army-career-dialog .army-specialty-information{border:1px solid #9cdbed;border-radius:12px;padding:16px;background:#061b29}#army-career-dialog .army-specialty-information h3,#army-career-dialog .army-specialty-information h4{color:#ffd34b;margin:0 0 10px}#army-career-dialog .army-specialty-requirements{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 12px}#army-career-dialog .army-specialty-requirements dt{grid-row:1;font-weight:700}#army-career-dialog .army-specialty-requirements dd{grid-row:2;margin:0}#army-career-dialog .army-specialty-skills{display:flex;flex-wrap:wrap;gap:6px 18px;padding-left:18px}#army-career-dialog .army-specialty-information .help,#army-career-dialog .army-specialty-information .source{font-size:15px}}
 @media screen and (max-width:850px){#army-career-dialog .army-specialty-choices{gap:6px}#army-career-dialog .army-specialty-choices button{font-size:15px;padding:10px 4px}#army-career-dialog .army-specialty-information{padding:12px}#army-career-dialog .army-specialty-requirements{font-size:14px;gap:6px}}
 @media screen{#army-career-dialog .army-specialty-choices [aria-checked="false"]{background:#0a2a3c;color:#ffd34b;border:2px solid #9cdbed;box-shadow:none}#army-career-dialog .army-specialty-choices [aria-checked="true"]::before{content:'✓ ';font-weight:800}#army-career-dialog .army-specialty-skills{list-style:none;margin:8px 0;padding:0;gap:4px 14px}#army-career-dialog .army-specialty-skills li:not(:last-child)::after{content:';'}}
 
@@ -133,7 +133,7 @@
 @media screen{#army-career-dialog .army-previous-result{margin:0 0 12px;border:1px solid #79a7bb;border-radius:8px;padding:10px 14px;background:#061b29}#army-career-dialog .army-previous-result summary{min-height:24px;color:#e6c978;font-weight:700;cursor:pointer}#army-career-dialog .army-previous-result[open] .result-panel{padding-top:12px}}
 
 @media screen and (min-width:851px){#army-career-dialog[data-career-template="career-selection"] .choice-list{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}#army-career-dialog[data-career-template="career-selection"] .career-choice-row .choice{font-size:16px;padding:8px 5px}#army-career-dialog[data-career-template="career-selection"] .career-choice-row .choice small{font-size:12px;line-height:1.3}#army-career-dialog[data-career-template="career-selection"] .career-pilot-guidance{padding-bottom:0;margin-bottom:12px}}
-@media screen{#army-rule-information .army-rule-header{display:flex;align-items:center;gap:18px}#army-rule-information .crow-assistance-image{width:80px;height:92px;flex-basis:80px;object-fit:contain}#army-rule-information .army-rule-header h2{margin:0}#army-rule-information .army-rule-specialty .help{font-size:14px}}
+@media screen{#army-rule-information .army-rule-header{display:flex;align-items:center;gap:18px}#army-rule-information .crow-assistance-image{width:128px;height:148px;flex-basis:128px;object-fit:contain}#army-rule-information .army-rule-header h2{margin:0}#army-rule-information .army-rule-specialty .help{font-size:14px}}
 @media screen and (min-width:851px){#army-career-dialog[data-career-template="career-selection"] .career-choice-row{display:block;position:relative}#army-career-dialog[data-career-template="career-selection"] .career-choice-row .career-info-trigger{position:absolute;right:5px;bottom:5px;z-index:1}#army-career-dialog[data-career-template="career-selection"] .career-choice-row .choice{padding:8px;width:100%;text-align:left}#army-career-dialog[data-career-template="career-selection"] .career-choice-row .choice small{display:block;min-height:44px;padding-right:46px;margin-top:5px}#army-career-dialog[data-career-template="career-selection"] .career-choice-row .choice strong{overflow-wrap:normal;word-break:normal}}
 @media screen and (min-width:851px){#army-career-dialog[data-career-template="career-selection"] .career-choice-row .choice{height:100%}}
 
@@ -143,3 +143,90 @@
 @media screen and (max-width:850px){#army-career-dialog #qualification-fallback .actions{grid-template-columns:1fr}#army-career-dialog #qualification-fallback{padding:12px}#army-career-dialog #qualification-fallback p{font-size:16px}#army-career-dialog #qualification-fallback .actions button{font-size:20px;min-height:56px}}
 
 @media screen{#army-career-dialog #pending-event-roll{border:1px solid #9cdbed;border-radius:12px;padding:16px;margin:0 0 24px;background:#061b29}#army-career-dialog #pending-event-roll h3{color:#ffd34b;margin:0 0 10px}#army-career-dialog #pending-event-roll button{width:100%;min-height:64px;font-size:22px}#army-career-dialog #pending-event-roll .source{color:#bed0dd}}
+/* Keep the compact career index in its approved viewport; selected-career
+   guidance and source popups give Crow's outfit more room. */
+@media screen and (min-width:851px){#army-career-dialog[data-career-template="career-selection"] .career-pilot-guidance{grid-template-columns:112px minmax(0,1fr)}#army-career-dialog[data-career-template="career-selection"] .crow-assistance-image{width:112px;height:128px;flex-basis:112px}}
+/* Delineate supplied costume silhouettes without recolouring Crow or error art. */
+@media screen{#army-career-dialog .career-pilot-guidance>img,#army-rule-information .army-rule-header>img{filter:drop-shadow(0 0 1px #fff0bd) drop-shadow(0 0 5px #72c4df55)}}
+#army-career-dialog .career-result-guidance.outcome-tagline{background:none;font-style:normal}
+#army-career-dialog .career-result-comment{font-style:italic;margin:6px 0}
+#army-career-dialog .career-result-guidance .career-crow-speech{font-style:normal}
+
+/* Completion retains every toolbar control without dominating phone height. */
+@media screen and (max-width:650px){
+ body[data-completion-shell="true"]>header{padding-bottom:10px}
+ body[data-completion-shell="true"]>header .lead{font-size:14px;letter-spacing:.12em}
+
+}
+
+/* Completion uses the approved Education frame and result hierarchy. */
+@media screen{
+ .completion-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+ #completion-context{grid-column:1;grid-row:1;padding:24px;border:1px solid #305367;border-radius:11px;background:#071d2a}
+ #completion-dialog{display:none;grid-column:1;grid-row:1;position:relative;inset:auto;z-index:2;box-sizing:border-box;width:100%;max-width:968px;max-height:none;margin:0 auto;padding:0;overflow:visible;border:2px solid #9cdbed;border-radius:15px;color:#f5f7fa;background:radial-gradient(ellipse at center,#0a2a3c,#041b2a 85%);box-shadow:0 16px 70px #0006}
+ #completion-dialog[open]{display:block}
+ body[data-completion-shell="true"] #completion-dialog #workspace{padding:24px 32px 20px;border:0;background:transparent;box-shadow:none}
+ #completion-dialog .completion-controls{display:flex;justify-content:flex-end;gap:12px;margin-bottom:12px}
+ #completion-dialog .completion-controls button{min-height:44px;font-size:20px;padding:8px 20px}
+ #completion-dialog .step-count{color:#ffcf38;font-size:19px;font-weight:800;letter-spacing:.04em;margin:0 0 6px}
+ #completion-dialog #step-title{font-size:40px;font-weight:800;line-height:1.15;color:#f5f7fa;margin:0 0 16px}
+ #completion-dialog .result-panel{padding:0;border:0;background:none;box-shadow:none}
+ #completion-dialog .result-status{font-size:20px;font-weight:800;margin:8px 0}
+ #completion-dialog .result-panel h3{font-size:34px;line-height:1.2;color:#ffd34b;margin:12px 0}
+ #completion-dialog .result-panel p{font-size:19px;line-height:1.45}
+ body[data-completion-shell="true"] #completion-dialog .crow-speaking-panel{display:flex;flex-direction:row;align-items:center;gap:12px;padding:0;border:0;background:none;margin:12px 0}
+ body[data-completion-shell="true"] #completion-dialog .crow-speaking-panel>img{width:128px;height:96px;flex:0 0 128px;object-fit:contain;align-self:center}
+ body[data-completion-shell="true"] #completion-dialog .crow-speaking-panel>blockquote{width:auto;min-width:0;flex:1;padding:10px 14px;margin:0}
+ #completion-dialog .final-sheet-invitation{border:0;padding:0;background:none;margin:16px 0}
+ #completion-dialog .final-sheet-invitation button{width:100%;min-height:72px;font-size:26px}
+ #completion-dialog .army-recorded-dice{padding:14px;border:2px solid #9cdbed;border-radius:16px;background:#061b29}
+ #completion-dialog .army-dice-faces{display:flex;justify-content:center;gap:12px}
+ #completion-dialog .army-recorded-dice svg{width:64px;height:64px}
+ #completion-dialog .result-information{margin-top:16px;border-top:1px solid #79a7bb}
+}
+@media screen and (max-width:1100px){.completion-layout{grid-template-columns:1fr}body[data-completion-shell="true"] #sheet{grid-column:1}}
+@media screen and (max-width:650px){
+ #completion-dialog{border-radius:13px}
+ body[data-completion-shell="true"] #completion-dialog #workspace{padding:22px 18px}
+ #completion-dialog #step-title{font-size:36px}
+ #completion-dialog .completion-controls{gap:8px}
+ #completion-dialog .completion-controls button{font-size:17px;padding:8px 12px}
+ #completion-dialog .result-panel h3{font-size:28px}
+ body[data-completion-shell="true"] #completion-dialog .crow-speaking-panel{display:block}
+ body[data-completion-shell="true"] #completion-dialog .crow-speaking-panel>img{float:left;width:112px;height:88px;margin:0 10px 6px 0}
+ body[data-completion-shell="true"] #completion-dialog .crow-speaking-panel>blockquote{display:block;width:100%;box-sizing:border-box}
+ #completion-dialog .crow-speaking-panel::after{content:'';display:block;clear:both}
+}
+
+@media screen{
+ #completion-dialog #workspace{position:relative}
+ #completion-dialog #step-title{font-size:16px;line-height:1.2;margin:0 0 12px;max-width:calc(100% - 12px)}
+ #completion-dialog #step-title:focus{outline:none}
+ #completion-dialog .result-panel{background:transparent}
+}
+
+@media screen{
+ #completion-dialog .completion-result-heading{display:flex;align-items:center;gap:18px;margin:6px 0 14px}
+ #completion-dialog .completion-result-heading>.education-result-art{width:62px;height:54px;flex:none;color:#f5f7fa}
+ #completion-dialog .completion-result-heading #step-title{font-size:34px;line-height:1.12;max-width:none;margin:0}
+ #completion-dialog .completion-next-instruction{margin:12px 0}
+ #completion-dialog .result-panel>.result-status.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ #completion-dialog .education-result-crow blockquote{font-style:italic;text-align:center}
+}
+@media screen and (max-width:650px){
+ #completion-dialog .completion-result-heading{gap:12px}
+ #completion-dialog .completion-result-heading #step-title{font-size:28px}
+ #completion-dialog .completion-result-heading>.education-result-art{width:54px;height:48px}
+}
+
+@media screen{
+ .completion-layout:has(#completion-dialog[open]) #completion-context{visibility:hidden}
+ #completion-dialog #workspace>button[data-action="finish"]{width:100%;min-height:72px;font-size:26px;margin:16px 0}
+ body[data-completion-shell="true"] #sheet{min-width:0}
+}
+
+/* Same record bars and compact characteristic grid as accepted Education. */
+@media screen{
+ #completion-notes>#notes-connections>summary{display:none}
+ #completion-characteristics .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+}

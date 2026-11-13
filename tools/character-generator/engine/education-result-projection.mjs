@@ -126,7 +126,7 @@ export function educationResultProjection({state,log,snapshots,events}){
 export function educationGraduationPreviewProjection(state){
  if(state.stage!=='education-graduation'||state.pending)return null;
  const record=state.character.educations?.[state.education];
- if(record?.id!=='core.university'||record.completed||record.graduation||record.graduationAllowed!==true||record.entry?.success!==true||record.entry.manual||record.entry.needsAdjudication||!Number.isFinite(record.entry.total)||!Number.isInteger(record.entry.roll))return null;
+ if(!['core.university','core.academy-army','core.academy-marine','core.academy-navy'].includes(record?.id)||record.entry?.id!==record.id||record.completed||record.graduation||record.graduationAllowed!==true||record.entry?.success!==true||record.entry.manual||record.entry.needsAdjudication||!Number.isFinite(record.entry.total)||!Number.isInteger(record.entry.roll))return null;
  // A fixed input evaluates the shared numeric rule only. It never consumes RNG,
  // and neither that input nor a hypothetical outcome is exposed to the player.
  const numbers=educationGraduationCheck({id:record.id,stats:state.character.stats,roll:2,graduationAllowed:true});

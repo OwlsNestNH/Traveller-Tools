@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {createSession,execute,project,exportSession,importSession} from '../engine/session.mjs';
 import {namedBenefitPlan,pensionEntitlement} from '../engine/benefits.mjs';
 import {findCareer} from '../engine/catalog.mjs';
-const url=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));source+='\nexport const audit={initial,apply,queueEffects,applyEffects,startPsionicTraining};';
+const url=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));source+='\nexport const audit={initial,apply,queueEffects,applyEffects,startPsionicTraining};';
 const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 function fixture(id='core.scout',assignment){
  const s=a.initial('benefit-fixture');s.stage='benefits';s.character.species='human';s.character.gender='male';s.character.stats={STR:8,DEX:8,END:8,INT:8,EDU:8,SOC:10,PSI:9,FOL:0};

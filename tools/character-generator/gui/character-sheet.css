@@ -78,3 +78,8 @@
  #final-character-sheet .final-sheet-boundary{margin:4px 0 6px}
 }
 @media print{.traveller-sheet-jumps,#final-character-sheet .final-sheet-export{display:none!important}}
+#final-sheet-content details.traveller-sheet-term{border:1px solid var(--sheet-cyan);border-radius:9px;margin:10px 0;padding:0 12px;background:var(--sheet-panel,#061b29)}
+.traveller-sheet-term>summary{min-height:48px;display:list-item;padding:12px 0;cursor:pointer;color:var(--sheet-gold);font-weight:700}
+.traveller-sheet-term>summary span{display:block;font-size:13px;font-weight:400;color:var(--sheet-ink);margin:4px 0 0 18px}
+.traveller-sheet-term>summary:focus-visible{outline:3px solid var(--sheet-gold);outline-offset:3px;border-radius:4px}
+@media print{.traveller-sheet-term>summary{color:#111}.traveller-sheet-term>summary span{color:#111}}

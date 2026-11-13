@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {educationReady,educationSetup} from './education-result-fixtures.mjs';
 import {buildAslanOriginFixture,settleOrigin} from './aslan-origin-fixtures.mjs';
-const url=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));source+='\nexport const finalRowAudit={apply,queueEffects};';
+const url=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));source+='\nexport const finalRowAudit={apply,queueEffects};';
 const {createSession,execute,project,exportSession,importSession,finalRowAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const run=(r,type,payload={})=>execute(r.session??r,{type,payload});
 const force=(r,type,payload,values)=>{const rolled=run(r,type,payload);return run(rolled,'gm-replay',{revision:rolled.revision,rollIndex:0,values,reason:'Synthetic final education rows'});};

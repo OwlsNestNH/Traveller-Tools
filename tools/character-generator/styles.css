@@ -452,3 +452,10 @@ body[data-stage="background"] #message{max-width:var(--tool-content-width);margi
 
 .army-recorded-dice{background:#062536;color:#fff4e8;border:1px solid #d8b76a;border-radius:10px;padding:12px;margin:12px 0}.army-recorded-dice p{color:#fff4e8}.army-dice-faces{display:flex;flex-wrap:wrap;gap:12px;color:#ffd34b}.army-dice-faces .education-result-die{width:56px;height:56px;flex:none}
 .career-pilot .result-panel .outcome-tagline{background:#062536;color:#ffe19a;padding:12px;border-radius:6px}
+/* The log information control has its own column and touch target. */
+@media screen{
+ body .toolbar>.log-switch{grid-template-columns:minmax(0,1fr) 44px;grid-template-rows:1fr 1fr;column-gap:4px}
+ body .toolbar>.log-switch>#simple-log-view{grid-column:1;grid-row:1;padding-right:8px}
+ body .toolbar>.log-switch>#log-view{grid-column:1;grid-row:2;padding-right:8px}
+ body[data-stage] nav.toolbar>.log-switch>button.opening-info-trigger{position:static;grid-column:2;grid-row:1 / span 2;align-self:center;justify-self:center;transform:none;width:44px;height:44px;min-height:44px;min-width:44px;border-radius:50%;padding:0}
+}

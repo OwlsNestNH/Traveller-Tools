@@ -18,9 +18,9 @@ async function ready(page){await page.waitForFunction(()=>!document.querySelecto
 async function replay(page){const before=await snapshot(page);await page.reload();await page.waitForFunction(()=>Number(document.querySelector('#workspace')?.dataset.revision??0)>5);assert.deepEqual(await snapshot(page),before);}
 // Use the visible record controls rather than reading text in a collapsed bar.
 async function openAssetRecord(page){
- const dialog=page.locator('#precareer-dialog');if(!await dialog.count())return;
- if(await dialog.evaluate(el=>el.open))await page.locator('#precareer-dismiss').click();
- const bar=page.locator('#precareer-more-record');if(!await bar.evaluate(el=>el.open))await bar.locator(':scope > summary').click();
+ const dialog=page.locator('#precareer-dialog');
+ if(await dialog.count()&&await dialog.evaluate(el=>el.open))await page.locator('#precareer-dismiss').click();
+ const bar=page.locator('#precareer-more-record, #completion-more-record');if(!await bar.count())return;if(!await bar.evaluate(el=>el.open))await bar.locator(':scope > summary').click();
  assert.equal(await bar.evaluate(el=>el.open),true);assert.equal(await page.getByRole('heading',{name:'Equipment & ships',exact:true}).isVisible(),true);
 }
 async function panel(page){const p=page.locator('#clan-share-panel');if(!await p.evaluate(n=>n.open))await p.locator(':scope > summary').click();}

@@ -39,7 +39,7 @@ function finalStage(r=enter(),preliminaryDice=[3,4],finalDice=[5,5]){
 
 // Narrow fault-injection fixtures supplement public API coverage for constraints not exposed as GM fields.
 const url=new URL('../engine/session.mjs',import.meta.url);
-let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));
+let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));
 source+='\nexport const audit={initial,apply,queueEffects,psionicGamesAvailability,psionicHistory};';
 const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const raw=(s,type,payload={},values)=>{const rolls=[];if(values)s._override={index:0,values};const summary=a.apply(s,{type,payload},rolls);delete s._override;return {rolls,summary};};

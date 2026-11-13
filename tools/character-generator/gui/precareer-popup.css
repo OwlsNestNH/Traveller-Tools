@@ -342,3 +342,120 @@
  #clan-share-panel option:disabled{color:#bdd3df}
  #clan-share-panel :is(input,select,textarea):focus-visible{outline:3px solid #ffd34b;outline-offset:3px}
 }
+#precareer-dialog[data-education-kind="academy-training"] .choice-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#precareer-dialog[data-education-kind="academy-training"] .choice-list .choice{min-height:56px;font-size:20px}
+.crow-speaking-panel{display:flex;gap:18px;align-items:center;margin:16px 0}
+.crow-speaking-panel>img{width:144px;height:144px;object-fit:contain;flex:0 0 144px}
+.crow-speaking-panel>blockquote{margin:0;min-width:0;padding:16px;border:1px solid #9cdbed;border-radius:10px;background:#061b29;color:#f5f7fa}
+.crow-speaking-panel>blockquote>strong{display:block;color:#ffd34b;font-size:13px}
+.crow-speaking-panel>blockquote p{margin:8px 0 0}
+.crow-speaking-panel[data-tone="failure"]>blockquote{background:#300a12;border-color:#ff6475}
+.crow-speaking-panel[data-tone="success"]>blockquote{background:#07321f;border-color:#73dfa1}
+.crow-speaking-aside{font-style:italic}
+@media(max-width:600px){.crow-speaking-panel{gap:10px}.crow-speaking-panel>img{width:112px;height:128px;flex-basis:112px}.crow-speaking-panel>blockquote{padding:10px}}
+.crow-speaking-panel>img{filter:drop-shadow(0 0 1px #fff0bd) drop-shadow(0 0 5px #72c4df55)}
+.crow-speaking-panel{min-width:0;max-width:100%}
+.crow-speaking-panel>blockquote{overflow-wrap:anywhere}
+@media screen and (min-width:851px){
+ .education-result .crow-speaking-panel.education-result-crow{margin:4px 0}
+ .education-result .education-result-crow>img{width:128px;height:96px;flex-basis:128px;object-fit:cover;object-position:50% 30%}
+ .education-result .education-result-crow>blockquote{padding:10px 14px;font-size:20px}
+ .education-result .education-result-heading h3{font-size:34px}
+ .education-result .education-result-headline h4{font-size:39px}
+}
+@media screen and (max-width:360px){.crow-speaking-panel{flex-direction:column;align-items:stretch}.crow-speaking-panel>img{align-self:center;width:128px;height:128px;flex-basis:auto}.crow-speaking-panel>blockquote{width:100%;box-sizing:border-box}}
+#species-skill-dialog .crow-speaking-panel{margin:8px 0;gap:12px}
+#species-skill-dialog .crow-speaking-panel>img{width:112px;height:88px;flex-basis:112px;object-fit:cover;object-position:50% 30%}
+#species-skill-dialog .crow-speaking-panel>blockquote{padding:8px 12px}
+#species-skill-dialog .crow-speaking-panel p{margin:4px 0 0}
+/* Keep the existing desktop popup and its source footer within the review
+   viewport while giving Crow a pictured speaking panel. */
+@media screen and (min-width:851px){
+ body[data-education-popup="true"] #precareer-dialog:is([data-panel="result"],[data-panel="event"]) #workspace{padding:16px 24px 4px}
+ #precareer-dialog[data-panel="result"] #step-title{position:absolute;top:3px;left:24px;margin:0;font-size:16px;line-height:1.2;max-width:calc(100% - 140px)}
+ #precareer-dialog:is([data-panel="result"],[data-panel="event"]) .precareer-information-rows{margin-top:4px}
+ #precareer-dialog:is([data-panel="result"],[data-panel="event"]) .precareer-information-rows button{min-height:44px;padding-top:8px;padding-bottom:8px}
+ .education-result .education-result-crow>img{height:88px}
+}
+.education-event-content.crow-speaking-panel{padding:0;border:0;background:none}
+@media screen and (min-width:851px){
+ body[data-education-popup="true"] #precareer-dialog:is([data-panel="result"],[data-panel="event"]) #workspace{padding-top:12px}
+ #precareer-dialog .education-result .education-result-heading .education-result-art{width:62px;height:54px}
+ .education-event-content.crow-speaking-panel{gap:12px}
+ .education-event-content.crow-speaking-panel>img{width:112px;height:112px;flex-basis:112px}
+ .education-event-content.crow-speaking-panel>blockquote{padding:10px 12px}
+ .education-event-content.crow-speaking-panel>blockquote p{font-size:20px;line-height:1.3}
+}
+/* A required-action warning becomes the active speaker in its scope. */
+#workspace:has(.required-action-warning:not([hidden])) .crow-speaking-panel,
+dialog:has(.required-action-warning:not([hidden])) .crow-speaking-panel{display:none}
+.education-graduation-prompt .education-event-content.crow-speaking-panel{border:4px solid #91f3f3;padding:12px 20px 14px}
+.education-graduation-prompt .education-event-content.crow-speaking-panel>blockquote{border:0;background:transparent}
+@media screen and (max-width:650px){.education-graduation-prompt .education-event-content.crow-speaking-panel{flex-direction:column}.education-graduation-prompt .education-event-content.crow-speaking-panel>img{width:112px;height:112px;flex-basis:auto}.education-graduation-prompt .education-event-content.crow-speaking-panel>blockquote{width:100%;box-sizing:border-box;padding:0}}
+/* Word-heavy decisions retain the full explanation width below Crow, while
+   their separate pending dice keep the approved desktop size. */
+@media screen and (min-width:1101px){
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]) .education-event-content.crow-speaking-panel{display:block;border:2px solid #99edf1;background:#061b29;padding:12px}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]) .education-event-content.crow-speaking-panel>img{float:left;width:112px;height:112px;margin:0 12px 8px 0}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]) .education-event-content.crow-speaking-panel>blockquote{display:contents}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]) .education-event-content.crow-speaking-panel::after{content:"";display:block;clear:both}
+}
+.education-checkpoint-instruction.crow-speaking-panel{margin:0}
+.education-checkpoint-instruction.crow-speaking-panel>img{width:112px;height:112px;flex-basis:112px}
+.education-checkpoint-instruction.crow-speaking-panel>blockquote{padding:10px 12px}
+@media screen and (min-width:1101px){
+ .education-checkpoint-next:has(>.education-pending-dice){display:grid;grid-template-columns:minmax(0,1fr) 316px;gap:12px 18px;align-items:center}
+ .education-checkpoint-next:has(>.education-pending-dice)>*{grid-column:1 / -1}
+ .education-checkpoint-next:has(>.education-pending-dice)>.education-checkpoint-instruction{grid-column:1;grid-row:1}
+ .education-checkpoint-next:has(>.education-pending-dice)>.education-pending-dice{grid-column:2;grid-row:1;margin:0}
+ .education-checkpoint-instruction.crow-speaking-panel>blockquote p{font-size:20px}
+}
+/* Keep the existing Background selection grid compact with its pictured guide. */
+@media screen and (min-width:851px){body[data-stage="background"] #workspace .crow-speaking-panel{margin:2px 0;gap:12px}body[data-stage="background"] #workspace .background-grid{row-gap:2px}body[data-stage="background"] #workspace .crow-speaking-panel>img{width:144px;height:96px;flex-basis:144px;object-fit:cover;object-position:50% 25%}body[data-stage="background"] #workspace .crow-speaking-panel>blockquote{padding:10px 14px}}
+
+/* Existing information dialog: one pictured speaker and a reachable Close bar. */
+@media screen{
+ .opening-help-dialog{border-color:#9cdbed}
+ .opening-help-dialog .opening-help-heading{position:sticky;top:0;z-index:2;padding-bottom:12px;background:#061a28}
+ .opening-help-dialog .opening-help-heading h2{color:#ffd34b}
+ .opening-help-dialog #opening-help-copy .opening-help-crow{display:block;margin:8px 0;padding:14px;border:1px solid #9cdbed;border-radius:10px;background:#061b29;color:#f5f7fa}
+ .opening-help-dialog #opening-help-copy .opening-help-crow>img{float:left;width:112px;height:128px;margin:0 14px 8px 0;object-fit:contain}
+ .opening-help-dialog #opening-help-copy .opening-help-crow>blockquote{display:contents}
+ .opening-help-dialog #opening-help-copy .opening-help-crow::after{content:'';display:block;clear:both}
+}
+@media screen{
+ .opening-help-dialog .opening-help-heading h2{min-width:0;overflow-wrap:anywhere}
+ .opening-help-dialog .opening-help-heading>[data-opening-help-close]{flex-shrink:0}
+}
+@media screen and (max-width:360px){
+ .opening-help-dialog .opening-help-heading{gap:8px}
+ .opening-help-dialog .opening-help-heading h2{font-size:20px}
+ .opening-help-dialog .opening-help-heading>[data-opening-help-close]{padding:8px 12px}
+}
+/* Cover the dialog's top padding while text scrolls behind the Close bar. */
+@media screen{.opening-help-dialog .opening-help-heading{box-shadow:0 -24px 0 #061a28}}
+@media screen and (max-width:360px){
+ .opening-help-dialog #opening-help-copy .opening-help-crow>img{float:none;display:block;margin:0 auto 8px}
+}
+/* Full-width completion speech at phone sizes; keep the approved portrait size. */
+@media screen and (max-width:650px){
+ body[data-completion-shell="true"] #workspace :is(.crow-speaking-panel,.career-pilot-guidance){display:flex;flex-direction:column;align-items:stretch}
+ body[data-completion-shell="true"] #workspace :is(.crow-speaking-panel,.career-pilot-guidance)>:is(img,.crow-assistance){align-self:center}
+ body[data-completion-shell="true"] #workspace .crow-speaking-panel>img{width:112px;height:128px;flex-basis:auto;object-fit:contain}
+ body[data-completion-shell="true"] #workspace :is(.crow-speaking-panel>blockquote,.career-crow-bubble){width:100%;box-sizing:border-box;overflow-wrap:normal;word-break:normal}
+ body[data-completion-shell="true"] #workspace .result-information{overflow-wrap:anywhere}
+ .opening-help-dialog .opening-help-heading{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+ .opening-help-dialog .opening-help-heading h2{grid-row:2;font-size:28px;overflow-wrap:normal;word-break:normal}
+ .opening-help-dialog .opening-help-heading>[data-opening-help-close]{grid-row:1;justify-self:end}
+ .opening-help-dialog #opening-help-copy .opening-help-crow>img{float:none;display:block;margin:0 auto 8px}
+}
+
+/* Keep completion actions visible before the full recorded explanation. */
+@media screen and (max-width:650px){
+ body[data-completion-shell="true"] #workspace .final-sheet-invitation{margin:12px 0}
+ body[data-completion-shell="true"] #workspace .final-sheet-invitation p{margin:8px 0;font-size:15px}
+ body[data-completion-shell="true"] #workspace .crow-speaking-panel{padding:10px;gap:6px}
+ body[data-completion-shell="true"] #workspace .crow-speaking-panel>img{height:96px}
+ body[data-completion-shell="true"] #workspace .crow-speaking-panel>blockquote{padding:10px}
+ body[data-completion-shell="true"] #workspace .crow-speaking-panel h3{font-size:20px}
+}

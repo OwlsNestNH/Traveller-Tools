@@ -31,3 +31,10 @@ test('skill provenance uses recorded source, timing and progression only',()=>{
  assert.equal(JSON.stringify(rows),before);
  assert.deepEqual(characterSheetSkillAcquisitions([{title:'Skill choice',termLabel:'Timing not recorded',changes:[{path:'skills.Medic',after:1}]}],'Medic'),['Skill choice · Timing not recorded · Gained Level/1']);
 });
+
+test('expandable term groups preserve every row and recorded chronology without inferred timing',async()=>{
+ const {characterSheetTermGroups}=await import('../gui/character-sheet-history.mjs');
+ const rows=[{number:1,timing:{term:1,phase:'before'}},{number:2,timing:{term:1,phase:'term'}},{number:3,timing:{term:1,phase:'after'}},{number:4,timing:{term:2,phase:'before'}},{number:5,timing:null},{number:6,timing:{term:2,phase:'term'}}],before=JSON.stringify(rows),groups=characterSheetTermGroups(rows);
+ assert.deepEqual(groups.map(g=>g.label),['Pre-Term','Term 1','Term 2','Timing not recorded']);assert.deepEqual(groups.map(g=>g.rows.map(r=>r.number)),[[1],[2,3],[4,6],[5]]);assert.equal(groups.reduce((n,g)=>n+g.rows.length,0),rows.length);assert.equal(JSON.stringify(rows),before);
+ const r=finalSheetFixture({finish:false}),html=characterSheetHistoryView(r,r.session,catalog);assert.match(html,/<details class="traveller-sheet-term"><summary>Pre-Term/);assert.match(html,/<summary>Term 1/);assert.doesNotMatch(html,/class="traveller-sheet-term" open/);assert.match(html,/recorded entr/);
+});

@@ -5,7 +5,7 @@ import {project,execute,exportSession,importSession} from '../engine/session.mjs
 import {buildAslanOriginFixture} from './aslan-origin-fixtures.mjs';
 import {forceEducation,command} from './education-result-fixtures.mjs';
 const url=new URL('../engine/session.mjs',import.meta.url);
-const source=(await readFile(url,'utf8')).replace(/from\s+'(\.\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));
+const source=(await readFile(url,'utf8')).replace(/from\s+'(\.\.?\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));
 const guard="if(state.deferredSpecializations&&state.character.species==='aslan'&&Array.isArray(state.pendingChoice?.options))";
 assert.ok(source.includes(guard));
 const load=s=>import('data:text/javascript;base64,'+Buffer.from(s).toString('base64'));

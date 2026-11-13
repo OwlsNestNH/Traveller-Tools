@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {api,exportSession,importSession,project} from '../engine/session.mjs';
 import {conciseResult,isBasicTrainingChoice,latestResultView} from '../gui/concise-result.mjs';
-import {characterEffectDetails} from '../gui/roll-result-view.mjs';
+import {rollResult,characterEffectDetails} from '../gui/roll-result-view.mjs';
 import {fullActionLog} from '../gui/log-download.mjs';
 import {qualificationOutcomeFixture} from './check-outcome-fixtures.mjs';
 import {laterCareerFixture,treatmentFixture,equipmentFixture,failedSurvivalFixture} from './concise-result-fixtures.mjs';
@@ -20,7 +20,7 @@ test('failed survival at term end keeps the check, mishap and rival without repe
 test('later career entry shows the actual check and new career, not bookkeeping; choice is named accurately',()=>{
  const r=laterCareerFixture().after,result=conciseResult(r.log.at(-1),r.state,catalog),before=exportSession(r.session);
  assert.equal(result.title,'Entered Rogue / Thief.');assert.equal(result.details.length,1);assert.match(result.text,/\[6, 4\].*total 11 against 6\+; succeeded/);assert.doesNotMatch(result.text,/none → 0|Officer commission|Pending:/);assert.equal(isBasicTrainingChoice(r.state),true);
- const html=latestResultView(result,{esc});assert.match(html,/<details class="result-information"><summary><span aria-hidden="true">ⓘ<\/span> Result details/);assert.doesNotMatch(html,/<details[^>]* open/);assert.equal(exportSession(r.session),before);
+ const html=latestResultView(result,{esc});assert.match(html,/<details class="result-information"><summary>Result details/);assert.doesNotMatch(html,/<details[^>]* open/);assert.equal(exportSession(r.session),before);
  const replay=project(importSession(before));assert.deepEqual(conciseResult(replay.log.at(-1),replay.state,catalog),result);
 });
 test('first-career skill awards are grouped without omitting any skill; qualification failures stay failures',()=>{
@@ -61,3 +61,12 @@ test('replacement equipment names the trade-in and does not hide unrelated benef
  ]};
  const result=conciseResult(event,{},catalog);assert.match(result.text,/Received Combat Armour/);assert.match(result.text,/Traded in Cloth Armour/);assert.match(result.text,/Ship Share × 2/);assert.match(result.text,/Removed: Membership/);assert.doesNotMatch(result.text,/Benefit: Combat Armour/);
 });
+
+test('education acknowledgement describes only the accepted action and keeps its original log',()=>{
+ const event={id:'acknowledgement',type:'acknowledge-education-result',summary:'Education result acknowledged. No additional dice or awards.',rolls:[],changes:[]},before=JSON.stringify(event),result=conciseResult(event,{stage:'education-event'},{});
+ assert.match(result.text,/Continue preserved that result/);assert.match(result.text,/separate roll/);assert.equal(JSON.stringify(event),before);
+});
+
+import {completionReviewFixtures} from './completion-review-fixtures.mjs';
+test('confirmed death is a compact failure outcome with complete recorded details retained',()=>{const r=completionReviewFixtures().find(([stage])=>stage==='deceased')[1],event=r.log.at(-1),before=exportSession(r.session),result=conciseResult(event,r.state,catalog);assert.equal(result.status,'failure');assert.equal(result.title,'This life path ended in death.');assert.match(result.text,/Recorded referee injury ruling/);assert.match(result.text,/not automatic death/);assert.match(result.text,/Synthetic referee confirmation/);assert.equal(result.compact,true);assert.deepEqual(result.full,rollResult(event,r.state,catalog));const html=latestResultView(result,{esc,tagline:'The result is recorded.'});assert.match(html,/result-failure/);assert.doesNotMatch(html,/<details[^>]* open/);for(const detail of result.full.details)assert.ok(html.includes(esc(detail)));assert.equal(exportSession(r.session),before);});
+test('retirement summary keeps the actual final benefit and complete audit',()=>{const r=completionReviewFixtures().find(([stage])=>stage==='retirement')[1],event=r.log.at(-1),before=exportSession(r.session),result=conciseResult(event,r.state,catalog);assert.equal(event.type,'benefit');assert.equal(result.title,'Retired from character creation.');assert.equal(result.compact,true);assert.match(result.text,/Material benefit/);assert.match(result.text,/Clan Shares awarded: 2/);assert.match(result.text,/Unspent Clan Shares: 9/);assert.doesNotMatch(result.text,/Benefit: Clan Share × 9/);assert.deepEqual(result.full,rollResult(event,r.state,catalog));assert.equal(exportSession(r.session),before);});

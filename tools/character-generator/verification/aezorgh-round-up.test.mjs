@@ -32,7 +32,7 @@ test('new boons retain best two before rounding; targeted replay and original au
  }
 });
 test('compatible .16-.21 revisions retain floor outcomes, summaries, bytes and continued play',()=>{
- for(const revision of COMPATIBLE_RULES_REVISIONS.filter(x=>![RULES_REVISION,'character-preview-2026-11-09.31','character-preview-2026-11-09.30','character-preview-2026-11-09.29','character-preview-2026-11-09.27','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25'].includes(x))){
+ for(const revision of COMPATIBLE_RULES_REVISIONS.filter(x=>![RULES_REVISION,'character-preview-2026-11-13.32','character-preview-2026-11-09.31','character-preview-2026-11-09.30','character-preview-2026-11-09.29','character-preview-2026-11-09.27','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25'].includes(x))){
   let r=pool([5,8,7,9,3,11],revision);assert.equal(r.state.aezorghRoundUp,undefined);assert.deepEqual(r.state.pool.map(p=>p.derivedBase),[2,8,3,9,1,5]);
   assert.match(r.log.find(x=>x.type==='roll-statistics').summary,/round down before species bonuses/);
   const saved=exportSession(r.session);assert.equal(exportSession(importSession(saved)),saved);assert.deepEqual(project(importSession(saved)).state,r.state);

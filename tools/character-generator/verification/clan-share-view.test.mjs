@@ -50,3 +50,5 @@ test('player-facing share records use numbered names, retaining hidden stable ID
  const html=clanShareSheet(s,context);assert.match(html,/Clan Share award 1/);assert.doesNotMatch(html,/clan-lot-42|clan-lot-91/);assert.equal(JSON.stringify(s),before);
  const form=clanShareView(state({config:{gm:true}}),context);assert.match(form,/value="person-2">Same name · Contact 2/);assert.doesNotMatch(form.replace(/<[^>]*>/g,''),/person-2|lot-1|lot-2/);
 });
+
+test('sheet distinguishes aggregate Clan Shares from individual awards without changing balances',()=>{const lots=[6,1,1].map((n,i)=>({id:'lot-'+i,awarded:n,available:n,spent:0,forfeited:0})),s={character:{clanShareLots:lots}},before=JSON.stringify(s),html=clanShareSheet(s,context);assert.match(html,/All recorded awards: 8 awarded; 8 unspent; 0 exchanged; 0 forfeited/);assert.match(html,/Individual awards/);assert.equal((html.match(/1 awarded; 1 available/g)??[]).length,2);assert.equal(JSON.stringify(s),before);const unknown=clanShareSheet({character:{clanShareLots:[{id:'unknown',awarded:2}]}},context);assert.match(unknown,/2 awarded; Not recorded unspent/);});

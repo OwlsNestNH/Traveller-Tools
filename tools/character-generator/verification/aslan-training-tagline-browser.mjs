@@ -39,27 +39,27 @@ try{
    assert.deepEqual(current.state,execute(item.before.session,item.command,{id:event.id}).state,'state and future RNG unchanged');
    const text=aslanTrainingTagline(event,current.state,{previousState:item.before.state,command:item.command}),tag=page.locator('#last-action-result .outcome-tagline');
    assert.equal(!!text,item.expected);assert.equal(await tag.count(),item.expected?1:0);
-   if(text){assert.equal(await tag.innerText(),text);assert.ok(!(await page.locator('#message').innerText()).includes(text));assert.equal(await tag.getAttribute('aria-live'),null);assert.equal(await tag.getAttribute('tabindex'),null);}
+   if(text){assert.equal(await tag.locator('img').count(),1);assert.match(await tag.locator('blockquote > strong').innerText(),/Crow says/);assert.equal(await tag.locator('blockquote > p').first().innerText(),text);assert.ok(!(await page.locator('#message').innerText()).includes(text));assert.equal(await tag.getAttribute('aria-live'),null);assert.equal(await tag.getAttribute('tabindex'),null);}
    assert.equal(await page.locator('dialog[open]').count(),0);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
    const fullLog=await downloadedActionLog(page);if(text)assert.ok(!fullLog.includes(text));
    if(text){
-    const ratio=await tag.evaluate(n=>{
+    const ratio=await tag.evaluate(root=>{const n=root.querySelector('blockquote > p');
      const rgb=c=>c.match(/\d+/g).slice(0,3).map(Number),lum=a=>a.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
      let p=n,bg;while(p){const c=getComputedStyle(p).backgroundColor;if(c!=='rgba(0, 0, 0, 0)'&&c!=='transparent'){bg=rgb(c);break;}p=p.parentElement;}
      const [a,b]=[lum(rgb(getComputedStyle(n).color)),lum(bg)].sort((a,b)=>b-a);return(a+.05)/(b+.05);
     });assert.ok(ratio>=4.5,'normal text contrast');
    }
    await page.locator('#cancel-character').click();await page.locator('#cancel-character-dialog[open]').waitFor();await page.keyboard.press('Escape');
-   assert.equal(await saved(page),raw);if(text)assert.equal(await tag.innerText(),text);
-   await page.reload();await ready(page);assert.equal(await tag.count(),text?1:0);if(text)assert.equal(await tag.innerText(),text);assert.equal(await saved(page),raw);
+   assert.equal(await saved(page),raw);if(text)assert.equal(await tag.locator('blockquote > p').first().innerText(),text);
+   await page.reload();await ready(page);assert.equal(await tag.count(),text?1:0);if(text)assert.equal(await tag.locator('blockquote > p').first().innerText(),text);assert.equal(await saved(page),raw);
    assert.equal(await restoredAslanTrainingTagline(session,current,async request=>api(request)),text);
    // Real file import, not only localStorage restore. Identity and provenance
    // are replayed through the same public static/HTTP JSON contract.
    page.once('dialog',dialog=>dialog.accept());
    await page.locator('#import').setInputFiles({name:'synthetic-aslan.json',mimeType:'application/json',buffer:Buffer.from(raw)});
    await page.waitForFunction(()=>document.querySelector('#message').textContent.includes('Character loaded.'));await ready(page);
-   assert.equal(await saved(page),raw);assert.equal(await downloadedActionLog(page),fullLog);if(text)assert.equal(await tag.innerText(),text);
+   assert.equal(await saved(page),raw);assert.equal(await downloadedActionLog(page),fullLog);if(text)assert.equal(await tag.locator('blockquote > p').first().innerText(),text);
    if(transport==='static'&&['direct','computers','historical-allocation'].includes(item.name))await page.screenshot({path:fileURLToPath(new URL('aslan-training-tagline-'+item.name+'-'+width+'.png',out)),fullPage:true});
    // A later unrelated action removes, rather than rerolls, the previous line.
    await load(page,run({...current,session},'notes',{text:'Synthetic review note'}).session);assert.equal(await tag.count(),0);

@@ -1,3 +1,4 @@
+import {crowSpeakingPanel} from './crow-speaking-panel.mjs';
 import {eventResultDetails} from './event-result-view.mjs';
 // Presentation only. The full result and immutable action log remain available.
 import {rollResult,characterEffectDetails,modifierEffectDetails,pendingEffectDetails} from './roll-result-view.mjs';
@@ -17,7 +18,22 @@ function otherEffects(event,catalog,keep){
 }
 export function conciseResult(event,state,catalog){
  const full=rollResult(event,state,catalog);if(!full)return null;
+ if(full.status!=='error'&&state?.stage==='deceased'&&state.character?.deceased===true){const title='This life path ended in death.',injury=state.character.injuries?.findLast(i=>i.deceased&&i.zeroRuling?.survives===false),details=state.character.ironManDeath?['Iron Man: failed Survival was fatal instead of rolling a mishap. Companion Update 2024 p. 13.',...diceDetails(event)]:injury?['Recorded referee injury ruling; this was not automatic death from a failed Survival check or a single zero score.','Referee reason: '+injury.zeroRuling.note]:[];return {title,details,status:'failure',text:[title,...details].join(' '),full,compact:true};}
+ if(full.status!=='error'&&state?.stage==='finish'){const title='Recorded character ready for review.',details=['Source-assisted steps remain listed in the record.'];return {title,details,status:'info',text:[title,...details].join(' '),full,compact:true};}
+ if(full.status!=='error'&&state?.stage==='retirement'&&state.character?.retirementFromCreation===true){
+  const title='Retired from character creation.';let details=[];
+  if(event.type==='benefit'){
+   const awards=(event.changes??[]).filter(c=>/^benefitAwards\.\d+$/.test(c.path)&&!c.before&&c.after?.definitionId==='aslan.clan-share').map(c=>c.after);
+   const quantity=awards.length&&awards.every(a=>Number.isSafeInteger(a.quantity)&&a.quantity>=0)?awards.reduce((sum,a)=>sum+a.quantity,0):null,known=Number.isSafeInteger(quantity);
+   const changes=known?(event.changes??[]).filter(c=>!/^clanShareLots\./.test(c.path)&&!(/^benefits\.\d+$|^benefitAwards\.\d+$/.test(c.path)&&c.after?.definitionId==='aslan.clan-share')):event.changes;
+   details=unique([...diceDetails(event),...(known?['Clan Shares awarded: '+quantity+'.']:[]),...characterEffectDetails({...event,changes},catalog),...(known&&Number.isSafeInteger(state.clanShareOptions?.balance)?['Unspent Clan Shares: '+state.clanShareOptions.balance+'.']:[])]);
+  }
+  details=details.filter(detail=>!detail.startsWith('Benefit rolls:'));
+  return {title,details,status:'info',text:[title,...details].join(' '),full,compact:true};
+ }
+
  const changes=event.changes??[];let title,details=[];
+ if(['acknowledge-education-result','acknowledge-education-event'].includes(event.type)){title='Previous education result acknowledged';details=['Continue preserved that result without rolling dice or granting awards. Follow the next step below; it may offer a separate roll.'];}
  const survival=event.type==='survival'&&state?.stage==='term-end'?survivalResult(event,state):null;
  if(survival?.status==='failure'){
   title=full.title;
@@ -73,8 +89,8 @@ export function conciseResult(event,state,catalog){
  if(basicSkills.length>1)details=[...details.filter(detail=>!basicSkills.includes(detail)),'Basic training: '+basicSkills.map(detail=>detail.slice(6).replace(': untrained → 0.',' 0')).join(', ')+'.'];
  details=unique([...eventResultDetails(event),...details]);return {title,details,status:full.status,text:[title,...details].join(' '),full,compact:true};
 }
-export function latestResultView(result,{esc,tagline=null}){
+export function latestResultView(result,{esc,tagline=null,crowType='generic'}){
  if(!result)return '';
  const paragraphs=details=>details.map(detail=>'<p>'+esc(detail)+'</p>').join('');
- return '<section id="last-action-result" class="result-panel result-'+result.status+'" data-result-status="'+result.status+'" aria-label="Latest result"><p class="result-status">'+({success:'Success',failure:'Failure',pending:'Pending resolution',info:'Information'}[result.status]??'Information')+'</p><h3>'+esc(result.title)+'</h3>'+paragraphs(result.details)+(tagline?'<p class="outcome-tagline">'+esc(tagline)+'</p>':'')+(result.compact?'<details class="result-information"><summary><span aria-hidden="true">ⓘ</span> Result details</summary><h4>'+esc(result.full.title)+'</h4>'+paragraphs(result.full.details)+'</details>':'')+'</section>';
+ return '<section id="last-action-result" class="result-panel result-'+result.status+'" data-result-status="'+result.status+'" aria-label="Latest result"><p class="result-status">'+({success:'Success',failure:'Failure',pending:'Pending resolution',info:'Information'}[result.status]??'Information')+'</p><h3>'+esc(result.title)+'</h3>'+paragraphs(result.details)+(tagline&&result.status!=='error'?crowSpeakingPanel({message:tagline,type:crowType,tone:result.status==='success'?'success':result.status==='failure'?'failure':'information',className:'outcome-tagline'}):'')+(result.compact?'<details class="result-information"><summary>Result details</summary><h4>'+esc(result.full.title)+'</h4>'+paragraphs(result.full.details)+'</details>':'')+'</section>';
 }

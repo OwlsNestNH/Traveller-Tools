@@ -1,3 +1,7 @@
+import {mountRecordBars} from './record-bars.mjs';
+import {mountCrowSpeakingContent} from './crow-speaking-panel.mjs';
+import {academyTrainingModel} from './academy-training-model.mjs';
+export {academyTrainingModel} from './academy-training-model.mjs';
 import {educationCheckpointModel} from './education-event-checkpoint-view.mjs';
 import {aslanFamilyDie} from './aslan-family-popup.mjs';
 import {currentActionNumbers} from './final-sheet-history.mjs';
@@ -27,12 +31,13 @@ export function preCareerChoicesView(state,catalog,{esc,button}){
 const signed=value=>value>=0?'+'+value:String(value);
 // This prompt changes presentation only; the existing command owns all event effects.
 export function educationEventModel(state,projection){
+ const training=academyTrainingModel(state);if(training)return training;
  const checkpoint=educationCheckpointModel(projection);
  const potential=educationPotentialModel(state);if(potential)return potential;
  const nested=educationNestedChoiceModel(state);if(nested)return nested;
  if(checkpoint&&checkpoint.mode!=='existing-choice')return checkpoint;
- if(projection?.educationGraduationPreview)return {name:'University',kind:'graduation',preview:projection.educationGraduationPreview};
- return state?.stage==='education-event'&&state.character.educations?.[state.education]?.id==='core.university'?{name:'University'}:null;
+ if(projection?.educationGraduationPreview)return {id:projection.educationGraduationPreview.id,name:projection.educationGraduationPreview.name,kind:'graduation',preview:projection.educationGraduationPreview};
+ const record=state?.character?.educations?.[state.education],id=record?.id,names={'core.university':'University','core.academy-army':'Army academy','core.academy-marine':'Marine academy','core.academy-navy':'Navy academy'};return state?.stage==='education-event'&&names[id]&&record.entry?.id===id?{id,name:names[id],kind:'event'}:null;
 }
 export function educationPotentialModel(state){
  const record=state?.character.educations?.[state.education],choice=state?.pendingChoice,options=choice?.options,effects=options?.[0]?.effects;
@@ -61,8 +66,9 @@ export function educationNestedChoiceView(model,state,{esc}){
  return '<section class="education-event-prompt education-nested-prompt" data-education-choice="'+model.kind+'"><div class="education-event-heading">'+icon('core.university')+'<h3>University education event</h3></div><section class="education-event-content"><p class="education-potential-label">Event '+model.event+' · '+(hobby?'Hobby skill':'Study challenge')+'</p><h4>'+(hobby?'Choose a hobby skill':'Choose a skill you learned')+'</h4><p>'+(hobby?'Gain an allowed base skill at level 0.':'Study challenge · Target 9+')+'</p><button type="button" class="education-potential-rules" data-education-info="nested"><span class="precareer-info-icon" aria-hidden="true">i</span> Rules and consequences</button></section><label class="education-nested-label">'+(hobby?'Hobby skill':'Skill learned or improved this term')+'<select id="'+id+'"><option value="">Choose a skill</option>'+choices.map(name=>'<option value="'+esc(name)+'">'+esc(name)+'</option>').join('')+'</select></label>'+(hobby?'':educationDicePair())+'<button type="button" class="education-event-roll" data-action="'+(hobby?'education-skill':'education-check')+'">'+(hobby?icon('core.university'):'')+'<span>'+(hobby?'Record hobby skill':'Roll the study challenge')+'</span></button><p class="education-event-agency">'+(hobby?'Choose a skill, then record your choice.':'No challenge roll is made until you press Roll.')+'</p></section>';
 }
 
-export function educationEventView(){
- return '<section class="education-event-prompt"><div class="education-event-heading">'+icon('core.university')+'<div><h3>University education event</h3><p>Your initial study skills and EDU gain are recorded.</p></div></div><section class="education-event-content"><h4>What happened during your studies?</h4><p>Roll 2D for one education event.</p><p>Resolve its outcome and any choices before graduation.</p></section>'+educationDicePair()+'<button type="button" data-action="education-event" class="education-event-roll"><span>Roll education event</span></button><p class="education-event-agency">You choose when to roll. Nothing has been rolled yet.</p></section>';
+export function educationEventView(model={}){
+ const name=({'core.academy-army':'Army academy','core.academy-marine':'Marine academy','core.academy-navy':'Navy academy'})[model.id]??'University';
+ return '<section class="education-event-prompt"><div class="education-event-heading">'+icon('core.university')+'<div><h3>'+name+' education event</h3><p>'+(name==='University'?'Your initial study skills and EDU gain are recorded.':'Your initial academy training awards are recorded.')+'</p></div></div><section class="education-event-content"><h4>What happened during your studies?</h4><p>Roll 2D for one education event.</p><p>Resolve its outcome and any choices before graduation.</p></section>'+educationDicePair()+'<button type="button" data-action="education-event" class="education-event-roll"><span>Roll education event</span></button><p class="education-event-agency">You choose when to roll. Nothing has been rolled yet.</p></section>';
 }
 
 // Filled, dimensional cartoon art for the approved graduation prompt.
@@ -70,7 +76,7 @@ const graduationCap='<svg class="graduation-cap-art" viewBox="0 0 120 96" aria-h
 
 export function educationGraduationView(model,{esc}){
  const p=model.preview,info=(kind,label)=>'<button type="button" class="education-prompt-info" data-education-info="'+kind+'" aria-label="'+label+'">i</button>';
- return '<section class="education-event-prompt education-graduation-prompt"><div class="education-event-heading">'+graduationCap+'<div class="graduation-title-group"><h3>University graduation</h3>'+info('graduation','What graduation changes')+'</div>'+'</div><section class="education-event-content"><h4>Graduation '+esc(p.target)+'+ · Honours '+esc(p.honoursTarget)+'+</h4><p class="graduation-formula">Roll 2D '+(p.modifier<0?'− '+Math.abs(p.modifier):'+ '+p.modifier)+'</p><p>'+esc(p.stat)+' '+esc(p.score)+' · Modifier '+esc(signed(p.modifier))+' '+info('calculation','How the graduation roll is calculated')+'</p></section>'+educationDicePair()+'<button type="button" data-action="education-graduation" class="education-event-roll"><span>Roll for graduation</span></button><p class="education-event-agency">You choose when to roll.</p></section>';
+ return '<section class="education-event-prompt education-graduation-prompt"><div class="education-event-heading">'+graduationCap+'<div class="graduation-title-group"><h3>'+esc(model.name??'University')+' graduation</h3>'+info('graduation','What graduation changes')+'</div>'+'</div><section class="education-event-content"><h4>Graduation '+esc(p.target)+'+ · Honours '+esc(p.honoursTarget)+'+</h4><p class="graduation-formula">Roll 2D '+(p.modifier<0?'− '+Math.abs(p.modifier):'+ '+p.modifier)+'</p><p>'+esc(p.stat)+' '+esc(p.score)+' · Modifier '+esc(signed(p.modifier))+' '+info('calculation','How the graduation roll is calculated')+'</p></section>'+educationDicePair()+'<button type="button" data-action="education-graduation" class="education-event-roll"><span>Roll for graduation</span></button><p class="education-event-agency">You choose when to roll.</p></section>';
 }
 
 export function admissionPreviewView(state,catalog,id,{esc,sourceLabel}){
@@ -162,19 +168,16 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  if(resultModel){info.querySelector('#precareer-information-result').innerHTML='<h3>'+esc(resultModel.name)+' '+esc(resultModel.kind)+'</h3><p>'+resultModel.dice.map(esc).join(' + ')+' '+(resultModel.modifier<0?'− ':'+ ')+Math.abs(resultModel.modifier)+' = '+esc(resultModel.total)+' · Target '+esc(resultModel.target)+'+</p><ul>'+[...(resultModel.details??[]),...(resultModel.benefits??[]),...(resultModel.retained??[]),...(resultModel.missed??[])].map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul>';workspace.querySelector('#precareer-result-open').remove();workspace.querySelector('#precareer-rules-open strong').textContent='Result details and sources';workspace.querySelector('#precareer-rules-open small').remove();}
  // Move existing record nodes, never clone editors or their IDs. Each top-level
  // bar is part of one exclusive group, with a fallback for older browsers.
- const rail=context.querySelector('#precareer-rail'),previousBar=rail.dataset.openBar;
+ const rail=context.querySelector('#precareer-rail');
  const nodes=[...sheet.children],stats=nodes.find(n=>n.querySelector('.stats')),skills=nodes.find(n=>n.querySelector('h3')?.textContent==='Skills'),notes=nodes.find(n=>n.id==='notes-connections'),origin=nodes.find(n=>n.matches('.aslan-origin-sheet'));
  const headerNodes=nodes.filter(n=>n.matches('.sheet-meta,.sheet-facts'));overview.append(...headerNodes);
  const groups=[['precareer-characteristics','Characteristics',stats?[stats]:[]],['precareer-aslan-origin','Aslan family and origin',origin?[origin]:[]],['precareer-skills','Skills',skills?[skills]:[]],['precareer-notes','Notes & connections',notes?[notes]:[]],['precareer-more-record','More character details',nodes.filter(n=>![stats,origin,skills,notes,...headerNodes].includes(n)&&n.tagName!=='H2'&&!n.matches('.eyebrow'))]];
  sheet.replaceChildren();
- for(const [id,label,contents] of groups){if(!contents.length)continue;const bar=root.createElement('details');bar.id=id;bar.dataset.precareerBar='';bar.name='precareer-record-bars';bar.innerHTML='<summary>'+label+' <span aria-hidden="true">+</span></summary>';bar.append(...contents);sheet.append(bar);bar.open=previousBar===id;
-  if(id==='precareer-notes')notes.open=bar.open;
-  bar.addEventListener('toggle',()=>{if(!bar.isConnected)return;if(id==='precareer-notes')notes.open=bar.open;if(bar.open){rail.dataset.openBar=id;for(const other of sheet.querySelectorAll(':scope > details'))if(other!==bar)other.open=false;}else if(rail.dataset.openBar===id)delete rail.dataset.openBar;});
- }
+ mountRecordBars(root,{sheet,host:rail,groups,notes,name:'precareer-record-bars'});
  if(eventModel?.kind==='graduation')for(const trigger of workspace.querySelectorAll('[data-education-info]'))trigger.addEventListener('click',()=>{
  const calculation=trigger.dataset.educationInfo==='calculation',p=eventModel.preview;
  info._restoreResult=info.querySelector('#precareer-information-result').innerHTML;
- info.querySelector('#precareer-information-result').innerHTML=calculation?'<p>Roll two dice and add your current '+esc(p.stat)+' characteristic modifier ('+esc(signed(p.modifier))+'). Graduation requires '+esc(p.target)+'+; honours requires '+esc(p.honoursTarget)+'+.</p>':'<p>Your initial awards and education event are already recorded. Successful graduation adds the existing study-skill and EDU awards, plus the applicable graduate career benefits. Honours improves the applicable career benefits.</p><p>If you do not graduate, your initial awards and resolved event gains are not removed by this result.</p>';
+ info.querySelector('#precareer-information-result').innerHTML=calculation?'<p>Roll two dice and add your current '+esc(p.stat)+' characteristic modifier ('+esc(signed(p.characteristicDM??p.modifier))+').'+(p.thresholdModifier?' Apply the recorded graduation bonus '+esc(signed(p.thresholdModifier))+'.':'')+' Total modifier: '+esc(signed(p.modifier))+'. Graduation requires '+esc(p.target)+'+; honours requires '+esc(p.honoursTarget)+'+.</p>':(eventModel.id&&eventModel.id!=='core.university'?'<p>Your initial academy training and resolved education event are already recorded. Graduation and honours apply the academy awards and eligible military-career benefits from the indicated source. A failed graduation may retain limited entry benefits where its recorded total permits; no graduation benefit is assumed before the roll.</p>':'<p>Your initial awards and education event are already recorded. Successful graduation adds the existing study-skill and EDU awards, plus the applicable graduate career benefits. Honours improves the applicable career benefits.</p><p>If you do not graduate, your initial awards and resolved event gains are not removed by this result.</p>');
  openInfo('result',calculation?'How graduation is calculated':'What graduation changes',trigger);
  });
  if(eventModel?.kind==='potential')workspace.querySelector('[data-education-info="potential"]').addEventListener('click',event=>{
@@ -190,6 +193,7 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  openInfo('result','Rules and consequences',event.currentTarget);
  });
  }
+ if(eventModel&&eventModel.kind!=='academy-training'){const instruction=['.education-event-content','.education-checkpoint-next','.education-checkpoint-neutral','.education-checkpoint-controls'].map(selector=>workspace.querySelector(selector)).find(Boolean);if(instruction?.classList.contains('education-checkpoint-next')){const text=root.createElement('div');text.className='education-checkpoint-instruction';for(const child of [...instruction.children]){if(!['H4','P'].includes(child.tagName)||child.querySelector('button,input,select,textarea'))break;text.append(child);}instruction.prepend(text);mountCrowSpeakingContent(root,text,{type:'skills'});}else mountCrowSpeakingContent(root,instruction,{type:'skills'});const checkpoint=workspace.querySelector('.education-checkpoint'),outerHeading=checkpoint?.querySelector(':scope > .education-event-heading h3');if(outerHeading)for(const nested of checkpoint.querySelectorAll('.education-checkpoint-controls .education-event-heading'))if(nested.querySelector('h3')?.textContent===outerHeading.textContent)nested.remove();}
  if(resultModel||eventModel)workspace.querySelector('#precareer-dismiss').textContent='Close';
  if(eventModel){for(const small of workspace.querySelectorAll('.precareer-information-rows small'))small.remove();if(dialog.open&&!dialog.matches(':modal')){dialog.close();open();}}
  if(!eventModel&&dialog.open&&dialog.matches(':modal')){dialog.close();open();}

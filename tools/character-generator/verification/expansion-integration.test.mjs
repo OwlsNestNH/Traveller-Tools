@@ -8,7 +8,7 @@ import {EXPANSION_PACK as pack} from '../engine/expansion-pack.mjs';
 // No production source is rewritten and no random fixture depends on a seed search.
 const sourceURL=new URL('../engine/session.mjs',import.meta.url);
 let source=await readFile(sourceURL,'utf8');
-source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,sourceURL).href));
+source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,sourceURL).href));
 source+='\nexport const expansionAudit={initial,queueEffects,apply,rankEffects,modifierTotal,asBasic,rulesCheck};\n';
 const {expansionAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 function fixture(species,id,assignment){

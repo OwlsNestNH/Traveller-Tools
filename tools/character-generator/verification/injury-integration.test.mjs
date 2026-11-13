@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createSession,execute,project,exportSession,importSession,catalog} from '../engine/session.mjs';
-const url=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,url).href));source+='\nexport const injuryAudit={apply,queueEffects,completeEffects,beginInjury};';
+const url=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,url).href));source+='\nexport const injuryAudit={apply,queueEffects,completeEffects,beginInjury};';
 const {injuryAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 function state(careerId='core.army',rank=0){const s=project(createSession('injury-fixture')).state;s.character.stats={STR:8,DEX:8,END:8,INT:8,EDU:8,SOC:8};s.character.species='human';s.stage='survival';if(careerId){const career=catalog().careers.find(c=>c.id===careerId);s.character.careers=[{id:careerId,assignment:career.assignments[0].id,rank,terms:1,benefitRolls:0,successfulTerms:1}];s.active=0;}return s;}
 const command=(s,type,payload={},rolls=[])=>a.apply(s,{type,payload},rolls);
