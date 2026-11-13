@@ -23,6 +23,15 @@ try{
    await page.getByRole('heading',{name:'Will you make it through?'}).waitFor();assert.equal(await page.locator('[data-action=training]').count(),0);
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(basic.session)});await page.reload();
    await page.getByRole('heading',{name:'Choose a basic-training skill'}).waitFor();
+   assert.match(await page.locator('#workspace').innerText(),/level 0.*survival/s);
+   const currentChoice=page.locator('[data-action=choose-effect][data-index="5"]');assert.match(await currentChoice.innerText(),/Persuade.*0/);await currentChoice.evaluate(button=>{button.click();button.click();});
+   await page.getByRole('heading',{name:'Will you make it through?'}).waitFor();
+   const currentRaw=await page.evaluate(key=>localStorage.getItem(key),key),current=api({operation:'project',session:JSON.parse(currentRaw)});
+   assert.equal(current.revision,basic.revision+1);assert.equal(current.state.character.skills.Persuade,0);assert.deepEqual(current.log.at(-1).rolls,[]);assert.equal(await page.locator('[data-action=training]').count(),0);
+   await page.reload();await page.getByRole('heading',{name:'Will you make it through?'}).waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),currentRaw);
+   // Preserve the full historical .31 ordinary-training route and its information popup.
+   const historical={...basic.session,rulesRevision:'character-preview-2026-11-09.31'};
+   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:JSON.stringify(historical,null,2)});await page.reload();await page.getByRole('heading',{name:'Choose a basic-training skill'}).waitFor();
    assert.match(await page.locator('#workspace').innerText(),/level 0.*regular training roll/s);
    await page.getByRole('button',{name:'Persuade 0',exact:true}).evaluate(button=>{button.click();button.click();});
    await page.getByRole('heading',{name:'Regular term training'}).waitFor();
