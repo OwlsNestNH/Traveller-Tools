@@ -23,7 +23,7 @@ function option(name,fallback,min,max) {
 const seeds=option('seeds',20,1,500),termGoal=option('terms',3,1,10),mental=option('mental',8,2,15);
 const sourceURL=new URL('../engine/session.mjs',import.meta.url);
 let source=await readFile(sourceURL,'utf8');
-source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,relative)=>'from '+JSON.stringify(new URL(relative,sourceURL).href));
+source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,relative)=>'from '+JSON.stringify(new URL(relative,sourceURL).href));
 source+='\nexport const continuationAudit={initial,enterCareer,apply,trainingOptions,exitOptions,activeReeducation,activeMerchantFine,advisoryRecord,advisoryOptions,crossCareerTraining,crossCareerCover};';
 const {continuationAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const currentPolicy=project(createSession('smoke-current-policy')).state;

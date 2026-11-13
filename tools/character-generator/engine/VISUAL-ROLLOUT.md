@@ -83,3 +83,12 @@ history. The death summary distinguishes Iron Man from explicit referee injury
 rulings and ageing crises. New and historical saves with no setting stay OFF.
 The shared engine gate covers the existing career Survival commands; narrative
 skill checks or failed qualification are not reclassified as Survival.
+
+Completion visual QA retains subdued Close, conceals the backing resume card
+while open, preserves the baseline340px desktop sidebar, uses full-width primary
+Finish/Retirement actions, and avoids duplicating Finish's visible heading. The
+recorded result is preserved in full audit details. The390px Finish primary
+action is asserted inside an844px first viewport. Before/after comparisons use
+the prior completion candidate6ded49a and actual Education/Background references.
+Iron Man review has an explicit six-PNG manifest and a dedicated CI artifact;
+a failed comparison must never be mistaken for completed Iron Man previews.
