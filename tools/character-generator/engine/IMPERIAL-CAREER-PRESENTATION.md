@@ -94,3 +94,6 @@ Future artwork guidance (not implemented): costumes are generally career-specifi
 not one per specialty. Corsair/Pirate may be reviewed as cosmetic exceptions,
 possibly with a small skull-and-crossbones flag behind Crow, without obscuring
 his face or messages. Vargr implementation remains a separate later phase.
+
+Scout, Merchant and Entertainer outfit drafts are review-only under
+`verification/review-assets`; none is mapped to production pending visual review.
