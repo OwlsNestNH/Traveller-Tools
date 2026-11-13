@@ -1,0 +1,11 @@
+# Failed-qualification choices
+
+The engine already offered the ordinary draft after eligible failed qualifications. The prior view placed a quiet draft control after a large result panel; in a reproducible 390×1000 case it began at y=1015. Army's window also retained specialty-selection guidance. This change makes projected alternatives prominent on a shared failed-qualification boundary, with failure-specific Crow guidance and read-only access to recorded history.
+
+The Core Rulebook Update 2022, printed pp.18–19, offers draft or Drifter after failed new-career qualification. The ordinary draft is once per lifetime, unless an explicit rule says otherwise, and is not limited to the first term. Printed p.20 distinguishes retained assignment changes (failure keeps the current assignment) from changes treated as new careers. The pre-career event on p.17 and Drifter event on p.29 retain their existing separate draft procedures and exceptions. These references were checked in the available source; no full tables or private source files are included.
+
+`qualification-fallback.mjs` consumes `fallbackOptions` without recreating eligibility rules. The model requires the actual `failed-entry` stage and excludes forced-draft events, whose existing view remains intact. A disabled or unavailable career preview is not a failed qualification. Source-specific alternatives, restrictions and disabled explanations remain authoritative. No engine command, rules revision, saved field, draft roll, outcome or eligibility predicate changes.
+
+Close/Escape dismisses the presentation without undoing the failed roll. Resume returns to the same choices. The history button opens the existing read-only log and restores focus. It offers no free second qualification attempt and no unconfirmed rewind. Existing GM correction and recovery remain unchanged.
+
+Regression coverage checks first/later-term failure across careers, once-used restrictions, species-specific permissions, assignment-change distinctions, idempotent and repeated actions, alternatives, reload/replay, first-viewport visibility and keyboard/focus behavior. Screenshots contain synthetic characters only. Candidate review must pass before publication.
