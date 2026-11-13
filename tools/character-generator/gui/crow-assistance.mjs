@@ -1,8 +1,8 @@
 // Use only the owner's verified Crow artwork. No substitute image is inferred.
 export const CROW_ASSISTANCE_IMAGE=Object.freeze({src:'./assets/crow-pet.png',kind:'sprite'});
 // Supplied artwork only. Empty costume slots fall back to the verified base pet.
-export const CROW_ASSISTANCE_VARIANTS=Object.freeze({technician:'./assets/crow-technician.png',professor:'./assets/crow-professor.png',referee:'./assets/crow-referee.png',military:'./assets/crow-military.png',navy:'./assets/crow-navy.png',rogue:'./assets/crow-rogue.png'});
-export function crowVariant(type){return ['military','navy','rogue'].includes(type)?type:type==='skills'?'professor':type==='referee'?'referee':'technician';}
+export const CROW_ASSISTANCE_VARIANTS=Object.freeze({technician:'./assets/crow-technician.png',professor:'./assets/crow-professor.png',referee:'./assets/crow-referee.png',military:'./assets/crow-military.png',navy:'./assets/crow-navy.png',rogue:'./assets/crow-rogue.png',noble:'./assets/crow-noble.png'});
+export function crowVariant(type){return ['military','navy','rogue','noble'].includes(type)?type:type==='skills'?'professor':type==='referee'?'referee':'technician';}
 export function crowAsset(type,variants=CROW_ASSISTANCE_VARIANTS,base=CROW_ASSISTANCE_IMAGE){return variants[crowVariant(type)]??base;}
 function portrait(document,asset){
  if(!asset)return null;
