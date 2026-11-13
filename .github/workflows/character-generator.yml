@@ -253,7 +253,9 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/character-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
           node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install chromium
       - name: Imperial specialty desktop and phone review
-        run: node tools/character-generator/verification/imperial-template-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+        run: |
+          node tools/character-generator/verification/imperial-template-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/imperial-layout-concept-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:

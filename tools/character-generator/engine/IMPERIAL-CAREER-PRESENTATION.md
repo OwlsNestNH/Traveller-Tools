@@ -52,3 +52,26 @@ This is an in-progress rollout. Selection/source-popup browser checks cover
 complete term/benefit flows require their dedicated checks before release.
 Navy is the first staged visual preview. No publication is implied by a
 registry entry or an individual passing presentation check.
+
+## Controlled presentation extension
+
+The pictured Crow component retains existing instruction nodes and controls.
+Career result comments and the next instruction share one pictured speaker;
+required-action warnings replace the normal speaker within their active scope.
+Technical errors keep their existing factual default-Crow dialog.
+
+Core academy training, event prompts and graduation previews use the Education
+shell. Preview numbers come from the existing graduation calculation; the
+academy source is Core p.16 (INT 7+, honours 11+, with the listed END/SOC
+bonuses). The presentation distinguishes those bonuses from the INT modifier.
+Acknowledgement wording describes the preceding action without suggesting
+that a later offered event roll is forbidden. Original recorded logs remain.
+
+Character-sheet history groups by recorded Pre-Term/Term timing, retaining
+individual timing labels and every current-branch entry. Unknown timing stays
+explicit. Print temporarily expands groups and restores their previous state.
+
+The sheet-centred layout under `verification/imperial-layout-concept*` is a
+review-only concept. It uses synthetic data and never initializes the app or
+sends character commands. It is not the application navigation design until
+reviewed; the existing production sheet/popup structure remains in place.

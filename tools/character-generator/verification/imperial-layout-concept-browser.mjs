@@ -1,0 +1,14 @@
+// Review-only layout concept. It never loads the application or sends commands.
+import assert from 'node:assert/strict';
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {createServer} from 'node:http';
+import {createRequire} from 'node:module';
+import {api} from '../engine/session.mjs';
+import {armyRecordedDice} from '../gui/career-template.mjs';
+const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright'),catalog=api({operation:'catalog'}),career=catalog.careers.find(c=>c.id==='core.navy'),out=new URL('./artifacts/',import.meta.url);
+await mkdir(out,{recursive:true});
+const image='data:image/png;base64,'+(await readFile(new URL('../assets/crow-technician.png',import.meta.url))).toString('base64');
+const html=(await readFile(new URL('./imperial-layout-concept.template.html',import.meta.url),'utf8')).replaceAll('__CROW_ASSET__',image).replace('__NAVY_MODEL__',JSON.stringify({career,skills:catalog.careerPresentation[career.id].specialtySkills})).replace('__RECORDED_DICE__',armyRecordedDice({rolls:[{label:'Survival',values:[5,3],total:8}]},{esc:String}));
+await writeFile(new URL('imperial-layout-concept.html',out),html);
+const server=createServer((req,res)=>{res.writeHead(200,{'Content-Type':'text/html'});res.end(html);});await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({headless:true});const checks=[];
+try{for(const width of [1440,390]){const p=await browser.newPage({viewport:{width,height:1000}});await p.goto('http://127.0.0.1:'+server.address().port);await p.locator('img').evaluateAll(ns=>Promise.all(ns.map(n=>n.decode())));const dialog=p.locator('#flow');assert.equal(await dialog.evaluate(n=>n.matches(':modal')),true);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);assert.equal(await dialog.evaluate(n=>n.scrollWidth>n.clientWidth+1),false);await p.locator('.tabs button').nth(2).click();assert.equal(await p.locator('#specialty').innerText(),career.assignments[2].name);await p.locator('.tabs button').first().click();await p.screenshot({path:new URL('imperial-layout-choice-'+width+'.png',out).pathname});await p.locator('#preview').click();assert.match(await dialog.innerText(),/Illustrative result/);await p.screenshot({path:new URL('imperial-layout-result-'+width+'.png',out).pathname});await p.locator('#close').click();assert.equal(await dialog.evaluate(n=>n.open),false);await p.screenshot({path:new URL('imperial-layout-sheet-'+width+'.png',out).pathname});await p.locator('#open').click();await p.keyboard.press('Escape');assert.equal(await dialog.evaluate(n=>n.open),false);checks.push({width,conceptOnly:true,modal:true,specialties:true,close:true});await p.close();}await writeFile(new URL('imperial-layout-status.json',out),JSON.stringify({checks},null,2));console.log(JSON.stringify({checks}));}finally{await browser.close();server.closeAllConnections();await new Promise(r=>server.close(r));}

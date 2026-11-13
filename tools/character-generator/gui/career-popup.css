@@ -148,3 +148,6 @@
 @media screen and (min-width:851px){#army-career-dialog[data-career-template="career-selection"] .career-pilot-guidance{grid-template-columns:112px minmax(0,1fr)}#army-career-dialog[data-career-template="career-selection"] .crow-assistance-image{width:112px;height:128px;flex-basis:112px}}
 /* Delineate supplied costume silhouettes without recolouring Crow or error art. */
 @media screen{#army-career-dialog .career-pilot-guidance>img,#army-rule-information .army-rule-header>img{filter:drop-shadow(0 0 1px #fff0bd) drop-shadow(0 0 5px #72c4df55)}}
+#army-career-dialog .career-result-guidance.outcome-tagline{background:none;font-style:normal}
+#army-career-dialog .career-result-comment{font-style:italic;margin:6px 0}
+#army-career-dialog .career-result-guidance .career-crow-speech{font-style:normal}

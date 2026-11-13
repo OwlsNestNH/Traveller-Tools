@@ -342,18 +342,8 @@
  #clan-share-panel option:disabled{color:#bdd3df}
  #clan-share-panel :is(input,select,textarea):focus-visible{outline:3px solid #ffd34b;outline-offset:3px}
 }
-.education-result-crow{display:flex;gap:18px;align-items:center;margin:16px 0}
-.education-result-crow img{width:144px;height:144px;object-fit:contain;flex:0 0 144px}
-.education-result-crow .education-result-tagline{margin:0;padding:14px;border:1px solid #9cdbed;border-radius:10px;color:#f5f7fa;background:#061b29}
-.education-result-tagline>span{display:block;color:#ffd34b;font-size:13px;font-weight:700;margin-bottom:8px}
 #precareer-dialog[data-education-kind="academy-training"] .choice-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 #precareer-dialog[data-education-kind="academy-training"] .choice-list .choice{min-height:56px;font-size:20px}
-@media(max-width:600px){.education-result-crow{gap:10px}.education-result-crow img{width:112px;height:128px;flex-basis:112px}.education-result-crow .education-result-tagline{padding:10px}}
-.academy-training-crow{display:flex;gap:18px;align-items:center;margin:16px 0}
-.academy-training-crow img{width:144px;height:144px;object-fit:contain;flex:0 0 144px}
-.academy-training-crow blockquote{margin:0;padding:16px;border:1px solid #9cdbed;border-radius:10px;background:#061b29;color:#f5f7fa}
-.academy-training-crow blockquote>strong{color:#ffd34b}
-@media(max-width:600px){.academy-training-crow{gap:10px}.academy-training-crow img{width:112px;height:128px;flex-basis:112px}.academy-training-crow blockquote{padding:10px}}
 .crow-speaking-panel{display:flex;gap:18px;align-items:center;margin:16px 0}
 .crow-speaking-panel>img{width:144px;height:144px;object-fit:contain;flex:0 0 144px}
 .crow-speaking-panel>blockquote{margin:0;min-width:0;padding:16px;border:1px solid #9cdbed;border-radius:10px;background:#061b29;color:#f5f7fa}
@@ -364,3 +354,49 @@
 .crow-speaking-aside{font-style:italic}
 @media(max-width:600px){.crow-speaking-panel{gap:10px}.crow-speaking-panel>img{width:112px;height:128px;flex-basis:112px}.crow-speaking-panel>blockquote{padding:10px}}
 .crow-speaking-panel>img{filter:drop-shadow(0 0 1px #fff0bd) drop-shadow(0 0 5px #72c4df55)}
+.crow-speaking-panel{min-width:0;max-width:100%}
+.crow-speaking-panel>blockquote{overflow-wrap:anywhere}
+@media screen and (min-width:851px){
+ .education-result .crow-speaking-panel.education-result-crow{margin:4px 0}
+ .education-result .education-result-crow>img{width:128px;height:96px;flex-basis:128px;object-fit:cover;object-position:50% 30%}
+ .education-result .education-result-crow>blockquote{padding:10px 14px;font-size:20px}
+ .education-result .education-result-heading h3{font-size:34px}
+ .education-result .education-result-headline h4{font-size:39px}
+}
+@media screen and (max-width:360px){.crow-speaking-panel{flex-direction:column;align-items:stretch}.crow-speaking-panel>img{align-self:center;width:128px;height:128px;flex-basis:auto}.crow-speaking-panel>blockquote{width:100%;box-sizing:border-box}}
+#species-skill-dialog .crow-speaking-panel{margin:8px 0;gap:12px}
+#species-skill-dialog .crow-speaking-panel>img{width:112px;height:88px;flex-basis:112px;object-fit:cover;object-position:50% 30%}
+#species-skill-dialog .crow-speaking-panel>blockquote{padding:8px 12px}
+#species-skill-dialog .crow-speaking-panel p{margin:4px 0 0}
+/* Keep the existing desktop popup and its source footer within the review
+   viewport while giving Crow a pictured speaking panel. */
+@media screen and (min-width:851px){
+ body[data-education-popup="true"] #precareer-dialog:is([data-panel="result"],[data-panel="event"]) #workspace{padding:16px 24px 4px}
+ #precareer-dialog[data-panel="result"] #step-title{position:absolute;top:3px;left:24px;margin:0;font-size:16px;line-height:1.2;max-width:calc(100% - 140px)}
+ #precareer-dialog:is([data-panel="result"],[data-panel="event"]) .precareer-information-rows{margin-top:4px}
+ #precareer-dialog:is([data-panel="result"],[data-panel="event"]) .precareer-information-rows button{min-height:44px;padding-top:8px;padding-bottom:8px}
+ .education-result .education-result-crow>img{height:88px}
+}
+.education-event-content.crow-speaking-panel{padding:0;border:0;background:none}
+@media screen and (min-width:851px){
+ body[data-education-popup="true"] #precareer-dialog:is([data-panel="result"],[data-panel="event"]) #workspace{padding-top:12px}
+ #precareer-dialog .education-result .education-result-heading .education-result-art{width:62px;height:54px}
+ .education-event-content.crow-speaking-panel{gap:12px}
+ .education-event-content.crow-speaking-panel>img{width:112px;height:112px;flex-basis:112px}
+ .education-event-content.crow-speaking-panel>blockquote{padding:10px 12px}
+ .education-event-content.crow-speaking-panel>blockquote p{font-size:20px;line-height:1.3}
+}
+/* A required-action warning becomes the active speaker in its scope. */
+#workspace:has(.required-action-warning:not([hidden])) .crow-speaking-panel,
+dialog:has(.required-action-warning:not([hidden])) .crow-speaking-panel{display:none}
+.education-graduation-prompt .education-event-content.crow-speaking-panel{border:4px solid #91f3f3;padding:12px 20px 14px}
+.education-graduation-prompt .education-event-content.crow-speaking-panel>blockquote{border:0;background:transparent}
+@media screen and (max-width:650px){.education-graduation-prompt .education-event-content.crow-speaking-panel{flex-direction:column}.education-graduation-prompt .education-event-content.crow-speaking-panel>img{width:112px;height:112px;flex-basis:auto}.education-graduation-prompt .education-event-content.crow-speaking-panel>blockquote{width:100%;box-sizing:border-box;padding:0}}
+/* Word-heavy decisions retain the full explanation width below Crow, while
+   their separate pending dice keep the approved desktop size. */
+@media screen and (min-width:1101px){
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]) .education-event-content.crow-speaking-panel{display:block;border:2px solid #99edf1;background:#061b29;padding:12px}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]) .education-event-content.crow-speaking-panel>img{float:left;width:112px;height:112px;margin:0 12px 8px 0}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]) .education-event-content.crow-speaking-panel>blockquote{display:contents}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]) .education-event-content.crow-speaking-panel::after{content:"";display:block;clear:both}
+}

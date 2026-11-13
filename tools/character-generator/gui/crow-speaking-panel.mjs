@@ -8,8 +8,16 @@ export function crowSpeakingPanel({message,aside='',type='generic',tone='informa
 // Promote an existing primary instruction without recreating its nodes or
 // listeners. Purpose-built Crow panels keep their approved layout.
 export function mountCrowStageGuidance(document,root,{type='generic'}={}){
- if(!root||root.querySelector('.crow-speaking-panel,.career-pilot-guidance,#crow-introduction,.required-action-warning'))return null;
+ if(!root||root.querySelector(':scope > .crow-speaking-panel,.career-pilot-guidance,#crow-introduction,.required-action-warning'))return null;
  const instruction=[...root.children].find(n=>n.tagName==='P'&&!n.classList.contains('step-count')&&n.textContent.trim());
  if(!instruction||instruction.querySelector('input,select,textarea,button'))return null;
  const holder=document.createElement('div');holder.innerHTML=crowSpeakingPanel({message:'',type});const panel=holder.firstElementChild,words=panel.querySelector('blockquote');words.lastElementChild.remove();instruction.before(panel);words.append(instruction);return panel;
+}
+export function mountCrowSpeakingContent(document,content,{type='generic',tone='information'}={}){
+ if(!content||content.closest('.crow-speaking-panel')||content.querySelector('.crow-speaking-panel'))return null;
+ const holder=document.createElement('div');holder.innerHTML=crowSpeakingPanel({message:'',type,tone});const panel=holder.firstElementChild,words=panel.querySelector('blockquote');words.lastElementChild.remove();
+ if(content.tagName==='P'){content.before(panel);words.append(content);return panel;}
+ // Preserve the original grid item, IDs and event listeners. Only its existing
+ // children move into the speaking bubble.
+ words.append(...content.childNodes);content.classList.add('crow-speaking-panel');content.dataset.tone=tone;content.replaceChildren(...panel.childNodes);return content;
 }

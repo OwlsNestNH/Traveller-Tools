@@ -24,10 +24,17 @@ test('live INT correction refreshes preview and actual check agrees at each modi
  }
  const outcome=run(r,'education-graduation');assert.equal(outcome.educationGraduationPreview,undefined);
 });
-test('non-University, source-pending, completed and event-blocked paths never get an ordinary preview',()=>{
+test('mismatched source, source-pending, completed and event-blocked paths never get an ordinary preview',()=>{
  const r=fixture(),state=r.state,index=state.education;
  for(const changes of [{stage:'education-event'},{stage:'book-step'},{pending:{kind:'native-effect'}}])assert.equal(educationGraduationPreviewProjection({...state,...changes}),null);
  for(const changes of [{id:'core.academy-army'},{id:'companion.colonial'},{graduationAllowed:false},{completed:true},{graduation:{attempted:false}},{entry:{manual:true,success:true,total:8,roll:8}},{entry:{success:true}},{entry:{...state.character.educations[index].entry,needsAdjudication:true}}]){
   const altered=structuredClone(state);Object.assign(altered.character.educations[index],changes);assert.equal(educationGraduationPreviewProjection(altered),null);
+ }
+});
+
+test('each real academy graduation preview uses its canonical check without changing its saved character',async()=>{
+ const {educationReady,forceEducation}=await import('./education-result-fixtures.mjs');
+ for(const id of ['core.academy-army','core.academy-marine','core.academy-navy']){
+  const r=forceEducation(educationReady(id),'education-event',{},[2,3]),before=exportSession(r.session),state=structuredClone(r.state),preview=r.educationGraduationPreview;assert.equal(r.state.stage,'education-graduation');assert.equal(preview.id,id);assert.equal(preview.target,7);assert.equal(preview.honoursTarget,11);assert.equal(preview.source.page,16);assert.deepEqual(project(r.session).state,state);assert.equal(exportSession(r.session),before);assert.equal(project(r.session).educationGraduationPreview.name,preview.name);
  }
 });

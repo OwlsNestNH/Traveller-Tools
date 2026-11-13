@@ -61,3 +61,8 @@ test('replacement equipment names the trade-in and does not hide unrelated benef
  ]};
  const result=conciseResult(event,{},catalog);assert.match(result.text,/Received Combat Armour/);assert.match(result.text,/Traded in Cloth Armour/);assert.match(result.text,/Ship Share × 2/);assert.match(result.text,/Removed: Membership/);assert.doesNotMatch(result.text,/Benefit: Combat Armour/);
 });
+
+test('education acknowledgement describes only the accepted action and keeps its original log',()=>{
+ const event={id:'acknowledgement',type:'acknowledge-education-result',summary:'Education result acknowledged. No additional dice or awards.',rolls:[],changes:[]},before=JSON.stringify(event),result=conciseResult(event,{stage:'education-event'},{});
+ assert.match(result.text,/Continue preserved that result/);assert.match(result.text,/separate roll/);assert.equal(JSON.stringify(event),before);
+});

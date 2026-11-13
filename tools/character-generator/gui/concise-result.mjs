@@ -1,3 +1,4 @@
+import {crowSpeakingPanel} from './crow-speaking-panel.mjs';
 import {eventResultDetails} from './event-result-view.mjs';
 // Presentation only. The full result and immutable action log remain available.
 import {rollResult,characterEffectDetails,modifierEffectDetails,pendingEffectDetails} from './roll-result-view.mjs';
@@ -18,6 +19,7 @@ function otherEffects(event,catalog,keep){
 export function conciseResult(event,state,catalog){
  const full=rollResult(event,state,catalog);if(!full)return null;
  const changes=event.changes??[];let title,details=[];
+ if(['acknowledge-education-result','acknowledge-education-event'].includes(event.type)){title='Previous education result acknowledged';details=['Continue preserved that result without rolling dice or granting awards. Follow the next step below; it may offer a separate roll.'];}
  const survival=event.type==='survival'&&state?.stage==='term-end'?survivalResult(event,state):null;
  if(survival?.status==='failure'){
   title=full.title;
@@ -76,5 +78,5 @@ export function conciseResult(event,state,catalog){
 export function latestResultView(result,{esc,tagline=null}){
  if(!result)return '';
  const paragraphs=details=>details.map(detail=>'<p>'+esc(detail)+'</p>').join('');
- return '<section id="last-action-result" class="result-panel result-'+result.status+'" data-result-status="'+result.status+'" aria-label="Latest result"><p class="result-status">'+({success:'Success',failure:'Failure',pending:'Pending resolution',info:'Information'}[result.status]??'Information')+'</p><h3>'+esc(result.title)+'</h3>'+paragraphs(result.details)+(tagline?'<p class="outcome-tagline">'+esc(tagline)+'</p>':'')+(result.compact?'<details class="result-information"><summary><span aria-hidden="true">ⓘ</span> Result details</summary><h4>'+esc(result.full.title)+'</h4>'+paragraphs(result.full.details)+'</details>':'')+'</section>';
+ return '<section id="last-action-result" class="result-panel result-'+result.status+'" data-result-status="'+result.status+'" aria-label="Latest result"><p class="result-status">'+({success:'Success',failure:'Failure',pending:'Pending resolution',info:'Information'}[result.status]??'Information')+'</p><h3>'+esc(result.title)+'</h3>'+paragraphs(result.details)+(tagline&&result.status!=='error'?crowSpeakingPanel({message:tagline,tone:result.status==='success'?'success':result.status==='failure'?'failure':'information',className:'outcome-tagline'}):'')+(result.compact?'<details class="result-information"><summary><span aria-hidden="true">ⓘ</span> Result details</summary><h4>'+esc(result.full.title)+'</h4>'+paragraphs(result.full.details)+'</details>':'')+'</section>';
 }
