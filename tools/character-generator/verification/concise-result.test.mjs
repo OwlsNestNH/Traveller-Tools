@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {api,exportSession,importSession,project} from '../engine/session.mjs';
 import {conciseResult,isBasicTrainingChoice,latestResultView} from '../gui/concise-result.mjs';
-import {characterEffectDetails} from '../gui/roll-result-view.mjs';
+import {rollResult,characterEffectDetails} from '../gui/roll-result-view.mjs';
 import {fullActionLog} from '../gui/log-download.mjs';
 import {qualificationOutcomeFixture} from './check-outcome-fixtures.mjs';
 import {laterCareerFixture,treatmentFixture,equipmentFixture,failedSurvivalFixture} from './concise-result-fixtures.mjs';
@@ -66,3 +66,7 @@ test('education acknowledgement describes only the accepted action and keeps its
  const event={id:'acknowledgement',type:'acknowledge-education-result',summary:'Education result acknowledged. No additional dice or awards.',rolls:[],changes:[]},before=JSON.stringify(event),result=conciseResult(event,{stage:'education-event'},{});
  assert.match(result.text,/Continue preserved that result/);assert.match(result.text,/separate roll/);assert.equal(JSON.stringify(event),before);
 });
+
+import {completionReviewFixtures} from './completion-review-fixtures.mjs';
+test('confirmed death is a compact failure outcome with complete recorded details retained',()=>{const r=completionReviewFixtures().find(([stage])=>stage==='deceased')[1],event=r.log.at(-1),before=exportSession(r.session),result=conciseResult(event,r.state,catalog);assert.equal(result.status,'failure');assert.equal(result.title,'This life path ended in death.');assert.equal(result.compact,true);assert.deepEqual(result.full,rollResult(event,r.state,catalog));const html=latestResultView(result,{esc,tagline:'The result is recorded.'});assert.match(html,/result-failure/);assert.doesNotMatch(html,/<details[^>]* open/);for(const detail of result.full.details)assert.ok(html.includes(esc(detail)));assert.equal(exportSession(r.session),before);});
+test('retirement summary keeps the actual final benefit and complete audit',()=>{const r=completionReviewFixtures().find(([stage])=>stage==='retirement')[1],event=r.log.at(-1),before=exportSession(r.session),result=conciseResult(event,r.state,catalog);assert.equal(event.type,'benefit');assert.equal(result.title,'Retired from character creation.');assert.equal(result.compact,true);assert.match(result.text,/Material benefit/);assert.match(result.text,/Clan Shares awarded: 2/);assert.match(result.text,/Unspent Clan Shares: 9/);assert.doesNotMatch(result.text,/Benefit: Clan Share × 9/);assert.deepEqual(result.full,rollResult(event,r.state,catalog));assert.equal(exportSession(r.session),before);});

@@ -33,3 +33,17 @@ existing layout and controls; the centred-sheet redesign is deferred.
 All release candidates require exact-head checks, independent review and the
 agreed user visual review. Existing saves, in-memory choices, accepted results,
 Back/Cancel behavior and mechanical rules must remain intact.
+
+## Completion review corrections
+
+Completion phone panels use full-width speech below the portrait. Long mobile
+help headings keep whole words with Close on its own persistent row. A verified
+deceased state receives a short failure outcome; all original recorded details
+remain in the closed Result details disclosure and in the unchanged full log.
+The final-sheet invitation appears once on Finish.
+
+Retirement previews end on an ordinary accepted benefit command, not GM replay.
+Actual recorded benefit dice are shown; current Clan Share awards and unspent
+balances are distinguished. The sheet labels aggregate holdings separately from
+individual award rows. This is a display clarification, not an accounting repair
+or save migration.

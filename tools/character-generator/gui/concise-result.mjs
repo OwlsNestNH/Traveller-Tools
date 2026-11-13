@@ -18,6 +18,18 @@ function otherEffects(event,catalog,keep){
 }
 export function conciseResult(event,state,catalog){
  const full=rollResult(event,state,catalog);if(!full)return null;
+ if(full.status!=='error'&&state?.stage==='deceased'&&state.character?.deceased===true){const title='This life path ended in death.';return {title,details:[],status:'failure',text:title,full,compact:true};}
+ if(full.status!=='error'&&state?.stage==='retirement'&&state.character?.retirementFromCreation===true){
+  const title='Retired from character creation.';let details=[];
+  if(event.type==='benefit'){
+   const awards=(event.changes??[]).filter(c=>/^benefitAwards\.\d+$/.test(c.path)&&!c.before&&c.after?.definitionId==='aslan.clan-share').map(c=>c.after);
+   const quantity=awards.length&&awards.every(a=>Number.isSafeInteger(a.quantity)&&a.quantity>=0)?awards.reduce((sum,a)=>sum+a.quantity,0):null,known=Number.isSafeInteger(quantity);
+   const changes=known?(event.changes??[]).filter(c=>!/^clanShareLots\./.test(c.path)&&!(/^benefits\.\d+$|^benefitAwards\.\d+$/.test(c.path)&&c.after?.definitionId==='aslan.clan-share')):event.changes;
+   details=unique([...diceDetails(event),...(known?['Clan Shares awarded: '+quantity+'.']:[]),...characterEffectDetails({...event,changes},catalog),...(known&&Number.isSafeInteger(state.clanShareOptions?.balance)?['Unspent Clan Shares: '+state.clanShareOptions.balance+'.']:[])]);
+  }
+  return {title,details,status:'info',text:[title,...details].join(' '),full,compact:true};
+ }
+
  const changes=event.changes??[];let title,details=[];
  if(['acknowledge-education-result','acknowledge-education-event'].includes(event.type)){title='Previous education result acknowledged';details=['Continue preserved that result without rolling dice or granting awards. Follow the next step below; it may offer a separate roll.'];}
  const survival=event.type==='survival'&&state?.stage==='term-end'?survivalResult(event,state):null;
