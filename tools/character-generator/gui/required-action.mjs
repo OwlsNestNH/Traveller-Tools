@@ -1,3 +1,4 @@
+import {ASLAN_CAREER_DEFINITIONS} from './aslan-career-definitions.mjs';
 import {recoveryButton} from './recovery-actions.mjs';
 import {crowAssistanceView} from './crow-assistance.mjs';
 // Presentation-only validation. Never interprets transport/engine errors as omissions.
@@ -12,8 +13,9 @@ export const REQUIRED_HEADLINES=Object.freeze({
  generic:['MAKE A CHOICE, DUMMY!','HOLD YOUR SPACE HORSES.','NOT SO FAST, TRAVELLER.','YOU’VE SKIPPED A BIT.','ONE THING AT A TIME, HERO.','THE NEXT BUTTON IS NOT A SHORTCUT.']
 });
 export const ARMY_SKILL_HEADLINES=Object.freeze([...REQUIRED_HEADLINES.skills.slice(0,5),'THE ARMY CAN’T TRAIN A BLANK.']);
+export const ASLAN_SKILL_HEADLINES=Object.freeze([...REQUIRED_HEADLINES.skills.slice(0,5),'THE CLAN CAN’T TRAIN A BLANK.']);
 export function requiredHeadline(type,key='',context=''){
- const bank=type==='skills'&&context==='core.army'?ARMY_SKILL_HEADLINES:REQUIRED_HEADLINES[type]??REQUIRED_HEADLINES.generic;
+ const bank=type==='skills'&&Object.hasOwn(ASLAN_CAREER_DEFINITIONS,context)?ASLAN_SKILL_HEADLINES:type==='skills'&&context==='core.army'?ARMY_SKILL_HEADLINES:REQUIRED_HEADLINES[type]??REQUIRED_HEADLINES.generic;
  let hash=0;for(const char of String(key))hash=(hash*31+char.codePointAt(0))>>>0;
  return bank[hash%bank.length];
 }
@@ -88,7 +90,7 @@ export function showRequiredAction(root,{control,type='generic',detail,key='',ac
  let warning=scope.querySelector(':scope > .required-action-warning');
  if(!warning){warning=root.createElement('div');warning.id='required-action-warning-'+(++serial);warning.className='required-action-warning';warning.dataset.crowEssential='true';warning.setAttribute('role','alert');warning.setAttribute('aria-atomic','true');scope.prepend(warning);}
  const introduction=scope.querySelector(':scope > #crow-introduction,.career-pilot-guidance');if(introduction)introduction.hidden=true;
- const assistance=crowAssistanceView(root,{type,informationDialog:introduction?.id==='crow-introduction'?'crow-introduction-dialog':null});assistance.help.id=warning.id+'-crow-help';if(introduction?.id!=='crow-introduction')assistance.button.setAttribute('aria-controls',assistance.help.id);
+ const assistance=crowAssistanceView(root,{type:ASLAN_CAREER_DEFINITIONS[root.body?.dataset.careerTemplate]?.crow??type,informationDialog:introduction?.id==='crow-introduction'?'crow-introduction-dialog':null});assistance.help.id=warning.id+'-crow-help';if(introduction?.id!=='crow-introduction')assistance.button.setAttribute('aria-controls',assistance.help.id);
  const title=root.createElement('strong'),instruction=root.createElement('p');title.textContent=requiredHeadline(type,key,root.body?.dataset.careerTemplate);instruction.textContent=detail;
  const speech=root.createElement('div');speech.className='crow-speech';speech.append(title,instruction);
  const recovery=root.createElement('div');recovery.className='crow-recovery-actions';const dismiss=()=>{warning.hidden=true;if(introduction)introduction.hidden=false;if(control.isConnected){control.focus();control.scrollIntoView?.({block:'nearest'});}};recovery.append(recoveryButton(root,{id:'continue',label:'Continue',ariaLabel:'Continue to the missing field',run:dismiss}));for(const action of actions)recovery.append(recoveryButton(root,action));warning.replaceChildren(assistance.row,speech,assistance.help,recovery);warning.hidden=false;
@@ -123,6 +125,9 @@ export function mountRequiredActions({document:root,getState,isBusy,backgroundSe
    const inputs=[...root.querySelectorAll('[data-companion-skill]')],values=inputs.map(n=>n.value.trim()),count=state.pendingChoice?.count??1;
    if(values.some(n=>!n)||new Set(values).size!==count)return fail(inputs.find(n=>!n.value.trim())??inputs[0],'skills','Choose exactly '+count+' distinct study skills; include a specialisation where this award requires one.');
   }
+  // The optional free-text name mirrors the native specialty selector. Point
+  // Aslan warnings at that actual missing choice while retaining manual entry.
+  if(action==='choose-skill'&&state.character?.species==='aslan'&&!root.querySelector('#award-skill')?.value.trim()){const specialty=root.querySelector('#award-speciality');if(active(specialty)&&missingField(specialty))return fail(specialty,'skills','Choose the awarded skill and its required specialisation, or use the offered deferral.');}
   for(const rule of actionRequirements(action,state,{...trigger.dataset,species:root.querySelector('#setup-species')?.value})){
    const control=root.querySelector(rule.selector);if(!active(control))continue;
    // The existence of optional fields is not a requirement for these branches.
