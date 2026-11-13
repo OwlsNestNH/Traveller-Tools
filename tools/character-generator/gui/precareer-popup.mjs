@@ -195,7 +195,7 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  openInfo('result','Rules and consequences',event.currentTarget);
  });
  }
- if(eventModel&&eventModel.kind!=='academy-training'){const instruction=workspace.querySelector('.education-event-content,.education-checkpoint-next,.education-checkpoint-controls,.education-checkpoint-neutral');mountCrowSpeakingContent(root,instruction,{type:'skills'});}
+ if(eventModel&&eventModel.kind!=='academy-training'){const instruction=['.education-event-content','.education-checkpoint-next','.education-checkpoint-neutral','.education-checkpoint-controls'].map(selector=>workspace.querySelector(selector)).find(Boolean);mountCrowSpeakingContent(root,instruction,{type:'skills'});const checkpoint=workspace.querySelector('.education-checkpoint'),outerHeading=checkpoint?.querySelector(':scope > .education-event-heading h3');if(outerHeading)for(const nested of checkpoint.querySelectorAll('.education-checkpoint-controls .education-event-heading'))if(nested.querySelector('h3')?.textContent===outerHeading.textContent)nested.remove();}
  if(resultModel||eventModel)workspace.querySelector('#precareer-dismiss').textContent='Close';
  if(eventModel){for(const small of workspace.querySelectorAll('.precareer-information-rows small'))small.remove();if(dialog.open&&!dialog.matches(':modal')){dialog.close();open();}}
  if(!eventModel&&dialog.open&&dialog.matches(':modal')){dialog.close();open();}
