@@ -1,0 +1,136 @@
+import {educationResultDie} from './education-result-view.mjs';
+// Presentation templates: existing engine data remains the only rules authority.
+import {crowAssistanceView} from './crow-assistance.mjs';
+import {outcomeTagline} from './outcome-taglines.mjs';
+export const ARMY_TEMPLATE=Object.freeze({id:'core.army',name:'Army',source:'Core Rulebook Update 2022 · pp. 24–25',specialties:Object.freeze({support:'Keep the unit supplied, repaired and functioning.',infantry:'Serve on foot at the sharp end of a campaign.',cavalry:'Operate the vehicles that carry the fight.'}),exceptions:Object.freeze({})});
+export const CAREER_TEMPLATES=Object.freeze({'core.army':ARMY_TEMPLATE});
+const phases=['Application','Training','Survival','Events','Progression','Term review','Mustering out'];
+export function careerPhase(stage){return stage==='career'||stage==='failed-entry'?0:['training','effect-choice','skill-choice','preterm-commission'].includes(stage)?1:stage==='survival'?2:['career-event','career-mishap','book-step','injury-loss','injury-treatment','relationship-event','relationship-loss'].includes(stage)?3:stage==='advancement'?4:['term-end','ageing','assignment-entry'].includes(stage)?5:['benefits','benefit-wager','equipment-finalization'].includes(stage)?6:null;}
+export function careerTemplateModel(state,catalog,selectedCareer=''){
+ // This pilot is deliberately limited to ordinary human Army careers.
+ if(state.character?.species!=='human')return null;
+ if(state.stage==='career'&&!selectedCareer)return {selection:true,template:{id:'career-selection'},career:{name:'Careers'},careers:state.careerChoices??catalog.careers,phase:0,specialties:[]};
+ const record=state.character.careers?.[state.active];
+ const id=state.stage==='career'?selectedCareer:state.stage==='failed-entry'?state.character.careerTransitions?.at(-1)?.toCareerId:record?.id;
+ const definition=CAREER_TEMPLATES[id];if(!definition)return null;const template={...definition,rankRewards:catalog.careerPresentation?.[id]?.ranks,specialtySkills:catalog.careerPresentation?.[id]?.specialtySkills};
+ const career=(state.careerChoices??catalog.careers).find(c=>c.id===id);if(!career)return null;
+ const rank=record&&template.rankRewards?.[record.officer?'officer':'enlisted']?.[record.rank];
+ return {template,career,record,phase:state.resolvingEquipmentTask||state.pending?.deferredContext==='finalization'?6:['effect-choice','skill-choice'].includes(state.stage)&&state.effectNext&&!['survival','new-career-training','training'].includes(state.effectNext)?(state.effectNext==='end-term'?4:['benefits','benefit-complete'].includes(state.effectNext)?6:3):careerPhase(state.stage),rank,specialties:career.assignments.map(a=>({...a,description:template.specialties[a.id]??'',skills:template.specialtySkills?.[a.id]??[]}))};
+}
+const lines={
+ 'army.success':['Competence. Try not to make it look accidental.','You met the standard. The standard is relieved.','Well done. Do not expect applause from payroll.','The Army has found a use for you. Disturbing.','A successful result. Someone will give you more work.','You passed. Your replacement can stop warming up.'],
+ 'army.exceptional':['Show-off. Now they will expect that every time.','Congratulations. You have volunteered for harder work.','The recruitment poster wants its ego back.','An excellent result. Try surviving your new reputation.','You made that look easy. Management noticed. Unfortunate.','Exceptional work. Your reward is responsibility.'],
+ 'army.failure':['The Army regrets discovering your limits so quickly.','That went poorly. Your paperwork remains outstanding.','A fine demonstration of what not to do.','Your ambition has outrun your competence again.','The result is recorded. Sadly, so is your name.','Try looking surprised. It may help the report.'],
+ 'army.survived':['Still alive. The Army will invoice you for the inconvenience.','You survived. Standards really are slipping.','Another term, and somehow they still have you.','Alive and available for more terrible decisions.','Your survival has disappointed the replacement office.','You lived. Try not to look so smug about it.'],
+ 'army.survival-failed':['Your survival plan appears to have omitted survival.','That was not the exit interview you wanted.','The Army has a mishap form with your name on it.','A career setback. An understatement worthy of command.','Your luck has requested reassignment.','The mission report will be kinder than Crow.'],
+ 'army.event':['A new story. Try making this one less embarrassing.','The universe has more paperwork for you.','Another chapter in your questionable judgment.','Your service record grows. So does the evidence.','Something happened. Command would prefer fewer details.','A memorable term. That is not necessarily praise.'],
+ 'army.training':['You learned something. Try remembering it under fire.','Another skill. Your excuses are running out.','Training completed. Competence remains your responsibility.','The instructors have done what they can.','Your résumé is now slightly less speculative.','A useful lesson. Please spare us the demonstration.'],
+ 'army.choice':['A decision. Command will treasure the novelty.','Your choice is recorded. Denial is now paperwork.','You picked something. A historic breakthrough.','One loose end tied. Several poor decisions remain.','The record reflects your judgment. Brace yourself.','A choice made. Crow reserves the right to comment.'],
+ 'army.benefit':['Payment for your service. Keep the receipt and your dignity.','The Army returns some of what it owes you. Some.','A parting gift. Try not to spend it on worse decisions.','Your service has acquired a price tag.','Mustering out: finally, a form with an upside.','Congratulations. Bureaucracy has produced something useful.']
+};
+// Registered with the same stable action-id hash as all existing cosmetic tags.
+export function armyOutcome(event,result){
+ if(!event||['restore','gm-replay'].includes(event.type))return null;
+ if(event.type==='survival-check'||event.type==='survival')return result?.status==='success'?'army.survived':result?.status==='failure'?'army.survival-failed':null;
+ if(result?.status==='failure')return 'army.failure';
+ if(event.type==='benefit')return 'army.benefit';
+ if(result?.status==='success'){
+  // Exceptional is cosmetic, based on a validated check margin, never raw dice.
+  const checks=(event.changes??[]).flatMap(c=>c.path.endsWith('.check')&&c.after?[c.after]:[]);
+  const match=event.summary?.match(/^(?:Advancement|Commission): (\{[^{}]+\})/);if(match)try{checks.push(JSON.parse(match[1]));}catch{}
+  return checks.some(c=>c.success===true&&Number.isFinite(c.total)&&Number.isFinite(c.target)&&c.total-c.target>=6)?'army.exceptional':'army.success';
+ }
+ if(event.type==='training')return 'army.training';
+ if(['choose-effect','choose-skill'].includes(event.type))return 'army.choice';
+ if(['career-event','career-mishap'].includes(event.type))return 'army.event';
+ return null;
+}
+export function armyTagline(event,result){const key=armyOutcome(event,result);if(!key||!event.id)return null;return outcomeTagline(key,event.id,lines);}
+export function armyResultTagline(event,result,state){
+ if(state.character?.species!=='human')return null;
+ const active=state.character.careers?.[state.active],latest=state.character.careers?.at(-1);
+ const context=event?.type==='career'?state.character.careerTransitions?.at(-1)?.toCareerId:active?.id??(event?.type==='benefit'?latest?.id:null);
+ return context==='core.army'?armyTagline(event,result):null;
+}
+export function armyRecordedDice(event,{esc}){
+ const rolls=(event?.rolls??[]).filter(roll=>Array.isArray(roll.values)&&roll.values.length&&roll.values.every(n=>Number.isInteger(n)&&n>=1&&n<=6));
+ const checkLabels={'survival-check':'Survival',survival:'Survival',advancement:'Advancement',commission:'Commission',career:'Qualification'};
+ let check=null;const match=Object.hasOwn(checkLabels,event?.type)&&event.summary?.match(/(?:^Survival: |^Advancement: |^Commission: |^Entered .+: |^Failed .+ qualification: )(\{[^{}]*\})/);
+ if(match)try{const candidate=JSON.parse(match[1]);if(typeof candidate.success==='boolean'&&Number.isFinite(candidate.total)&&Number.isFinite(candidate.target)&&Number.isFinite(candidate.natural))check=candidate;}catch{}
+ return rolls.map(roll=>{
+  const checked=check&&roll.label===checkLabels[event.type]&&check.natural===roll.total,modifier=checked?check.total-roll.total:null;
+  const faces='<div class="army-dice-faces" role="img" aria-label="'+esc('Recorded dice: '+roll.values.join(', '))+'">'+roll.values.map(educationResultDie).join('')+'</div>';
+  return '<div class="army-recorded-dice"><p>'+esc(roll.label??'Recorded dice')+'</p><div class="army-dice-calculation">'+faces+(checked?'<span class="army-dice-equation">'+(modifier<0?'− ':'+ ')+esc(Math.abs(modifier))+' = '+esc(check.total)+'</span>':'')+'</div><p>'+(checked?'Total '+esc(check.total)+' · Target '+esc(check.target)+'+ · '+(check.success?'Success':'Failure'):'Recorded total: '+esc(roll.total)+'.')+'</p></div>';
+ }).join('');
+}
+export function armyRuleInformation(phase){
+ const topics=[['Army application','Choose Support, Infantry or Cavalry. Your specialty determines the career checks and specialist training available. Review the shown qualification before applying.',24],['Army training','Choose from the training options offered for this award. Resolve any required skill or specialisation before continuing; an offered deferral remains optional.',24],['Army survival','The selected specialty determines the survival check. The recorded dice, modifier, total and target are shown after the roll. A failed survival check leads to a mishap.',24],['Army events and mishaps','Resolve the recorded event or mishap and its required decisions. Follow the specific outcome shown; a failed survival check is a game result, not a software error.',25],['Army progression','Review the available advancement or commission check. Enlisted and officer ranks have separate titles and rewards; any required reward choice is resolved explicitly.',24],['Army term review','Review the accepted term and its recorded results before choosing the next available step. Going back never silently rerolls an accepted check.',24],['Army mustering out','Resolve the benefit options currently offered. Cash and material benefits are distinct choices; the app retains the recorded benefit and any pending details.',24]];
+ const [title,summary,page]=topics[phase]??['Army career','Follow the current required action and check the cited Army career reference.',24];return {title,summary,page,book:'Core Rulebook Update 2022',url:'https://www.mongoosepublishing.com/products/traveller-core-rulebook-update-2022'};
+}
+export function careerCrowTone(status,selection=false){return selection?'information':status==='success'?'success':status==='failure'?'failure':'information';}
+export function mountCareerTemplate(document,model,{esc,event=null,resultStatus=null,showDice=false,state=null,sessionKey=''}={}){
+ const layout=document.querySelector('.layout'),workspace=document.getElementById('workspace'),sheet=document.getElementById('sheet');
+ let dialog=document.getElementById('army-career-dialog'),context=document.getElementById('army-career-context'),rail=document.getElementById('army-career-rail');
+ for(const warning of dialog?.querySelectorAll(':scope > .required-action-warning')??[])warning.remove();
+ const result=workspace.querySelector('#last-action-result');if(result&&event&&(model||showDice))result.insertAdjacentHTML('beforeend',armyRecordedDice(event,{esc}));
+ if(!model){
+  if(dialog){if(dialog.contains(workspace))layout.prepend(workspace);if(rail?.contains(sheet))layout.append(sheet);dialog.remove();context?.remove();rail?.remove();}
+  document.getElementById('army-creation-overview')?.remove();layout.classList.remove('army-career-layout');return;
+ }
+ document.querySelector('header h1').textContent='CHARACTER BUILDER';document.querySelector('header .lead').textContent='TRAVELLER RPG';
+ const newlyCreated=!dialog;
+ if(!dialog){
+  dialog=document.createElement('dialog');dialog.id='army-career-dialog';dialog.className='career-pilot';dialog.setAttribute('aria-labelledby','step-title');
+  context=document.createElement('section');context.id='army-career-context';context.innerHTML='<p class="eyebrow">CAREER CREATION</p><h2>Your next chapter</h2><p>Your choices and recorded results stay here while this window is closed.</p><button type="button" id="army-career-resume">Continue career creation</button>';
+  rail=document.createElement('aside');rail.id='army-career-rail';rail.innerHTML='<section id="army-career-overview"></section>';
+  layout.append(context,dialog,rail);dialog.append(workspace);rail.append(sheet);
+  context.querySelector('button').addEventListener('click',()=>{dialog.show();workspace.querySelector('#step-title').focus({preventScroll:true});});
+  const dismiss=()=>{dialog.close();context.querySelector('button').focus({preventScroll:true});};
+  dialog._dismiss=dismiss;dialog.addEventListener('cancel',e=>{e.preventDefault();dismiss();});
+  dialog.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.querySelector('dialog:modal,:popover-open')){e.preventDefault();dismiss();}});
+ }
+ layout.classList.add('army-career-layout');dialog.dataset.careerTemplate=model.template.id;dialog.dataset.careerPhase=model.phase??'current';
+ let orientation=document.getElementById('army-creation-overview');if(!orientation){orientation=document.createElement('ol');orientation.id='army-creation-overview';orientation.setAttribute('aria-label','Character creation overview');layout.before(orientation);}orientation.innerHTML='<li>✓ Characteristics</li><li>✓ Background</li><li>✓ Pre-Career</li><li aria-current="step">4 Careers</li><li>5 Finalization</li>';
+ const title=workspace.querySelector('#step-title');if(state?.stage==='career'&&!model.selection)title.textContent='Army specialty';
+ const step=workspace.querySelector('.step-count');step.textContent=model.selection?'CAREERS':model.career.name.toUpperCase()+(model.record?' · '+(model.specialties.find(s=>s.id===model.record.assignment)?.name??model.record.assignment).toUpperCase():'');
+ const close=document.createElement('button');close.type='button';close.id='army-career-close';close.className='quiet';close.textContent='Close';close.addEventListener('click',dialog._dismiss);workspace.prepend(close);const sheetAccess=document.createElement('button');sheetAccess.type='button';sheetAccess.className='army-mobile-sheet quiet';sheetAccess.dataset.action='open-current-character-sheet-popup';sheetAccess.textContent='Character sheet';sheetAccess.setAttribute('aria-haspopup','dialog');sheetAccess.setAttribute('aria-controls','final-character-sheet');workspace.prepend(sheetAccess);
+ const guidance=document.createElement('aside');guidance.className='career-pilot-guidance';guidance.setAttribute('aria-label','Crow guidance');guidance.dataset.tone=careerCrowTone(resultStatus,model.selection||state?.stage==='career');const assistance=crowAssistanceView(document,{type:model.phase===1?'skills':model.phase===4?'referee':'generic',informationDialog:model.selection?null:'army-rule-information'});guidance.append(assistance.row,assistance.help);const words=document.createElement('p');words.className='career-crow-speech';words.textContent=model.selection?'Pick a career. Optimism is still not a qualification.':state?.stage==='career-event'?'You survived. Roll your career event. Try not to make it embarrassing.':state?.stage==='career-mishap'?'Roll the mishap. Apparently surviving was too ambitious.':['Choose your specialty. Even the Army needs to know where to file you.','Choose the training offered here. Wishful thinking remains unaccredited.','Training is recorded. Now find out whether it kept you alive.','Resolve the event and every required choice. A loose end is still your problem.','Review advancement or an available commission. Ambition is not a modifier.','Review the recorded term before deciding to stay or leave. Nostalgia is not a plan.','Resolve the remaining benefits. Payroll will not chase you.'][model.phase]??'Follow the current step below. Even your detours need an ending.';const bubble=document.createElement('div');bubble.className='career-crow-bubble';const crowHeading=document.createElement('div');crowHeading.className='career-crow-heading';const crowLabel=[...assistance.row.children].find(n=>n.tagName==='SPAN'&&!n.classList.contains('crow-assistance-image'));if(crowLabel)crowHeading.append(crowLabel);const toneLabel=document.createElement('span');toneLabel.className='career-crow-tone';toneLabel.textContent=guidance.dataset.tone==='success'?'Success':guidance.dataset.tone==='failure'?'Failure':'Information';crowHeading.append(toneLabel);crowHeading.append(assistance.button);bubble.append(crowHeading,words);guidance.append(bubble);title.after(guidance);
+ if(model.rank){const rank=document.createElement('details');rank.className='army-current-rank';const summary=document.createElement('summary');summary.textContent=(model.record.officer?'Officer':'Enlisted')+' · '+(model.rank.title||'Rank '+model.record.rank)+' · Rank '+model.record.rank;const detail=document.createElement('p');detail.textContent='Current rank reference: '+(model.rank.reward||'No additional rank reward.')+' The engine records any award and required specialisation separately.';rank.append(summary,detail);workspace.append(rank);}
+ if(state?.stage==='career'&&!model.selection){const back=workspace.querySelector('[data-action=career-list]');if(back){back.classList.add('army-career-back');step.append(back);}for(const node of workspace.querySelectorAll(':scope > h3,:scope > p.source'))node.remove();const select=workspace.querySelector('#career-assignment');if(select){select.parentElement.classList.add('army-specialty-native');select.setAttribute('aria-hidden','true');select.tabIndex=-1;const choices=document.createElement('div');choices.className='army-specialty-choices';choices.setAttribute('role','radiogroup');choices.setAttribute('aria-label','Army specialty');for(const specialty of model.specialties){const button=document.createElement('button');button.type='button';button.dataset.armySpecialty=specialty.id;button.setAttribute('role','radio');button.textContent=specialty.name;button.addEventListener('click',()=>{select.value=specialty.id;select.dispatchEvent(new Event('change',{bubbles:true}));});button.addEventListener('keydown',event=>{const direction=['ArrowRight','ArrowDown'].includes(event.key)?1:['ArrowLeft','ArrowUp'].includes(event.key)?-1:0;if(!direction)return;event.preventDefault();const buttons=[...choices.children],next=buttons[(buttons.indexOf(button)+direction+buttons.length)%buttons.length];next.click();next.focus();});choices.append(button);}const details=document.createElement('section');details.className='army-specialty-information';details.setAttribute('aria-live','polite');select.parentElement.after(choices,details);select.addEventListener('change',()=>syncCareerSpecialty(document,model));syncCareerSpecialty(document,model);} }
+ if(['career-event','career-mishap'].includes(state?.stage)){const repeated=[...workspace.children].find(n=>n.tagName==='H3');if(repeated?.nextElementSibling?.tagName==='P')repeated.nextElementSibling.remove();repeated?.remove();}
+ if(!model.selection){const info=armyRuleInformation(model.phase),popup=document.createElement('dialog');popup.id='army-rule-information';popup.className='army-rule-information';popup.setAttribute('aria-labelledby','army-rule-title');const heading=document.createElement('h2');heading.id='army-rule-title';heading.tabIndex=-1;heading.textContent=info.title;const explanation=document.createElement('p');explanation.textContent=info.summary;const reference=document.createElement('p');reference.textContent=info.book+' · p. '+info.page;const link=document.createElement('a');link.href=info.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Publisher’s book listing';const aside=document.createElement('p');aside.className='army-rule-aside';aside.textContent='Crow: The book has rules. Your optimism remains an unofficial supplement.';const close=document.createElement('button');close.type='button';close.textContent='Close';close.setAttribute('aria-label','Close Army rule information');close.addEventListener('click',()=>popup.close());popup.addEventListener('close',()=>{if(assistance.button.isConnected)assistance.button.focus();});const specialtyInfo=document.createElement('section');specialtyInfo.className='army-rule-specialty';const infoHeader=document.createElement('div');infoHeader.className='army-rule-header';const portrait=crowAssistanceView(document,{type:model.phase===1?'skills':model.phase===4?'referee':'generic'}).row.querySelector('.crow-assistance-image');if(portrait)infoHeader.append(portrait);infoHeader.append(heading);const closeBar=document.createElement('div');closeBar.className='army-rule-close-bar';closeBar.append(close);popup.append(closeBar,infoHeader,explanation,specialtyInfo,reference,link,aside);workspace.append(popup);assistance.button.setAttribute('aria-label','Army rules and source information');syncArmyRuleSpecialty(document,model);}
+ if(model.selection){for(const button of workspace.querySelectorAll('[data-action=select-career]')){const career=model.careers.find(c=>c.id===button.dataset.id),reference=button.querySelector('small');if(career&&reference){button.setAttribute('aria-label',career.name+'. '+reference.textContent);reference.title=reference.textContent;reference.textContent=career.source.toUpperCase()+' · p. '+career.page+(career.reason?' · '+career.reason:'');}}}
+ if(model.selection&&result){const previous=document.createElement('details');previous.className='army-previous-result';const summary=document.createElement('summary');summary.textContent='Previous result: '+(result.querySelector('h3')?.textContent??'View recorded outcome');result.before(previous);previous.append(summary,result);}
+ const source=document.createElement('p');source.className='source army-career-source';source.textContent=model.template.source??'Choose a career to review its specialties and source references.';workspace.append(source);
+ const overview=rail.querySelector('#army-career-overview');overview.replaceChildren();const eyebrow=document.createElement('p');eyebrow.className='eyebrow';eyebrow.textContent='YOUR TRAVELLER';const name=document.createElement('h2');name.textContent=state?.character.name||'Your Traveller';overview.append(eyebrow,name);
+ const nodes=[...sheet.children],facts=nodes.find(n=>n.matches('.sheet-facts')),meta=nodes.find(n=>n.matches('.sheet-meta'));if(meta)overview.append(meta);if(facts)overview.append(facts);
+ for(const node of nodes)if(node.tagName==='H2'||node.matches('.eyebrow'))node.remove();
+ for(const [id,label,node] of [['army-record-characteristics','Characteristics',nodes.find(n=>n.querySelector('.stats'))],['army-record-skills','Skills',nodes.find(n=>n.querySelector('h3')?.textContent==='Skills')]]){if(!node)continue;const group=document.createElement('details');group.id=id;group.className='army-record-section';const summary=document.createElement('summary');summary.textContent=label;node.before(group);group.append(summary,node);}
+ const stepKey=sessionKey+'|'+state?.stage+'|'+(model.selection?'selection':model.career.id);if(newlyCreated||dialog.dataset.stepKey!==stepKey){if(!dialog.open)dialog.show();dialog.dataset.stepKey=stepKey;dialog.scrollTop=0;if(document.defaultView.matchMedia('(max-width:850px)').matches)dialog.scrollIntoView({block:'start'});}if(newlyCreated)title.focus({preventScroll:true});
+}
+
+function fillSpecialtyInformation(document,details,model,specialty,{popup=false}={}){
+ details.replaceChildren();
+ const title=document.createElement('h3');title.textContent=specialty.name;
+ const description=document.createElement('p');if(!popup)description.className='army-specialty-description';description.textContent=specialty.description;
+ const requirements=document.createElement('dl');requirements.className='army-specialty-requirements';
+ for(const [name,check] of [['Qualification',model.career.qualification],['Survival',specialty.survival],['Advancement',specialty.advancement]]){
+  const row=document.createElement('div'),term=document.createElement('dt'),value=document.createElement('dd');term.textContent=name;value.textContent=check.stat+' '+check.target+'+';row.append(term,value);requirements.append(row);
+ }
+ const skillTitle=document.createElement('h4');skillTitle.textContent='Specialty training skills';
+ const skills=document.createElement('ul');skills.className='army-specialty-skills';
+ for(const name of specialty.skills){const item=document.createElement('li');item.textContent=name;skills.append(item);}
+ const note=document.createElement('p');note.className='help';note.textContent='Base requirements. Entry rights and applicable modifiers are shown with the action. These are specialty skill options, not automatic awards; other training options are shown when available.';
+ const source=document.createElement('p');source.className='source';source.textContent='Core Rulebook Update 2022 · p. 24';
+ details.append(title,description,requirements,skillTitle,skills,note,source);
+}
+function syncArmyRuleSpecialty(document,model){
+ const details=document.querySelector('#army-rule-information .army-rule-specialty'),assignment=document.getElementById('career-assignment')?.value??model.record?.assignment,specialty=model.specialties.find(s=>s.id===assignment);
+ if(details&&specialty)fillSpecialtyInformation(document,details,model,specialty,{popup:true});
+}
+export function syncCareerSpecialty(document,model){
+ const select=document.getElementById('career-assignment'),details=document.querySelector('.army-specialty-information');if(!select||!details||!model)return;
+ const specialty=model.specialties.find(s=>s.id===select.value);if(!specialty)return;
+ for(const button of document.querySelectorAll('[data-army-specialty]')){const selected=button.dataset.armySpecialty===select.value;button.setAttribute('aria-checked',String(selected));button.tabIndex=selected?0:-1;}
+ fillSpecialtyInformation(document,details,model,specialty);syncArmyRuleSpecialty(document,model);
+}

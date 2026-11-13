@@ -26,8 +26,8 @@ export const outcomeTaglines = Object.freeze({
  ]),
 });
 
-export function outcomeTagline(outcome, actionId) {
- const lines=Object.hasOwn(outcomeTaglines,outcome)?outcomeTaglines[outcome]:null;
+export function outcomeTagline(outcome, actionId, bank=outcomeTaglines) {
+ const lines=Object.hasOwn(bank,outcome)?bank[outcome]:null;
  if(!lines||typeof actionId!=='string'||!actionId)return null;
  // The GUI already assigns each action a crypto.randomUUID(), independently of
  // the seeded rules RNG. Domain-separated selection stays stable on rerender,

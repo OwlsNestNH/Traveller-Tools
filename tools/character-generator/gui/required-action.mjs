@@ -11,8 +11,9 @@ export const REQUIRED_HEADLINES=Object.freeze({
  referee:['THE REFEREE GETS A SAY HERE.','THIS ONE NEEDS A RULING.','NICE TRY. CHECK WITH THE REFEREE.','THE RULEBOOK HAS ENTERED THE CHAT.','WE NEED A RULING, NOT A GUESS.','OFFICIAL WORD REQUIRED.'],
  generic:['MAKE A CHOICE, DUMMY!','HOLD YOUR SPACE HORSES.','NOT SO FAST, TRAVELLER.','YOU’VE SKIPPED A BIT.','ONE THING AT A TIME, HERO.','THE NEXT BUTTON IS NOT A SHORTCUT.']
 });
-export function requiredHeadline(type,key=''){
- const bank=REQUIRED_HEADLINES[type]??REQUIRED_HEADLINES.generic;
+export const ARMY_SKILL_HEADLINES=Object.freeze([...REQUIRED_HEADLINES.skills.slice(0,5),'THE ARMY CAN’T TRAIN A BLANK.']);
+export function requiredHeadline(type,key='',context=''){
+ const bank=type==='skills'&&context==='core.army'?ARMY_SKILL_HEADLINES:REQUIRED_HEADLINES[type]??REQUIRED_HEADLINES.generic;
  let hash=0;for(const char of String(key))hash=(hash*31+char.codePointAt(0))>>>0;
  return bank[hash%bank.length];
 }
@@ -85,9 +86,9 @@ export function showRequiredAction(root,{control,type='generic',detail,key='',ac
  const scope=control.closest('dialog[open]')??root.querySelector('#workspace')??root.body;
  let warning=scope.querySelector(':scope > .required-action-warning');
  if(!warning){warning=root.createElement('div');warning.id='required-action-warning-'+(++serial);warning.className='required-action-warning';warning.dataset.crowEssential='true';warning.setAttribute('role','alert');warning.setAttribute('aria-atomic','true');scope.prepend(warning);}
- const introduction=scope.querySelector(':scope > #crow-introduction');if(introduction)introduction.hidden=true;
- const assistance=crowAssistanceView(root,{type,informationDialog:introduction?'crow-introduction-dialog':null});assistance.help.id=warning.id+'-crow-help';if(!introduction)assistance.button.setAttribute('aria-controls',assistance.help.id);
- const title=root.createElement('strong'),instruction=root.createElement('p');title.textContent=requiredHeadline(type,key);instruction.textContent=detail;
+ const introduction=scope.querySelector(':scope > #crow-introduction,.career-pilot-guidance');if(introduction)introduction.hidden=true;
+ const assistance=crowAssistanceView(root,{type,informationDialog:introduction?.id==='crow-introduction'?'crow-introduction-dialog':null});assistance.help.id=warning.id+'-crow-help';if(introduction?.id!=='crow-introduction')assistance.button.setAttribute('aria-controls',assistance.help.id);
+ const title=root.createElement('strong'),instruction=root.createElement('p');title.textContent=requiredHeadline(type,key,root.body?.dataset.careerTemplate);instruction.textContent=detail;
  const speech=root.createElement('div');speech.className='crow-speech';speech.append(title,instruction);
  const recovery=root.createElement('div');recovery.className='crow-recovery-actions';const dismiss=()=>{warning.hidden=true;if(introduction)introduction.hidden=false;if(control.isConnected){control.focus();control.scrollIntoView?.({block:'nearest'});}};recovery.append(recoveryButton(root,{id:'continue',label:'Continue',ariaLabel:'Continue to the missing field',run:dismiss}));for(const action of actions)recovery.append(recoveryButton(root,action));warning.replaceChildren(assistance.row,speech,assistance.help,recovery);warning.hidden=false;
  control.setAttribute('aria-invalid','true');
@@ -169,7 +170,7 @@ export function mountRequiredActions({document:root,getState,isBusy,backgroundSe
 export function clearRequiredActions(scope){
  if(!scope)return;
  for(const warning of scope.querySelectorAll('.required-action-warning'))warning.hidden=true;
- const introduction=scope.querySelector('#crow-introduction');if(introduction)introduction.hidden=false;
+ const introduction=scope.querySelector('#crow-introduction,.career-pilot-guidance');if(introduction)introduction.hidden=false;
  for(const control of scope.querySelectorAll('[aria-describedby]')){
   const ids=(control.getAttribute('aria-describedby')??'').split(/\s+/),remaining=ids.filter(id=>id&&!id.startsWith('required-action-warning-'));
   if(remaining.length===ids.length)continue;
