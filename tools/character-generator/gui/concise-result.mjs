@@ -1,4 +1,5 @@
 import {crowSpeakingPanel} from './crow-speaking-panel.mjs';
+import {showOpeningInformation} from './opening-help.mjs';
 import {eventResultDetails} from './event-result-view.mjs';
 // Presentation only. The full result and immutable action log remain available.
 import {rollResult,characterEffectDetails,modifierEffectDetails,pendingEffectDetails} from './roll-result-view.mjs';
@@ -7,6 +8,17 @@ const finite=n=>typeof n==='number'&&Number.isFinite(n);
 const unique=values=>[...new Set(values.filter(Boolean))];
 const amount=n=>'Cr'+n.toLocaleString('en-US');
 const label=id=>String(id??'').replaceAll('-',' ');
+function awardedBenefitCredits(event){
+ const records=new Map();
+ for(const c of event.changes??[]){
+  const match=c.path.match(/^benefitCredits\.(\d+)(?:\.(\w+))?$/);
+  if(!match||c.before!=null)continue;
+  const record=records.get(match[1])??{};
+  if(match[2])record[match[2]]=c.after;else Object.assign(record,c.after);
+  records.set(match[1],record);
+ }
+ return [...records.values()].filter(c=>c.status==='available'&&finite(c.value)&&['any','career'].includes(c.scope));
+}
 export function isBasicTrainingChoice(state){
  return state?.stage==='effect-choice'&&state.pendingChoice?.options?.length>0&&(state.pendingChoice.basicTraining===true||state.pendingChoice.options.every(option=>/^Basic-training option \d+$/.test(option.label)));
 }
@@ -18,6 +30,24 @@ function otherEffects(event,catalog,keep){
 }
 export function conciseResult(event,state,catalog){
  const full=rollResult(event,state,catalog);if(!full)return null;
+ // Project awarded credits from the recorded changes; never rewrite replay-verified summaries.
+ const credits=awardedBenefitCredits(event);
+ if(credits.length){
+  const merchant=(event.eventResults??[]).find(r=>r.table==='core.merchant.events'&&r.row===10);
+  const title=merchant?'A profitable deal lets you live well for a few years.':'Benefit roll bonus saved.';
+  const details=unique([
+   ...credits.map(c=>(c.value>=0?'+':'')+c.value+' to one future Benefit roll'+(c.scope==='career'?' from this career'+(catalog?.careers?.find(career=>career.id===c.originCareerId)?.name?' ('+catalog.careers.find(career=>career.id===c.originCareerId).name+')':''):' from any career')+'.'),
+   'The bonus is saved. Select it under “Bonuses for this roll” when rolling benefits. It is neither money nor an extra roll.',
+   ...(state?.stage==='advancement'?['Continue with Advancement below.']:[]),
+   ...(merchant?otherEffects(event,catalog,c=>!/^benefitCredits\./.test(c.path)):full.details.filter(line=>!line.startsWith('Benefit credit')).map(line=>line.replaceAll('Resolve benefit credit.','Benefit roll bonus saved.'))),
+   ...(merchant?['Merchant event 10 · Core Rulebook Update 2022 p. 35.',...diceDetails(event)]:[])
+  ]);
+  if(merchant){
+   const mainDetails=[...credits.map(c=>(c.value>=0?'+':'')+c.value+' to one future Benefit roll.'),...otherEffects(event,catalog,c=>!/^benefitCredits\./.test(c.path))];
+   return {title,details:mainDetails,status:full.status,text:[title,...mainDetails].join(' '),full,compact:true,information:{title:'Your Benefit roll bonus',paragraphs:unique([...details,...full.details]),crowType:'merchant'}};
+  }
+  return {title,details,status:full.status,text:[title,...details].join(' '),full,compact:true};
+ }
  if(full.status!=='error'&&state?.stage==='deceased'&&state.character?.deceased===true){const title='This life path ended in death.',injury=state.character.injuries?.findLast(i=>i.deceased&&i.zeroRuling?.survives===false),details=state.character.ironManDeath?['Iron Man: failed Survival was fatal instead of rolling a mishap. Companion Update 2024 p. 13.',...diceDetails(event)]:injury?['Recorded referee injury ruling; this was not automatic death from a failed Survival check or a single zero score.','Referee reason: '+injury.zeroRuling.note]:[];return {title,details,status:'failure',text:[title,...details].join(' '),full,compact:true};}
  if(full.status!=='error'&&state?.stage==='finish'){const title='Recorded character ready for review.',details=['Source-assisted steps remain listed in the record.'];return {title,details,status:'info',text:[title,...details].join(' '),full,compact:true};}
  if(full.status!=='error'&&state?.stage==='retirement'&&state.character?.retirementFromCreation===true){
@@ -92,5 +122,14 @@ export function conciseResult(event,state,catalog){
 export function latestResultView(result,{esc,tagline=null,crowType='generic'}){
  if(!result)return '';
  const paragraphs=details=>details.map(detail=>'<p>'+esc(detail)+'</p>').join('');
+ if(result.information)return '<section id="last-action-result" class="result-panel result-'+result.status+' merchant-benefit-result" data-result-status="'+result.status+'" aria-label="Latest result"><div class="merchant-benefit-heading"><h3>'+esc(result.title)+'</h3><button type="button" class="opening-info-trigger" data-result-information aria-label="About your Benefit roll bonus" aria-haspopup="dialog" aria-controls="opening-help-dialog"><span aria-hidden="true">i</span></button></div>'+paragraphs(result.details)+'</section>';
  return '<section id="last-action-result" class="result-panel result-'+result.status+'" data-result-status="'+result.status+'" aria-label="Latest result"><p class="result-status">'+({success:'Success',failure:'Failure',pending:'Pending resolution',info:'Information'}[result.status]??'Information')+'</p><h3>'+esc(result.title)+'</h3>'+paragraphs(result.details)+(tagline&&result.status!=='error'?crowSpeakingPanel({message:tagline,type:crowType,tone:result.status==='success'?'success':result.status==='failure'?'failure':'information',className:'outcome-tagline'}):'')+(result.compact?'<details class="result-information"><summary>Result details</summary><h4>'+esc(result.full.title)+'</h4>'+paragraphs(result.full.details)+'</details>':'')+'</section>';
+}
+export function mountResultInformation(document,result){
+ const trigger=document.querySelector('[data-result-information]');if(!trigger||!result?.information)return;
+ trigger.addEventListener('click',()=>showOpeningInformation(document,result.information,trigger));
+ // The existing career popup has already supplied the progression control and recorded dice.
+ // Supporting Crow guidance now belongs with the event's informational, not a second main panel.
+ document.querySelector('#workspace>.career-pilot-guidance')?.remove();
+ for(const p of document.querySelectorAll('#workspace>p'))if(p.textContent==='Your term events are recorded. Resolve advancement for your assignment.')p.remove();
 }

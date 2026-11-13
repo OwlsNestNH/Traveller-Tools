@@ -230,3 +230,9 @@
  #completion-notes>#notes-connections>summary{display:none}
  #completion-characteristics .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 }
+/* Event outcome stays concise; supporting detail uses the established circled-i dialog. */
+@media screen{
+ #army-career-dialog .merchant-benefit-heading{display:flex;align-items:flex-start;gap:12px}
+ #army-career-dialog .merchant-benefit-heading h3{flex:1;margin-top:0}
+ #army-career-dialog .merchant-benefit-heading .opening-info-trigger{flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:0;border:2px solid #ffd34b;border-radius:50%;background:#071c2a;color:#ffd34b;box-shadow:none;font-size:27px}
+}
