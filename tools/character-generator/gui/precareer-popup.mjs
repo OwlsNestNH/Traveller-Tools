@@ -36,7 +36,7 @@ export function educationEventModel(state,projection){
  const nested=educationNestedChoiceModel(state);if(nested)return nested;
  if(checkpoint&&checkpoint.mode!=='existing-choice')return checkpoint;
  if(projection?.educationGraduationPreview)return {id:projection.educationGraduationPreview.id,name:projection.educationGraduationPreview.name,kind:'graduation',preview:projection.educationGraduationPreview};
- const id=state?.character?.educations?.[state.education]?.id,names={'core.university':'University','core.academy-army':'Army academy','core.academy-marine':'Marine academy','core.academy-navy':'Navy academy'};return state?.stage==='education-event'&&names[id]?{id,name:names[id],kind:'event'}:null;
+ const record=state?.character?.educations?.[state.education],id=record?.id,names={'core.university':'University','core.academy-army':'Army academy','core.academy-marine':'Marine academy','core.academy-navy':'Navy academy'};return state?.stage==='education-event'&&names[id]&&record.entry?.id===id?{id,name:names[id],kind:'event'}:null;
 }
 export function educationPotentialModel(state){
  const record=state?.character.educations?.[state.education],choice=state?.pendingChoice,options=choice?.options,effects=options?.[0]?.effects;
