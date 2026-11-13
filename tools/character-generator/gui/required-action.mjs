@@ -66,6 +66,7 @@ export function actionRequirements(action,state={},trigger={}){
  if(action==='resolve-book'){
   const p=state.pending??{},kind=p.kind??'';
   add('#book-confirm','referee','Confirm you checked the indicated source and recorded all effects.');
+  if(p.requiredAwardReview){add('#book-note','referee','Record why the referee replaces or omits the pending skill award.');add('#award-review-confirmed','referee','Explicitly confirm the referee replacement or omission of the pending skill award.');}
   if(!['native-effect','species-setup','mishap','precareer','education-entry-rights'].includes(kind))add('#book-note','referee','Record the '+kind.replaceAll('-',' ')+' source decision and reason.');
   for(const [id,type,detail] of [
    ['aslan-officer-status-approved','referee','Record approval or denial of this offer-specific exception.'],['ageing-psi-confirmed','referee','Confirm the referee PSI ageing ruling.'],['ageing-anagathic-terms','details','Enter the anagathic ageing credit.'],['transfer-rank-track','career','Choose an enlisted or officer rank track.'],

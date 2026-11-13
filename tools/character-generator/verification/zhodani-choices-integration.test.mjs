@@ -92,7 +92,7 @@ test('protected Government successful check resumes the existing Event at advanc
  assert.equal(r.state.stage,'advancement');assert.equal(career(r).forcedExit,false);assert.equal(career(r).terms,0);assert.equal(r.log.at(-1).rolls.length,1);roundtrip(r);
 });
 test('revision .6 rejects every prior candidate unchanged before replay',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-09.31');
+ assert.equal(RULES_REVISION,'character-preview-2026-11-13.32');
  for(const rev of [2,3,4,5]){const old=structuredClone(prole.session);old.rulesRevision='character-preview-2026-11-08.'+rev;const before=JSON.stringify(old);
  const r=api({operation:'project',session:old});assert.equal(r.ok,false);assert.match(r.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),before);}
 });
@@ -102,7 +102,7 @@ test('distinct Scholar partial progress survives a skill-cap source stop without
  r=run(r,'gm-override',{field:'stat.INT',value:0,reason:'Skill-cap boundary fixture'});r=run(r,'gm-override',{field:'stat.EDU',value:0,reason:'Skill-cap boundary fixture'});
  r=run(r,'choose-skill',{name:'Science (chemistry)'});assert.equal(r.state.stage,'book-step');
  assert.deepEqual(r.state.pending.effect.selected,['Science (physics)']);assert.equal(r.state.pending.effect.count,1);assert.equal(r.state.character.skills['Science (physics)'],1);
- r=run(r,'resolve-book',{confirmed:true,note:'Referee discards the remaining over-cap award.',effects:[]});assert.equal(r.state.stage,'reeducation-roll');
+ r=run(r,'resolve-book',{confirmed:true,awardReviewConfirmed:true,note:'Referee discards the remaining over-cap award.',effects:[]});assert.equal(r.state.stage,'reeducation-roll');
  assert.equal(r.state.character.skills['Science (chemistry)'],undefined);roundtrip(r);
 });
 
