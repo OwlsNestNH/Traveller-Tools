@@ -86,6 +86,11 @@ The owner approved Military Crow ("Love it"). The exact shown asset is used
 for Army/Marine career guidance, result commentary and rule-information panels.
 Other careers retain their contextual costumes; technical errors use default Crow.
 
-Navy and Imperial Rogue costume drafts are review-only, with no production
-mapping. Pirate/tricorn styling is reserved for the later Vargr Corsair phase;
+The owner approved Navy and Imperial Rogue costumes. Exact shown image bytes
+are mapped to their corresponding career guidance, rule information and results. Pirate/tricorn styling is reserved for the later Vargr Corsair phase;
 this candidate does not implement Vargr careers or a Corsair costume.
+
+Future artwork guidance (not implemented): costumes are generally career-specific,
+not one per specialty. Corsair/Pirate may be reviewed as cosmetic exceptions,
+possibly with a small skull-and-crossbones flag behind Crow, without obscuring
+his face or messages. Vargr implementation remains a separate later phase.

@@ -8,8 +8,9 @@ import {crowAssistanceView} from './crow-assistance.mjs';
 import {outcomeTagline} from './outcome-taglines.mjs';
 export const ARMY_TEMPLATE=IMPERIAL_CAREER_DEFINITIONS['core.army'];
 export const CAREER_TEMPLATES=IMPERIAL_CAREER_DEFINITIONS;
-export function careerResultCrowType(event,result,state){return result?.status!=='error'&&['core.army','core.marine'].includes(imperialResultCareer(event,state))?'military':'generic';}
-export function careerCrowType(model){return ['core.army','core.marine'].includes(model?.career?.id)?'military':model?.phase===1?'skills':model?.phase===4?'referee':'generic';}
+const CAREER_CROW_COSTUMES=Object.freeze({'core.army':'military','core.marine':'military','core.navy':'navy','core.rogue':'rogue'});
+export function careerResultCrowType(event,result,state){return result?.status==='error'?'generic':CAREER_CROW_COSTUMES[imperialResultCareer(event,state)]??'generic';}
+export function careerCrowType(model){return CAREER_CROW_COSTUMES[model?.career?.id]??(model?.phase===1?'skills':model?.phase===4?'referee':'generic');}
 const phases=['Application','Training','Survival','Events','Progression','Term review','Mustering out'];
 export function careerPhase(stage){return stage==='career'||stage==='failed-entry'?0:['training','effect-choice','skill-choice','preterm-commission'].includes(stage)?1:stage==='survival'?2:['career-event','career-mishap','borrowed-event-roll','book-step','injury-loss','injury-treatment','relationship-event','relationship-loss'].includes(stage)?3:stage==='advancement'?4:['term-end','ageing','assignment-entry'].includes(stage)?5:['benefits','benefit-wager','equipment-finalization'].includes(stage)?6:null;}
 export function careerTemplateModel(state,catalog,selectedCareer=''){
