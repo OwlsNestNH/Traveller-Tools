@@ -18,7 +18,7 @@ function otherEffects(event,catalog,keep){
 }
 export function conciseResult(event,state,catalog){
  const full=rollResult(event,state,catalog);if(!full)return null;
- if(full.status!=='error'&&state?.stage==='deceased'&&state.character?.deceased===true){const title='This life path ended in death.';return {title,details:[],status:'failure',text:title,full,compact:true};}
+ if(full.status!=='error'&&state?.stage==='deceased'&&state.character?.deceased===true){const title='This life path ended in death.',injury=state.character.injuries?.findLast(i=>i.deceased&&i.zeroRuling?.survives===false),details=injury?['Recorded referee injury ruling; this was not automatic death from a failed Survival check or a single zero score.','Referee reason: '+injury.zeroRuling.note]:[];return {title,details,status:'failure',text:[title,...details].join(' '),full,compact:true};}
  if(full.status!=='error'&&state?.stage==='retirement'&&state.character?.retirementFromCreation===true){
   const title='Retired from character creation.';let details=[];
   if(event.type==='benefit'){

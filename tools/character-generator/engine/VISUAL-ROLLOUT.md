@@ -56,3 +56,10 @@ age14 plus one four-year term is18, not an age-calculation defect.
 
 Approved Scholar and Agent portraits are used for their career guidance, source
 information and recorded career results. Technical errors retain default Crow.
+
+The deceased completion preview is a legacy synthetic referee-ruling case, not
+Iron Man or an ordinary automatic injury death. Its summary states that provenance
+and preserves the recorded reason. Core2022 p49 ageing-crisis death is separate;
+Companion2024 p13 optional Iron Man is not an implemented setting. Standard failed
+Survival still leads to a mishap. Injury-zero decisions explicitly name the referee
+ruling and never preselect death; no rules or existing saves are changed.
