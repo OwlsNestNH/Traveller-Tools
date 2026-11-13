@@ -245,6 +245,12 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
+      - name: Read-only approved screen reference
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 897918917b44234420d148ac8ebb4c12b924e056
+          path: approved-screen-reference
+          persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '22'
@@ -255,7 +261,7 @@ jobs:
       - name: Imperial specialty desktop and phone review
         run: |
           node tools/character-generator/verification/imperial-template-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
-          node tools/character-generator/verification/imperial-layout-concept-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          APPROVED_SCREEN_ROOT="$GITHUB_WORKSPACE/approved-screen-reference/tools/character-generator" node tools/character-generator/verification/imperial-layout-concept-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:

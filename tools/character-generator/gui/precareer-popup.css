@@ -410,3 +410,5 @@ dialog:has(.required-action-warning:not([hidden])) .crow-speaking-panel{display:
  .education-checkpoint-next:has(>.education-pending-dice)>.education-pending-dice{grid-column:2;grid-row:1;margin:0}
  .education-checkpoint-instruction.crow-speaking-panel>blockquote p{font-size:20px}
 }
+/* Keep the existing Background selection grid compact with its pictured guide. */
+@media screen and (min-width:851px){body[data-stage="background"] #workspace .crow-speaking-panel{margin:2px 0;gap:12px}body[data-stage="background"] #workspace .background-grid{row-gap:2px}body[data-stage="background"] #workspace .crow-speaking-panel>img{width:144px;height:96px;flex-basis:144px;object-fit:cover;object-position:50% 25%}body[data-stage="background"] #workspace .crow-speaking-panel>blockquote{padding:10px 14px}}

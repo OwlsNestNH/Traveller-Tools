@@ -72,6 +72,10 @@ individual timing labels and every current-branch entry. Unknown timing stays
 explicit. Print temporarily expands groups and restores their previous state.
 
 The sheet-centred layout under `verification/imperial-layout-concept*` is a
-review-only concept. It uses synthetic data and never initializes the app or
-sends character commands. It is not the application navigation design until
-reviewed; the existing production sheet/popup structure remains in place.
+review-only framing study, replacing the rejected redesigned content. CI loads
+the approved deployed Education/Background application at commit 8979189 with
+synthetic sessions, then changes only popup/sheet positioning in browser memory.
+It asserts identical screen text, controls and saved bytes before/after framing.
+No character command is submitted by the framing operation. Reference and framed
+screenshots are paired. Costume contrast comparisons are also review-only.
+The existing production sheet/popup structure and artwork remain in place.
