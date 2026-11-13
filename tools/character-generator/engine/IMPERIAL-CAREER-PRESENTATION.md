@@ -97,3 +97,6 @@ his face or messages. Vargr implementation remains a separate later phase.
 
 Scout, Merchant and Entertainer outfit drafts are review-only under
 `verification/review-assets`; none is mapped to production pending visual review.
+
+Noble Crow is also a review-only draft: high-collared ivory/gold coat, blue sash
+and medal. It is not mapped to the application pending visual approval.
