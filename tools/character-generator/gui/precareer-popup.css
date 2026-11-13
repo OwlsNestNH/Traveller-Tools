@@ -400,3 +400,13 @@ dialog:has(.required-action-warning:not([hidden])) .crow-speaking-panel{display:
  :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]) .education-event-content.crow-speaking-panel>blockquote{display:contents}
  :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]) .education-event-content.crow-speaking-panel::after{content:"";display:block;clear:both}
 }
+.education-checkpoint-instruction.crow-speaking-panel{margin:0}
+.education-checkpoint-instruction.crow-speaking-panel>img{width:112px;height:112px;flex-basis:112px}
+.education-checkpoint-instruction.crow-speaking-panel>blockquote{padding:10px 12px}
+@media screen and (min-width:1101px){
+ .education-checkpoint-next:has(>.education-pending-dice){display:grid;grid-template-columns:minmax(0,1fr) 316px;gap:12px 18px;align-items:center}
+ .education-checkpoint-next:has(>.education-pending-dice)>*{grid-column:1 / -1}
+ .education-checkpoint-next:has(>.education-pending-dice)>.education-checkpoint-instruction{grid-column:1;grid-row:1}
+ .education-checkpoint-next:has(>.education-pending-dice)>.education-pending-dice{grid-column:2;grid-row:1;margin:0}
+ .education-checkpoint-instruction.crow-speaking-panel>blockquote p{font-size:20px}
+}
