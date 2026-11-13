@@ -1,6 +1,10 @@
 import {educationPresentationIcon} from './education-result-view.mjs';
 // Approved Education popup frame, applied to existing completion nodes only.
 // No commands, storage writes, new choices or result changes.
+export function sourceAssistedCoverageView(coverage,{labels,esc}){
+ if(!coverage.length)return '';
+ return '<h3>Source-assisted coverage</h3><ul>'+coverage.map(id=>'<li>'+esc(labels[id]??id.replaceAll('-',' '))+'</li>').join('')+'</ul>';
+}
 export function mountCompletionPopup(document,state){
  const layout=document.querySelector('.layout'),workspace=document.getElementById('workspace');
  let dialog=document.getElementById('completion-dialog'),context=document.getElementById('completion-context');
@@ -16,7 +20,7 @@ export function mountCompletionPopup(document,state){
  layout.classList.add('completion-layout');
  const controls=document.createElement('div');controls.className='completion-controls';const close=document.createElement('button');close.type='button';close.className='quiet';close.textContent='Close';close.id='completion-close';close.addEventListener('click',dialog._dismiss);const sheet=document.createElement('button');sheet.type='button';sheet.className='quiet';sheet.dataset.action='open-current-character-sheet-popup';sheet.textContent='Character sheet';sheet.setAttribute('aria-haspopup','dialog');sheet.setAttribute('aria-controls','final-character-sheet');if(state.stage!=='finish')controls.append(sheet);controls.append(close);workspace.prepend(controls);
  const title=workspace.querySelector('#step-title'),heading=document.createElement('div');heading.className='completion-result-heading';heading.innerHTML=educationPresentationIcon('book');title.before(heading);heading.append(title);
- const result=workspace.querySelector('#last-action-result');if(result){result.classList.add('education-result');const invitation=workspace.querySelector('.final-sheet-invitation'),speaker=result.querySelector('.crow-speaking-panel');if(state.stage==='finish'){const duplicate=result.querySelector(':scope>h3');if(duplicate)duplicate.hidden=true;if(invitation&&speaker)speaker.after(invitation);}
+ const result=workspace.querySelector('#last-action-result');if(result){result.classList.add('education-result');const invitation=workspace.querySelector('.final-sheet-invitation'),speaker=result.querySelector('.crow-speaking-panel');const duplicate=result.querySelector(':scope>h3'),normal=value=>value.trim().replace(/[.!?]+$/,'');if(duplicate&&(state.stage==='finish'||normal(duplicate.textContent)===normal(title.textContent)))duplicate.hidden=true;if(state.stage==='finish'&&invitation&&speaker)speaker.after(invitation);
  const status=result.querySelector(':scope>.result-status');if(status&&result.dataset.resultStatus==='info')status.classList.add('sr-only');for(const crow of result.querySelectorAll('.crow-speaking-panel'))crow.classList.add('education-result-crow');const audit=result.querySelector('.result-information'),dice=result.querySelector('.army-recorded-dice');if(audit&&dice)audit.before(dice);}
  if(created||dialog.dataset.stage!==state.stage){if(!dialog.open)dialog.show();dialog.dataset.stage=state.stage;workspace.querySelector('#step-title').focus({preventScroll:true});}
 }

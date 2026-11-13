@@ -92,3 +92,8 @@ action is asserted inside an844px first viewport. Before/after comparisons use
 the prior completion candidate6ded49a and actual Education/Background references.
 Iron Man review has an explicit six-PNG manifest and a dedicated CI artifact;
 a failed comparison must never be mistaken for completed Iron Man previews.
+
+Final completion copy QA removes a repeated visible Retirement heading while
+retaining its full recorded result in the audit disclosure. Finish omits the
+source-assisted coverage heading/list when no entries exist; nonempty coverage
+keeps the same labels, order and escaping. Layout, controls and state are unchanged.
