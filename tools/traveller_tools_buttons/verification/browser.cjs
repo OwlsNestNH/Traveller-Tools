@@ -13,14 +13,20 @@ const fs=require('node:fs');
  assert.equal(await discussions.getAttribute('target'),'_blank');
  assert.equal(await discussions.getAttribute('rel'),'noopener noreferrer');
  const links=page.locator('#grid a');
- const count=await links.count();assert.equal(count,44);
+ const count=await links.count();assert.equal(count,45);
+ const missouri=page.getByRole('link',{name:/Missouri Archive/});
+ assert.equal(await missouri.count(),1);
+ assert.equal(await missouri.getAttribute('href'),'https://missouri.codemonki.net/');
+ assert.equal(await missouri.getAttribute('target'),'_blank');
+ assert.equal(await missouri.getAttribute('rel'),'noopener noreferrer');
+ assert.equal(await missouri.locator('xpath=ancestor::section').getAttribute('data-section'),'Other Tools & Resources');
  const derelict=page.getByRole('link',{name:/Derelict Maps/});
  assert.equal(await derelict.count(),1);
  assert.equal(await derelict.getAttribute('href'),'https://derelictmaps.com/');
  assert.equal(await derelict.getAttribute('target'),'_blank');
  assert.equal(await derelict.getAttribute('rel'),'noopener noreferrer');
  for(const host of ['mytravelleruniverse.net','taunoyen.com','pgarriga.github.io','DoNotResuscitate/traveller-sector-gen','cthulhustig/autojimmy','travellercc.avorial.com'])assert.equal(await links.filter({has:page.locator('[class="url"]', {hasText:host})}).count(),1);
- for(const [query,expected] of [['derelict',1],['self-hosting',1],['command-line',1],['edition-agnostic',1],['ship sheets',1],['no-match-xyz',0]]){
+ for(const [query,expected] of [['missouri',1],['codemonki',1],['derelict',1],['self-hosting',1],['command-line',1],['edition-agnostic',1],['ship sheets',1],['no-match-xyz',0]]){
   await page.locator('#search').fill(query);assert.equal(await links.count(),expected);assert.ok(await discussions.isVisible());
  }
  await page.locator('#search').fill('');
@@ -28,6 +34,7 @@ const fs=require('node:fs');
  const downloadEvent=page.waitForEvent('download');await page.locator('#export-links').click();
  const download=await downloadEvent;const exported=fs.readFileSync(await download.path(),'utf8');
  assert.equal((exported.match(/^- \[/gm)||[]).length,count);assert.match(exported,/public testing instance/);assert.match(exported,/\[Derelict Maps\]\(<https:\/\/derelictmaps\.com\/>\)/);
+ assert.ok(exported.includes('[Missouri Archive](<https://missouri.codemonki.net/>)'));
  await page.getByRole('button',{name:'All',exact:true}).click();
  for(const width of [1440,390,320]){
   await page.setViewportSize({width,height:900});
@@ -80,5 +87,5 @@ const fs=require('node:fs');
  const homePopup=await homePopupEvent;await homePopup.waitForLoadState();assert.equal(homePopup.url(),destination);await homePopup.close();
  await finishBadges();
  await page.getByRole('link',{name:'Tool Locker Changelog'}).click();assert.ok(page.url().endsWith('/changes/locker.html'));
- assert.deepEqual(errors,[]);await browser.close();console.log('PASS homepage readiness and reload with pending visit badges; homepage Discussions above fold at desktop/mobile, touch target and keyboard navigation; Tool Locker Discussions link visibility, keyboard focus and new-tab navigation; 44 links, Derelict Maps URL, safe new-tab attributes, search and export, six unique additions, description search, categories, complete export, responsive layout and changelog navigation');
+ assert.deepEqual(errors,[]);await browser.close();console.log('PASS homepage readiness and reload with pending visit badges; homepage Discussions above fold at desktop/mobile, touch target and keyboard navigation; Tool Locker Discussions link visibility, keyboard focus and new-tab navigation; 45 links, Missouri Archive URL/category/search/export, Derelict Maps URL, safe new-tab attributes, search and export, six unique additions, description search, categories, complete export, responsive layout and changelog navigation');
 })().catch(e=>{console.error(e);process.exit(1)});
