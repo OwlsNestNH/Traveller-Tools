@@ -432,3 +432,8 @@ dialog:has(.required-action-warning:not([hidden])) .crow-speaking-panel{display:
  .opening-help-dialog .opening-help-heading h2{font-size:20px}
  .opening-help-dialog .opening-help-heading>[data-opening-help-close]{padding:8px 12px}
 }
+/* Cover the dialog's top padding while text scrolls behind the Close bar. */
+@media screen{.opening-help-dialog .opening-help-heading{box-shadow:0 -24px 0 #061a28}}
+@media screen and (max-width:360px){
+ .opening-help-dialog #opening-help-copy .opening-help-crow>img{float:none;display:block;margin:0 auto 8px}
+}
