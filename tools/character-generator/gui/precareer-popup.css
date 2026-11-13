@@ -412,3 +412,23 @@ dialog:has(.required-action-warning:not([hidden])) .crow-speaking-panel{display:
 }
 /* Keep the existing Background selection grid compact with its pictured guide. */
 @media screen and (min-width:851px){body[data-stage="background"] #workspace .crow-speaking-panel{margin:2px 0;gap:12px}body[data-stage="background"] #workspace .background-grid{row-gap:2px}body[data-stage="background"] #workspace .crow-speaking-panel>img{width:144px;height:96px;flex-basis:144px;object-fit:cover;object-position:50% 25%}body[data-stage="background"] #workspace .crow-speaking-panel>blockquote{padding:10px 14px}}
+
+/* Existing information dialog: one pictured speaker and a reachable Close bar. */
+@media screen{
+ .opening-help-dialog{border-color:#9cdbed}
+ .opening-help-dialog .opening-help-heading{position:sticky;top:0;z-index:2;padding-bottom:12px;background:#061a28}
+ .opening-help-dialog .opening-help-heading h2{color:#ffd34b}
+ .opening-help-dialog #opening-help-copy .opening-help-crow{display:block;margin:8px 0;padding:14px;border:1px solid #9cdbed;border-radius:10px;background:#061b29;color:#f5f7fa}
+ .opening-help-dialog #opening-help-copy .opening-help-crow>img{float:left;width:112px;height:128px;margin:0 14px 8px 0;object-fit:contain}
+ .opening-help-dialog #opening-help-copy .opening-help-crow>blockquote{display:contents}
+ .opening-help-dialog #opening-help-copy .opening-help-crow::after{content:'';display:block;clear:both}
+}
+@media screen{
+ .opening-help-dialog .opening-help-heading h2{min-width:0;overflow-wrap:anywhere}
+ .opening-help-dialog .opening-help-heading>[data-opening-help-close]{flex-shrink:0}
+}
+@media screen and (max-width:360px){
+ .opening-help-dialog .opening-help-heading{gap:8px}
+ .opening-help-dialog .opening-help-heading h2{font-size:20px}
+ .opening-help-dialog .opening-help-heading>[data-opening-help-close]{padding:8px 12px}
+}

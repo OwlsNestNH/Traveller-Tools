@@ -103,3 +103,7 @@ images are mapped to their respective career guidance, information and results.
 The owner approved Noble Crow. The exact shown high-collared ivory/gold coat,
 blue sash and medal are used for Noble guidance, rule information and recorded
 results. Scout, Merchant and Entertainer were subsequently approved separately.
+
+The staged coverage and remaining Crow/theme/help/completion audits are tracked
+in [VISUAL-ROLLOUT.md](VISUAL-ROLLOUT.md). Completion and shared-help presentation
+are a separate review batch; they do not certify the whole tool as refurbished.

@@ -257,6 +257,7 @@ jobs:
           node tools/character-generator/verification/imperial-template-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/crow-outfit-contrast-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/career-costume-error-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/completion-presentation-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:

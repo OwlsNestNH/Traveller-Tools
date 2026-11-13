@@ -1,33 +1,33 @@
 /* The approved Education/Background shell, scoped to career selection and Army. */
 @media screen{
- body[data-career-shell="imperial"]{color-scheme:dark;--ink:#f1f5f8;--muted:#bed0dd;--blue:#ffd052;--line:#79a7bb;--paper:#061b29;--wash:#081f2d;--focus:#fff1ae;--accent:#142e3c;background:radial-gradient(ellipse at 50% 30%,#092536 0%,#03131f 80%);color:var(--ink)}
- body[data-career-shell="imperial"]>header{padding:8px 0 18px;min-height:0}
- body[data-career-shell="imperial"]>header .eyebrow{display:none}
- body[data-career-shell="imperial"]>header h1{color:#ffd34b;font-size:clamp(30px,3.8vw,52px);font-weight:800;letter-spacing:.01em;margin:0 0 4px;text-shadow:0 3px 10px #0008}
- body[data-career-shell="imperial"]>header .lead{color:#edf4f8;letter-spacing:.3em;font-size:17px;line-height:1.2}
- body[data-career-shell="imperial"] :is(#workspace,#sheet,.log-section){background:linear-gradient(140deg,#062536ef,#03121deb);border-color:#79a7bb;box-shadow:0 8px 30px #0007}
- body[data-career-shell="imperial"] :is(.status,.tag,.career-rank-summary){background:#071c2b;color:#f1f5f8;border-color:#79a7bb}
- body[data-career-shell="imperial"] button,body[data-career-shell="imperial"] .button{background:linear-gradient(#ffd64d,#efb921);color:#071018;border:1px solid #ffd34b;box-shadow:inset 0 1px 7px #ffe89b,0 2px 4px #0005;background-color:#efb921}
- body[data-career-shell="imperial"] :is(.quiet,.choice,.toolbar button,.toolbar .button){color:#f4f6f8;background:linear-gradient(140deg,#0b2b3c,#061a28);border:1px solid #a4d4e7;box-shadow:inset 0 1px 8px #294353,0 2px 4px #0005;background-color:#061a28}
- body[data-career-shell="imperial"] :is(.quiet,.choice,.toolbar button,.toolbar .button):hover{background:#183c4d;filter:none}
- body[data-career-shell="imperial"] :is(input:not([type=checkbox]):not([type=file]),select,textarea){background:#071c2b;color:#f1f5f8;border-color:#8db1c4}
- body[data-career-shell="imperial"] :is(.help,.source,.sheet-meta,footer){color:#bed0dd}
- body[data-career-shell="imperial"] .beta-notice-trigger{background:#061b29;color:#ffd34b;border-color:#ffd34b;box-shadow:none}
- body[data-career-shell="imperial"] a{color:#ffdc67}
- body[data-career-shell="imperial"] :is(.result-panel,#message){background:#062536;color:#f1f5f8;border-color:#79a7bb}
- body[data-career-shell="imperial"] :is(.result-panel,#message).result-success{border-color:#88d9a2}
- body[data-career-shell="imperial"] .result-success .result-status{color:#b4efbc}
- body[data-career-shell="imperial"] :is(.result-panel,#message).result-failure{border-color:#ff5964;color:#fff4e8}
- body[data-career-shell="imperial"] .result-failure .result-status{color:#ff7b85}
- body[data-career-shell="imperial"] :is(.result-panel,#message).result-pending{border-color:#ffd34b}
- body[data-career-shell="imperial"] :is(.warning,.notice){background:#372e15;color:#fff0c4;border-color:#ffd34b}
- body[data-career-shell="imperial"] #crow-error-dialog button,body[data-career-shell="imperial"] #crow-rewind-dialog button,body[data-career-shell="imperial"] .required-action-warning .crow-recovery-actions button{background:#185876;border-color:#78bbdc;color:#fff;box-shadow:none}
- body[data-career-shell="imperial"] .toolbar{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:stretch;grid-auto-rows:58px}
- body[data-career-shell="imperial"] .toolbar>*,body[data-career-shell="imperial"] .toolbar button{width:100%;min-width:0;font-size:16px;line-height:1.2;padding:9px 8px;min-height:58px}
- body[data-career-shell="imperial"] .toolbar>.log-switch{display:grid;grid-template-rows:1fr 1fr;padding:0;gap:0}
- body[data-career-shell="imperial"] .toolbar .log-switch button{height:29px;min-height:29px;padding:3px 8px;border-radius:0}
- body[data-career-shell="imperial"] .toolbar .log-switch button:first-child{border-radius:9px 9px 0 0}
- body[data-career-shell="imperial"] .toolbar .log-switch>.opening-info-trigger{width:28px;height:28px;min-height:28px;padding:0;border:1px solid #eac746;border-radius:50%;font-size:18px;color:#ffdd68;background:#071c2a;box-shadow:none}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]){color-scheme:dark;--ink:#f1f5f8;--muted:#bed0dd;--blue:#ffd052;--line:#79a7bb;--paper:#061b29;--wash:#081f2d;--focus:#fff1ae;--accent:#142e3c;background:radial-gradient(ellipse at 50% 30%,#092536 0%,#03131f 80%);color:var(--ink)}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"])>header{padding:8px 0 18px;min-height:0}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"])>header .eyebrow{display:none}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"])>header h1{color:#ffd34b;font-size:clamp(30px,3.8vw,52px);font-weight:800;letter-spacing:.01em;margin:0 0 4px;text-shadow:0 3px 10px #0008}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"])>header .lead{color:#edf4f8;letter-spacing:.3em;font-size:17px;line-height:1.2}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(#workspace,#sheet,.log-section){background:linear-gradient(140deg,#062536ef,#03121deb);border-color:#79a7bb;box-shadow:0 8px 30px #0007}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.status,.tag,.career-rank-summary){background:#071c2b;color:#f1f5f8;border-color:#79a7bb}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) button,body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .button{background:linear-gradient(#ffd64d,#efb921);color:#071018;border:1px solid #ffd34b;box-shadow:inset 0 1px 7px #ffe89b,0 2px 4px #0005;background-color:#efb921}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.quiet,.choice,.toolbar button,.toolbar .button){color:#f4f6f8;background:linear-gradient(140deg,#0b2b3c,#061a28);border:1px solid #a4d4e7;box-shadow:inset 0 1px 8px #294353,0 2px 4px #0005;background-color:#061a28}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.quiet,.choice,.toolbar button,.toolbar .button):hover{background:#183c4d;filter:none}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(input:not([type=checkbox]):not([type=file]),select,textarea){background:#071c2b;color:#f1f5f8;border-color:#8db1c4}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.help,.source,.sheet-meta,footer){color:#bed0dd}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .beta-notice-trigger{background:#061b29;color:#ffd34b;border-color:#ffd34b;box-shadow:none}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) a{color:#ffdc67}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.result-panel,#message){background:#062536;color:#f1f5f8;border-color:#79a7bb}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.result-panel,#message).result-success{border-color:#88d9a2}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .result-success .result-status{color:#b4efbc}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.result-panel,#message).result-failure{border-color:#ff5964;color:#fff4e8}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .result-failure .result-status{color:#ff7b85}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.result-panel,#message).result-pending{border-color:#ffd34b}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) :is(.warning,.notice){background:#372e15;color:#fff0c4;border-color:#ffd34b}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) #crow-error-dialog button,body:is([data-career-shell="imperial"],[data-completion-shell="true"]) #crow-rewind-dialog button,body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .required-action-warning .crow-recovery-actions button{background:#185876;border-color:#78bbdc;color:#fff;box-shadow:none}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:stretch;grid-auto-rows:58px}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar>*,body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar button{width:100%;min-width:0;font-size:16px;line-height:1.2;padding:9px 8px;min-height:58px}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar>.log-switch{display:grid;grid-template-rows:1fr 1fr;padding:0;gap:0}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar .log-switch button{height:29px;min-height:29px;padding:3px 8px;border-radius:0}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar .log-switch button:first-child{border-radius:9px 9px 0 0}
+ body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar .log-switch>.opening-info-trigger{width:28px;height:28px;min-height:28px;padding:0;border:1px solid #eac746;border-radius:50%;font-size:18px;color:#ffdd68;background:#071c2a;box-shadow:none}
  #army-creation-overview{display:flex;justify-content:space-between;gap:12px;padding:0;margin:12px 0 22px;list-style:none;color:#a9bfcd;font-size:16px}
  #army-creation-overview [aria-current=step]{color:#ffd34b;font-weight:800}
  .layout.army-career-layout{grid-template-columns:minmax(0,2.45fr) minmax(290px,1fr);align-items:start}
@@ -79,7 +79,7 @@
 @media screen and (max-width:850px){
  .layout.army-career-layout{grid-template-columns:minmax(0,1fr)}#army-career-rail{grid-area:auto}#army-career-dialog,#army-career-context{grid-area:1/1}
  #army-career-dialog #workspace{padding:20px 18px}#army-career-dialog #step-title{font-size:30px;margin-right:80px}#army-career-close{right:16px;top:18px;font-size:17px;padding:8px 12px}
- #army-creation-overview{font-size:12px;gap:8px;flex-wrap:wrap}body[data-career-shell="imperial"] .toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #army-creation-overview{font-size:12px;gap:8px;flex-wrap:wrap}body:is([data-career-shell="imperial"],[data-completion-shell="true"]) .toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
  #army-career-dialog .career-pilot-guidance{grid-template-columns:112px minmax(0,1fr);gap:10px}#army-career-dialog .crow-assistance-image{width:112px;height:128px;flex-basis:112px}
  #army-career-dialog .career-crow-bubble{padding:10px}#army-career-dialog .career-crow-speech{font-size:18px}#army-career-dialog .career-crow-heading{font-size:10px;letter-spacing:.02em}
  #army-career-dialog .army-career-back{font-size:14px;padding:8px}#army-career-dialog .step-count{margin-right:80px;font-size:15px}
