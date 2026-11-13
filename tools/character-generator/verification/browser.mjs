@@ -43,8 +43,15 @@ try{
   await page.getByRole('button',{name:'Accept background skills'}).click();await page.getByRole('heading',{name:'Pre-Career'}).waitFor();
   await page.getByRole('button',{name:'Go straight to careers'}).click();await page.getByRole('heading',{name:'Choose your next career'}).waitFor();
   await page.getByRole('button',{name:/Drifter.*Core/}).click();await page.locator('#career-assignment').selectOption('wanderer');
+  const beforeCareer=await page.locator('#workspace').evaluate(el=>Number(el.dataset.revision));
+  let releaseCareerResponse,careerResponseReady;
+  const heldCareerResponse=new Promise(resolve=>{releaseCareerResponse=resolve;}),careerResponse=new Promise(resolve=>{careerResponseReady=resolve;});
+  if(transport==='http')await page.route('**/api/v1',async route=>{if(route.request().postDataJSON().command?.type!=='career')return route.continue();const response=await route.fetch();careerResponseReady();await heldCareerResponse;await route.fulfill({response});});
   await page.getByRole('button',{name:'Attempt this career'}).click();
-  await page.waitForFunction(()=>!document.querySelector('#step-title').textContent.includes('Choose your next career'));
+  if(transport==='http'){await careerResponse;assert.equal(await page.locator('#export').isDisabled(),true);assert.equal(await page.locator('#workspace').evaluate(el=>Number(el.dataset.revision)),beforeCareer);releaseCareerResponse();}
+  // The specialty heading already changes before this asynchronous command.
+  // Observe its accepted revision, stage and idle state before reading the save.
+  await page.waitForFunction(expected=>document.body.dataset.stage!=='career'&&!document.querySelector('#export').disabled&&Number(document.querySelector('#workspace').dataset.revision)===expected,beforeCareer+1);
   const saved=await page.evaluate(()=>localStorage.getItem('traveller-character-generator.v1'));assert.ok(JSON.parse(saved).events.length>5);
   const beforeLog=await page.locator('#workspace').evaluate(el=>Number(el.dataset.revision));await page.reload();await page.waitForFunction(()=>Number(document.querySelector('#workspace')?.dataset.revision??0)>0);assert.equal(await page.locator('#workspace').evaluate(el=>Number(el.dataset.revision)),beforeLog);
   assert.equal(await page.locator('#sheet img,#sheet script').count(),0);
