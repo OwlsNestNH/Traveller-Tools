@@ -37,7 +37,11 @@ available; comments do not create mechanical effects.
 
 Revision `.33` adds explicit pending consequence dice to native Companion
 career events/mishaps using the same context-checked actions as Core events.
-Revision `.32` keeps its prior replay behavior. Existing session revisions and
+The same revision extends the selected later-career basic-only interpretation to
+these two optional Imperial careers; earned advancement training stays separate.
+This is the previously selected interpretation of the ambiguous Core p.18
+wording, not a claim of a new official clarification. Revision `.32` keeps its
+prior replay behavior. Existing session revisions and
 accepted outcomes are retained; importing a save does not upgrade its rules or
 retroactively reroll an event.
 

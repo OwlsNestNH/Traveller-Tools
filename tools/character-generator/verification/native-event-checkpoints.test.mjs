@@ -76,3 +76,15 @@ test('Companion nested checks retain source and require one deliberate action',(
   const pendingId=s.pendingBorrowedRoll.id;a.apply(s,{type:'roll-borrowed-event',payload:{pendingId}},rolls);assert.equal(rolls.length,1);assert.equal(s.pendingBorrowedRoll,undefined);assert.throws(()=>a.apply(s,{type:'roll-borrowed-event',payload:{pendingId}},[]),/No borrowed/);
  }
 });
+
+test('later Companion entry follows the chosen basic-only policy without altering legacy behavior',()=>{
+ for(const id of ['companion.truther','companion.believer'])for(const modern of [false,true]){
+  const s=state(id);s.companionBasicEntryOnly=modern;s.active=null;s.stage='career';delete s.nativeEventContext;s.character.careers=[{id:'core.drifter',assignment:'wanderer',terms:1,rank:0,exit:'voluntary',exitGenerationTerms:1}];s.character.terms=1;s.character.age=22;
+  const rolls=[];a.enterCareer(s,a.findCareer(id),id.endsWith('truther')?'truther':'mainstream',rolls);
+  for(let i=0;i<10&&['effect-choice','skill-choice'].includes(s.stage);i++){
+   if(s.stage==='effect-choice')a.apply(s,{type:'choose-effect',payload:{index:0}},rolls);
+   else a.apply(s,{type:'choose-skill',payload:{name:'Profession (construction)'}},rolls);
+  }
+  assert.equal(s.stage,modern?'survival':'training',id+' '+modern);assert.equal(rolls.length,0);
+ }
+});
