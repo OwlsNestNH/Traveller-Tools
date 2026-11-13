@@ -1,3 +1,5 @@
+import {outcomeTagline} from './outcome-taglines.mjs';
+import {IMPERIAL_OUTCOME_LINES} from './imperial-career-tags.mjs';
 // Shared presentation only: no commands, storage, random draws or rule effects.
 import {crowAsset} from './crow-assistance.mjs';
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -23,12 +25,14 @@ export function mountCrowSpeakingContent(document,content,{type='generic',tone='
 }
 // Completion has no new decision/roll. Keep its existing result and next
 // instruction with one speaker, retaining the original nodes and wording.
-export function mountCrowCompletionGuidance(document,root){
- const invitation=root?.querySelector('.final-sheet-invitation'),title=root?.querySelector('#step-title');
- if(invitation&&title)title.after(invitation);
+export function mountCrowCompletionGuidance(document,root,{actionId}={}){
  const result=root?.querySelector('#last-action-result'),guide=root?.querySelector(':scope > .crow-speaking-panel');
- if(!result||!guide||result===guide)return null;
- const instructions=[...(guide.querySelector('blockquote')?.children??[])].filter(n=>n.tagName==='P');
- const panel=mountCrowSpeakingContent(document,result,{type:'generic'});if(!panel)return null;
- panel.querySelector('blockquote').append(...instructions);guide.remove();return panel;
+ if(!result||!guide)return null;
+ const audit=result.querySelector('.result-information'),instructions=[...guide.querySelector('blockquote').children].filter(n=>n.tagName==='P');
+ const existing=result.querySelector('.outcome-tagline.crow-speaking-panel');
+ let speaker=existing;
+ if(existing)guide.remove();else{speaker=guide;const quote=guide.querySelector('blockquote');for(const p of instructions)p.remove();const comment=document.createElement('p');comment.textContent=outcomeTagline('choice',actionId,IMPERIAL_OUTCOME_LINES);quote.append(comment);if(audit)audit.before(guide);else result.append(guide);}
+ speaker.classList.add('education-result-crow','education-result-tagline');
+ for(const instruction of instructions){instruction.classList.add('completion-next-instruction');if(audit)audit.before(instruction);else result.append(instruction);}
+ return speaker;
 }

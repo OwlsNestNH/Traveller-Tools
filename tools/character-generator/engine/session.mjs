@@ -1,3 +1,4 @@
+import {ironManOptionAvailable} from './iron-man.mjs';
 import {nativeEventRollPending,validNativeEventContext} from './native-event-roll-checkpoints.mjs';
 import {characterSheetTiming} from './character-sheet-timing.mjs';
 import {educationEventEvidence,educationEventText} from './education-event-projection.mjs';
@@ -2424,6 +2425,13 @@ function apply(state,command,rolls) {
   state.config.academyServiceSkill=payload.enabled;
   return 'GM option: Allow Service Skill choice in the first term after Academy '+(payload.enabled?'on':'off')+'. Grants one Service Skills roll instead of skipping first-career training; graduation awards are unchanged.';
  }
+ case 'gm-iron-man': {
+  need(state.config.gm,'Enable GM result changes to change Iron Man.');
+  need(ironManOptionAvailable(state),'Finish the pending procedure before changing Iron Man.');
+  need(Object.keys(payload).every(k=>k==='enabled')&&typeof payload.enabled==='boolean','Iron Man requires an enabled boolean.');
+  state.config.ironMan=payload.enabled;
+  return 'Iron Man '+(payload.enabled?'ON':'OFF')+' for future Survival checks. Companion Update 2024 p. 13: a failed Survival check kills the Traveller instead of rolling a mishap. Recorded results are unchanged.';
+ }
  case 'gm-mode': {
   need(typeof payload.enabled==='boolean','GM mode must be true or false.');
   const old=state.config.gm;state.config.gm=payload.enabled;return 'GM mode '+old+' → '+payload.enabled+'.';
@@ -2795,6 +2803,11 @@ function apply(state,command,rolls) {
   const {record,career,assignment}=currentCareer(state);
   if(!checkAvailable(state,assignment.survival)&&!state._sourceCheck){missingCheck(state,assignment.survival,'Survival',command);return 'Survival check requires source resolution for the absent characteristic.';}
   const check=rulesCheck(state,assignment.survival,rolls,'Survival',modifierTotal(state,'survival'));check.success&&=check.natural!==2;
+  if(!check.success&&state.config.ironMan===true){
+   state.character.ironManDeath={source:{id:'companion',page:13},careerId:career.id,assignment:record.assignment,check:copy(check)};
+   queueEffects(state,[{kind:'death',cause:'iron-man-survival'}],'deceased',rolls);
+   return 'Iron Man: failed Survival ends this life path instead of rolling a mishap. Companion Update 2024 p. 13. Survival: '+JSON.stringify(check)+'.';
+  }
   const pack=nativePack(state);
   // New interactive command: preserve the historical combined command verbatim.
   // The explicit table action consumes the same next dice, only after this checkpoint.

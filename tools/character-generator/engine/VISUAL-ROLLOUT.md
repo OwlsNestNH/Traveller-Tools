@@ -36,7 +36,7 @@ Back/Cancel behavior and mechanical rules must remain intact.
 
 ## Completion review corrections
 
-Completion phone panels use full-width speech below the portrait. Long mobile
+Completion uses compact pictured Crow commentary and separate full-width instructions. Long mobile
 help headings keep whole words with Close on its own persistent row. A verified
 deceased state receives a short failure outcome; all original recorded details
 remain in the closed Result details disclosure and in the unchanged full log.
@@ -50,7 +50,7 @@ or save migration.
 
 Completion follow-up uses a plain-text Result details disclosure and avoids
 duplicating fallback rank labels. Finish offers its existing sheet action before
-the full Crow explanation; phone heading and portrait spacing are compact while
+the full Crow explanation; phone heading and portrait spacing follow the Education frame while
 retaining all controls and full-width speech. The retirement fixture is Aslan:
 age14 plus one four-year term is18, not an age-calculation defect.
 
@@ -60,6 +60,26 @@ information and recorded career results. Technical errors retain default Crow.
 The deceased completion preview is a legacy synthetic referee-ruling case, not
 Iron Man or an ordinary automatic injury death. Its summary states that provenance
 and preserves the recorded reason. Core2022 p49 ageing-crisis death is separate;
-Companion2024 p13 optional Iron Man is not an implemented setting. Standard failed
+No Iron Man setting was used by that referee-ruling fixture. Standard failed
 Survival still leads to a mishap. Injury-zero decisions explicitly name the referee
 ruling and never preselect death; no rules or existing saves are changed.
+
+## Revised completion frame and optional Iron Man candidate
+
+Finish, Retirement and Deceased use the approved Education popup frame rhythm:
+existing Character Builder branding, cyan border, white outcome heading, gold
+actions and recorded dice, one compact Crow commentary panel, separate next-step
+instructions and complete audit disclosures. Close/Resume and nested sheet/help
+focus are checked without issuing character commands. No centered-sheet redesign.
+Before/after fixtures and actual unchanged Education/Background references are
+rendered from public synthetic histories for the owner's new visual review.
+
+The owner has now requested optional Iron Man in GM result controls. It remains
+OFF unless a logged explicit gm-iron-man command enables it. Companion Update2024
+p13 makes a failed career Survival check fatal instead of rolling a mishap; success
+and ordinary OFF behavior retain the existing dice/results. The setting applies
+to future checks, not prior failures, and audited restore/replay preserves original
+history. The death summary distinguishes Iron Man from explicit referee injury
+rulings and ageing crises. New and historical saves with no setting stay OFF.
+The shared engine gate covers the existing career Survival commands; narrative
+skill checks or failed qualification are not reclassified as Survival.

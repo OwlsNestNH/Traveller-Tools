@@ -158,3 +158,63 @@
  body[data-completion-shell="true"]>header .lead{font-size:14px;letter-spacing:.12em}
 
 }
+
+/* Completion uses the approved Education frame and result hierarchy. */
+@media screen{
+ .completion-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+ #completion-context{grid-column:1;grid-row:1;padding:24px;border:1px solid #305367;border-radius:11px;background:#071d2a}
+ #completion-dialog{display:none;grid-column:1;grid-row:1;position:relative;inset:auto;z-index:2;box-sizing:border-box;width:100%;max-width:968px;max-height:none;margin:0 auto;padding:0;overflow:visible;border:2px solid #9cdbed;border-radius:15px;color:#f5f7fa;background:radial-gradient(ellipse at center,#0a2a3c,#041b2a 85%);box-shadow:0 16px 70px #0006}
+ #completion-dialog[open]{display:block}
+ body[data-completion-shell="true"] #completion-dialog #workspace{padding:24px 32px 20px;border:0;background:transparent;box-shadow:none}
+ #completion-dialog .completion-controls{display:flex;justify-content:flex-end;gap:12px;margin-bottom:12px}
+ #completion-dialog .completion-controls button{min-height:44px;font-size:20px;padding:8px 20px}
+ #completion-dialog .step-count{color:#ffcf38;font-size:19px;font-weight:800;letter-spacing:.04em;margin:0 0 6px}
+ #completion-dialog #step-title{font-size:40px;font-weight:800;line-height:1.15;color:#f5f7fa;margin:0 0 16px}
+ #completion-dialog .result-panel{padding:0;border:0;background:none;box-shadow:none}
+ #completion-dialog .result-status{font-size:20px;font-weight:800;margin:8px 0}
+ #completion-dialog .result-panel h3{font-size:34px;line-height:1.2;color:#ffd34b;margin:12px 0}
+ #completion-dialog .result-panel p{font-size:19px;line-height:1.45}
+ body[data-completion-shell="true"] #completion-dialog .crow-speaking-panel{display:flex;flex-direction:row;align-items:center;gap:12px;padding:0;border:0;background:none;margin:12px 0}
+ body[data-completion-shell="true"] #completion-dialog .crow-speaking-panel>img{width:128px;height:96px;flex:0 0 128px;object-fit:contain;align-self:center}
+ body[data-completion-shell="true"] #completion-dialog .crow-speaking-panel>blockquote{width:auto;min-width:0;flex:1;padding:10px 14px;margin:0}
+ #completion-dialog .final-sheet-invitation{border:0;padding:0;background:none;margin:16px 0}
+ #completion-dialog .final-sheet-invitation button{width:100%;min-height:72px;font-size:26px}
+ #completion-dialog .army-recorded-dice{padding:14px;border:2px solid #9cdbed;border-radius:16px;background:#061b29}
+ #completion-dialog .army-dice-faces{display:flex;justify-content:center;gap:12px}
+ #completion-dialog .army-recorded-dice svg{width:64px;height:64px}
+ #completion-dialog .result-information{margin-top:16px;border-top:1px solid #79a7bb}
+}
+@media screen and (max-width:1100px){.completion-layout{grid-template-columns:1fr}body[data-completion-shell="true"] #sheet{grid-column:1}}
+@media screen and (max-width:650px){
+ #completion-dialog{border-radius:13px}
+ body[data-completion-shell="true"] #completion-dialog #workspace{padding:22px 18px}
+ #completion-dialog #step-title{font-size:36px}
+ #completion-dialog .completion-controls{gap:8px}
+ #completion-dialog .completion-controls button{font-size:17px;padding:8px 12px}
+ #completion-dialog .result-panel h3{font-size:28px}
+ body[data-completion-shell="true"] #completion-dialog .crow-speaking-panel{display:block}
+ body[data-completion-shell="true"] #completion-dialog .crow-speaking-panel>img{float:left;width:112px;height:88px;margin:0 10px 6px 0}
+ body[data-completion-shell="true"] #completion-dialog .crow-speaking-panel>blockquote{display:block;width:100%;box-sizing:border-box}
+ #completion-dialog .crow-speaking-panel::after{content:'';display:block;clear:both}
+}
+
+@media screen{
+ #completion-dialog #workspace{position:relative}
+ #completion-dialog #step-title{font-size:16px;line-height:1.2;margin:0 0 12px;max-width:calc(100% - 12px)}
+ #completion-dialog #step-title:focus{outline:none}
+ #completion-dialog .result-panel{background:transparent}
+}
+
+@media screen{
+ #completion-dialog .completion-result-heading{display:flex;align-items:center;gap:18px;margin:6px 0 14px}
+ #completion-dialog .completion-result-heading>.education-result-art{width:62px;height:54px;flex:none;color:#f5f7fa}
+ #completion-dialog .completion-result-heading #step-title{font-size:34px;line-height:1.12;max-width:none;margin:0}
+ #completion-dialog .completion-next-instruction{margin:12px 0}
+ #completion-dialog .result-panel>.result-status.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ #completion-dialog .education-result-crow blockquote{font-style:italic;text-align:center}
+}
+@media screen and (max-width:650px){
+ #completion-dialog .completion-result-heading{gap:12px}
+ #completion-dialog .completion-result-heading #step-title{font-size:28px}
+ #completion-dialog .completion-result-heading>.education-result-art{width:54px;height:48px}
+}

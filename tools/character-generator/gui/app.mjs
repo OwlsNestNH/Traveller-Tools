@@ -1,5 +1,6 @@
+import {mountCompletionPopup} from './completion-popup.mjs';
 import {crowSpeakingPanel,mountCrowStageGuidance,mountCrowCompletionGuidance} from './crow-speaking-panel.mjs';
-import {careerTemplateModel,mountCareerTemplate,careerResultTagline,careerResultCrowType,syncCareerSpecialty} from './career-template.mjs';
+import {careerTemplateModel,careerCrowType,mountCareerTemplate,careerResultTagline,careerResultCrowType,syncCareerSpecialty} from './career-template.mjs';
 import {mountRewindConfirmation,createNavigationDrafts} from './recovery-actions.mjs';
 import {mountCrowIntroduction} from './crow-assistance.mjs';
 import {mountRequiredActions,clearRequiredActions} from './required-action.mjs';
@@ -469,7 +470,7 @@ function stageView(state,insideEquipmentDialog=false){
  case 'training':return '<p>'+esc(trainingContext(state)?.description??'Choose an available training table. The rules engine will roll and apply its result.')+'</p><div class="choice-list">'+state.trainingOptions.map(t=>trainingChoiceView(t.name,t.information,'training','data-table="'+esc(t.id)+'"',{esc,button})).join('')+'</div>';
  case 'ageing':return '<p>Your Traveller has reached the next ageing checkpoint. The engine applies the species schedule and modifiers.</p>'+button('Roll ageing','ageing');
  case 'deceased':return '<p>This life path ended in death. The full record remains saved. A GM can restore an earlier action and record an explicit correction.</p>';
- case 'survival':return '<p>Training is recorded. Roll to see whether you complete this term safely.</p>'+button('Roll survival','survival-check');
+ case 'survival':return (state.config.ironMan&&!careerTemplateModel(state,catalog,selectedCareer)?'<p class="warning"><strong>Iron Man is ON.</strong> A failed Survival check kills this Traveller instead of opening a mishap. Companion Update 2024 p. 13. Change the option in GM result controls before rolling if you do not want this rule.</p>':'')+'<p>Training is recorded. Roll to see whether you complete this term safely.</p>'+button('Roll survival','survival-check');
  case 'career-event':return '<h3>Your career event</h3><p>You survived this term. Roll separately to discover what happened, then resolve its outcome before advancement.</p>'+button('Roll career event','career-event');
  case 'career-mishap':return '<h3>Your career mishap</h3><p>The survival check failed. Roll separately to discover the mishap and resolve its consequences.</p>'+button('Roll mishap','career-mishap');
  case 'advancement':{
@@ -537,9 +538,10 @@ function render(){
  if(state.stage!=='precareer'&&!educationModel&&!eventModel)cancelCharacter.placeButton();
  if(state.stage!=='precareer'&&!educationModel&&!eventModel)mountPreCareerPopup(document,{state});
  mountBackgroundLayout(document,state,backgroundDraft?.skills??[],catalog,{esc});
+ if(!['finish','retirement','deceased'].includes(state.stage))mountCompletionPopup(document,state);
  if(state.stage==='precareer'||educationModel||eventModel)mountPreCareerPopup(document,{state,catalog,projection,session,esc,sourceLabel,generation:operationGeneration,resultModel:educationModel,eventModel});
- if(!careerModel&&!educationModel&&!eventModel)mountCrowStageGuidance(document,$('#workspace'),{type:['training','effect-choice','skill-choice'].includes(state.stage)?'skills':state.stage==='book-step'?'referee':'generic'});
- if(!careerModel&&['finish','retirement','deceased'].includes(state.stage))mountCrowCompletionGuidance(document,$('#workspace'));
+ if(!careerModel&&!educationModel&&!eventModel)mountCrowStageGuidance(document,$('#workspace'),{type:['finish','retirement','deceased'].includes(state.stage)?careerCrowType({career:state.character.careers?.[state.active??state.character.careers.length-1]}):['training','effect-choice','skill-choice'].includes(state.stage)?'skills':state.stage==='book-step'?'referee':'generic'});
+ if(!careerModel&&['finish','retirement','deceased'].includes(state.stage))mountCrowCompletionGuidance(document,$('#workspace'),{actionId:projection.log.at(-1)?.id});
  const sheetOpener=document.querySelector('[data-action="open-current-character-sheet"]');if(sheetOpener)$('#sheet').prepend(sheetOpener);
  const activePrecareerDialog=document.getElementById('precareer-dialog');if(activePrecareerDialog&&!activePrecareerDialog.querySelector('.popup-character-sheet-button')){const access=document.createElement('button');access.type='button';access.className='popup-character-sheet-button';access.dataset.action='open-current-character-sheet-popup';access.textContent='Character sheet';access.setAttribute('aria-haspopup','dialog');access.setAttribute('aria-controls','final-character-sheet');activePrecareerDialog.prepend(access);}
  const studyKey=JSON.stringify([operationGeneration,session.seed,state.education,state.pendingChoice?.selectionId]);$('#workspace').dataset.educationStudyKey=studyKey;
@@ -547,7 +549,8 @@ function render(){
  if(educationModel?.study&&studyDraft?.key===studyKey&&[...$('#education-subject').options].some(o=>o.value===studyDraft.subject)){$('#education-subject').value=studyDraft.subject;syncEducationSubject(state,catalog,document,esc);$('#education-skill').value=studyDraft.skill;syncEducationStudyContinue(state,catalog,document);}
  $('#workspace').dataset.revision=projection.revision;
  if(state.stage==='identity')mountCrowIntroduction(document);
- mountCareerTemplate(document,careerTemplateModel(state,catalog,selectedCareer),{esc,event:projection.log.at(-1),resultStatus:lastRollResult?.status,showDice:!!careerResultTagline(projection.log.at(-1),lastRollResult,state)||state.stage==='retirement'&&projection.log.at(-1)?.type==='benefit',state,sessionKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id])});
+ mountCareerTemplate(document,careerTemplateModel(state,catalog,selectedCareer),{esc,event:projection.log.at(-1),resultStatus:lastRollResult?.status,showDice:state.stage==='deceased'&&!!state.character.ironManDeath||!!careerResultTagline(projection.log.at(-1),lastRollResult,state)||state.stage==='retirement'&&projection.log.at(-1)?.type==='benefit',state,sessionKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id])});
+ if(['finish','retirement','deceased'].includes(state.stage))mountCompletionPopup(document,state);
  mountSpeciesSkillPopup(document);
  mountAslanFamilyPopup(document,{onRoll:async()=>{if(!await send(aslanRitePopupModel(projection.state)?'roll-aslan-rite':aslanPridePopupModel(projection.state)?'roll-aslan-pride':aslanClanPopupModel(projection.state)?'roll-aslan-clan':aslanBirthPopupModel(projection.state)?'roll-aslan-birth-order':'roll-aslan-family'))throw new Error($('#message').textContent||'The family roll could not be recorded.');},onContinue:async(index)=>{
   const rite=aslanRitePopupModel(projection.state);if(rite){if(!await send(rite.equipment?'record-aslan-rite-equipment':'acknowledge-aslan-rite'))throw new Error($('#message').textContent||'Rite continuation could not be recorded.');return;}
@@ -697,6 +700,7 @@ document.addEventListener('change',event=>{
  if(event.target.id==='games-event-mode')$('#games-event-effects').hidden=event.target.value!=='resolved-externally';
   if(event.target.id==='gm-psi-mode')send('gm-psi-mode',{enabled:event.target.checked});
   if(event.target.id==='gm-psi-testing')send('gm-psi-testing',{enabled:event.target.checked});
+  if(event.target.id==='gm-iron-man')send('gm-iron-man',{enabled:event.target.checked});
   if(event.target.id==='gm-academy-training')send('gm-academy-training',{enabled:event.target.checked});
    if(event.target.id==='gm-physical-dice')send('gm-physical-dice',{enabled:event.target.checked});
    if(event.target.id==='gm-toggle')send('gm-mode',{enabled:event.target.checked});

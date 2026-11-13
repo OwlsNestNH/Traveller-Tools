@@ -18,7 +18,8 @@ function otherEffects(event,catalog,keep){
 }
 export function conciseResult(event,state,catalog){
  const full=rollResult(event,state,catalog);if(!full)return null;
- if(full.status!=='error'&&state?.stage==='deceased'&&state.character?.deceased===true){const title='This life path ended in death.',injury=state.character.injuries?.findLast(i=>i.deceased&&i.zeroRuling?.survives===false),details=injury?['Recorded referee injury ruling; this was not automatic death from a failed Survival check or a single zero score.','Referee reason: '+injury.zeroRuling.note]:[];return {title,details,status:'failure',text:[title,...details].join(' '),full,compact:true};}
+ if(full.status!=='error'&&state?.stage==='deceased'&&state.character?.deceased===true){const title='This life path ended in death.',injury=state.character.injuries?.findLast(i=>i.deceased&&i.zeroRuling?.survives===false),details=state.character.ironManDeath?['Iron Man: failed Survival was fatal instead of rolling a mishap. Companion Update 2024 p. 13.',...diceDetails(event)]:injury?['Recorded referee injury ruling; this was not automatic death from a failed Survival check or a single zero score.','Referee reason: '+injury.zeroRuling.note]:[];return {title,details,status:'failure',text:[title,...details].join(' '),full,compact:true};}
+ if(full.status!=='error'&&state?.stage==='finish'){const title='Recorded character ready for review.',details=['Source-assisted steps remain listed in the record.'];return {title,details,status:'info',text:[title,...details].join(' '),full,compact:true};}
  if(full.status!=='error'&&state?.stage==='retirement'&&state.character?.retirementFromCreation===true){
   const title='Retired from character creation.';let details=[];
   if(event.type==='benefit'){
@@ -27,6 +28,7 @@ export function conciseResult(event,state,catalog){
    const changes=known?(event.changes??[]).filter(c=>!/^clanShareLots\./.test(c.path)&&!(/^benefits\.\d+$|^benefitAwards\.\d+$/.test(c.path)&&c.after?.definitionId==='aslan.clan-share')):event.changes;
    details=unique([...diceDetails(event),...(known?['Clan Shares awarded: '+quantity+'.']:[]),...characterEffectDetails({...event,changes},catalog),...(known&&Number.isSafeInteger(state.clanShareOptions?.balance)?['Unspent Clan Shares: '+state.clanShareOptions.balance+'.']:[])]);
   }
+  details=details.filter(detail=>!detail.startsWith('Benefit rolls:'));
   return {title,details,status:'info',text:[title,...details].join(' '),full,compact:true};
  }
 
