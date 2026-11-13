@@ -1,4 +1,4 @@
-import {ironManOptionAvailable} from './iron-man.mjs';
+import {ironManOptionAvailable} from '../shared/iron-man.mjs';
 import {nativeEventRollPending,validNativeEventContext} from './native-event-roll-checkpoints.mjs';
 import {characterSheetTiming} from './character-sheet-timing.mjs';
 import {educationEventEvidence,educationEventText} from './education-event-projection.mjs';

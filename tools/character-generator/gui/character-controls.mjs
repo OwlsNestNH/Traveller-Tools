@@ -1,4 +1,4 @@
-import {ironManOptionAvailable} from '../engine/iron-man.mjs';
+import {ironManOptionAvailable} from '../shared/iron-man.mjs';
 import {physicalDiceSetting} from './physical-dice.mjs';
 // Presentation only. Corrections continue through the existing audited commands.
 export function correctionFields(state){
