@@ -20,5 +20,5 @@ export function buildUnverifiedClanSharesFixture({stage='precareer'}={}){
 }
 
 export function buildClanShareMedicalFixture(){
- let r=buildClanSharesFixture({stage:'career'});r=settle(force(r,'career',{id:'aslan.military',assignment:'support'},[6,6]));r=force(r,'survival',{},[1,1]);r=run(r,'injury-loss',{index:0});r=run(r,'injury-treatment',{restore:r.state.injuryRestorable,inService:false});assert.equal(r.state.character.medicalBills[0].personalCost,10000);return run(r,'leave-career');
+ let r=buildClanSharesFixture({stage:'career'});r=settle(force(r,'career',{id:'aslan.military',assignment:'support'},[6,6]));if(r.state.aslanRollCheckpoints){r=force(r,'survival-check',{},[1,1]);r=force(r,'career-mishap',{},[6]);assert.equal(r.state.stage,'borrowed-event-roll');r=force(r,'roll-borrowed-event',{pendingId:r.state.pendingBorrowedRoll.id},[4]);}else r=force(r,'survival',{},[1,1]);r=run(r,'injury-loss',{index:0});r=run(r,'injury-treatment',{restore:r.state.injuryRestorable,inService:false});assert.equal(r.state.character.medicalBills[0].personalCost,10000);return run(r,'leave-career');
 }

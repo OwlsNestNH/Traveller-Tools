@@ -95,7 +95,7 @@ test('Companion and Aslan Outcast Event7 dispatch the same Core source and prese
  const {EXPANSION_PACK}=await import('../engine/expansion-pack.mjs');const {findCareer}=await import('../engine/catalog.mjs');
  for(const id of ['companion.truther','companion.believer','aslan.outcast']){
   const s=structuredClone(lifeFixture({row:7}).state),career=findCareer(id);s.character.lifeEvents=[];s.character.relationships=[];s.character.careers[0].id=id;s.character.careers[0].assignment=career.assignments[0].id;if(id.startsWith('aslan'))s.character.species='aslan';
-  const rolls=[];s._override={index:0,values:[3,4]};a.queueEffects(s,EXPANSION_PACK[id].events[7],'after-event',rolls);delete s._override;
+  const rolls=[];s._override={index:0,values:[3,4]};a.queueEffects(s,EXPANSION_PACK[id].events[7],'after-event',rolls);if(s.stage==='borrowed-event-roll'){assert.equal(rolls.length,0);a.apply(s,{type:'roll-borrowed-event',payload:{pendingId:s.pendingBorrowedRoll.id}},rolls);}delete s._override;
   assert.equal(s.character.lifeEvents[0].table,'core.life-events');assert.equal(s.character.lifeEvents[0].careerId,id);assert.deepEqual(s.character.lifeEvents[0].source,{id:'core',page:46});assert.equal(s.character.relationships[0].role,'Contact');assert.equal(s.stage,'advancement');assert.equal(s.character.terms,0);assert.equal(rolls.length,1);
  }
 });

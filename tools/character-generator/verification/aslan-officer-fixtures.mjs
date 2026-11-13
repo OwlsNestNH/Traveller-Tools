@@ -4,10 +4,13 @@ import assert from 'node:assert/strict';
 import {api,project} from '../engine/session.mjs';
 import {findCareer} from '../engine/catalog.mjs';
 import {run,force,rejected} from './zhodani-reeducation-fixtures.mjs';
-import {settleAssignment as settle} from './assignment-fixtures.mjs';
-export {run,force,rejected,settle};
+import {settleAssignment as settleChoices} from './assignment-fixtures.mjs';
+export {run,force,rejected};
+// Test automation deliberately clicks each new pending roll; legacy histories have none.
+export function settle(r){for(let n=0;n<40;n++){if(r.state.stage==='borrowed-event-roll'){r=run(r,'roll-borrowed-event',{pendingId:r.state.pendingBorrowedRoll.id});continue;}const next=settleChoices(r);if(next.state.stage==='borrowed-event-roll'){r=next;continue;}return next;}throw Error('Aslan fixture exceeded bounded explicit choices and rolls.');}
 const cache=new Map();
-export function aslanSetup(seed='aslan-officer',gender='male',riteShares=false,config={},rulesRevision=null){
+// Preserve established source-regression histories at .33; new checkpoint fixtures pass RULES_REVISION explicitly.
+export function aslanSetup(seed='aslan-officer',gender='male',riteShares=false,config={},rulesRevision='character-preview-2026-11-13.33'){
  let r=api({operation:'create',seed});if(rulesRevision){r.session.rulesRevision=rulesRevision;r={...r,...project(r.session)};}r=run(r,'setup',{species:'aslan',gender});if(Object.keys(config).length)r=run(r,'configure',config);r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');
  for(let i=0;i<6;i++)r=run(r,'gm-override',{field:'pool',index:i,value:8,reason:'Officer opportunity source fixture'});
  r=run(r,'accept-statistics');r=settleOrigin(r,{riteDice:riteShares?[1,1]:[2,3]});assert.equal(r.state.stage,'precareer');return run(r,'skip-precareer');

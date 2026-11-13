@@ -236,3 +236,12 @@
  #army-career-dialog .merchant-benefit-heading h3{flex:1;margin-top:0}
  #army-career-dialog .merchant-benefit-heading .opening-info-trigger{flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:0;border:2px solid #ffd34b;border-radius:50%;background:#071c2a;color:#ffd34b;box-shadow:none;font-size:27px}
 }
+
+/* Four Aslan assignments retain clear touch targets without squeezing phone labels. */
+@media screen and (max-width:850px){#army-career-dialog .army-specialty-choices[data-count="4"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+
+@media screen and (max-width:850px){
+ #army-career-dialog .army-specialty-requirements>.rite-qualification,#army-rule-information[data-career-species="aslan"] .army-specialty-requirements>.rite-qualification{display:block}
+ #army-rule-information[data-career-species="aslan"] .army-rule-header{flex-wrap:wrap}
+ #army-rule-information[data-career-species="aslan"] .army-rule-header h2{min-width:0;overflow-wrap:normal}
+}

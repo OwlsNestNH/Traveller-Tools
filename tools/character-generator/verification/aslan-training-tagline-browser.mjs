@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import {careerResultTagline} from '../gui/career-template.mjs';
+import {conciseResult} from '../gui/concise-result.mjs';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
@@ -38,9 +40,9 @@ try{
    assert.equal(session.events.length,count+1,'repeated click applies once');
    assert.deepEqual(current.state,execute(item.before.session,item.command,{id:event.id}).state,'state and future RNG unchanged');
    const text=aslanTrainingTagline(event,current.state,{previousState:item.before.state,command:item.command}),tag=page.locator('#last-action-result .outcome-tagline');
-   assert.equal(!!text,item.expected);assert.equal(await tag.count(),item.expected?1:0);
-   if(text){assert.equal(await tag.locator('img').count(),1);assert.match(await tag.locator('blockquote > strong').innerText(),/Crow says/);assert.equal(await tag.locator('blockquote > p').first().innerText(),text);assert.ok(!(await page.locator('#message').innerText()).includes(text));assert.equal(await tag.getAttribute('aria-live'),null);assert.equal(await tag.getAttribute('tabindex'),null);}
-   assert.equal(await page.locator('dialog[open]').count(),0);
+   assert.equal(!!text,item.expected);const shown=text??careerResultTagline(event,conciseResult(event,current.state,api({operation:'catalog'})),current.state);assert.equal(await tag.count(),shown?1:0);if(shown)assert.equal(await tag.locator('blockquote > p').first().innerText(),shown);
+   if(text){assert.equal(await tag.locator('img').count(),1);assert.match(await tag.locator('.career-crow-heading').innerText(),/CROW IS ASSISTING/);assert.equal(await tag.locator('blockquote > p').first().innerText(),text);assert.ok(!(await page.locator('#message').innerText()).includes(text));assert.equal(await tag.getAttribute('aria-live'),null);assert.equal(await tag.getAttribute('tabindex'),null);}
+   assert.equal(await page.locator('dialog:modal').count(),0);assert.equal(await page.locator('#army-career-dialog[open]').count(),1);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
    const fullLog=await downloadedActionLog(page);if(text)assert.ok(!fullLog.includes(text));
    if(text){
@@ -52,7 +54,7 @@ try{
    }
    await page.locator('#cancel-character').click();await page.locator('#cancel-character-dialog[open]').waitFor();await page.keyboard.press('Escape');
    assert.equal(await saved(page),raw);if(text)assert.equal(await tag.locator('blockquote > p').first().innerText(),text);
-   await page.reload();await ready(page);assert.equal(await tag.count(),text?1:0);if(text)assert.equal(await tag.locator('blockquote > p').first().innerText(),text);assert.equal(await saved(page),raw);
+   await page.reload();await ready(page);assert.equal(await tag.count(),shown?1:0);if(text)assert.equal(await tag.locator('blockquote > p').first().innerText(),text);assert.equal(await saved(page),raw);
    assert.equal(await restoredAslanTrainingTagline(session,current,async request=>api(request)),text);
    // Real file import, not only localStorage restore. Identity and provenance
    // are replayed through the same public static/HTTP JSON contract.
