@@ -8,7 +8,7 @@ import {crowAssistanceView} from './crow-assistance.mjs';
 import {outcomeTagline} from './outcome-taglines.mjs';
 export const ARMY_TEMPLATE=IMPERIAL_CAREER_DEFINITIONS['core.army'];
 export const CAREER_TEMPLATES=IMPERIAL_CAREER_DEFINITIONS;
-const CAREER_CROW_COSTUMES=Object.freeze({'core.army':'military','core.marine':'military','core.navy':'navy','core.rogue':'rogue','core.noble':'noble'});
+const CAREER_CROW_COSTUMES=Object.freeze({'core.army':'military','core.marine':'military','core.navy':'navy','core.rogue':'rogue','core.noble':'noble','core.scout':'scout','core.merchant':'merchant','core.entertainer':'entertainer'});
 export function careerResultCrowType(event,result,state){return result?.status==='error'?'generic':CAREER_CROW_COSTUMES[imperialResultCareer(event,state)]??'generic';}
 export function careerCrowType(model){return CAREER_CROW_COSTUMES[model?.career?.id]??(model?.phase===1?'skills':model?.phase===4?'referee':'generic');}
 const phases=['Application','Training','Survival','Events','Progression','Term review','Mustering out'];

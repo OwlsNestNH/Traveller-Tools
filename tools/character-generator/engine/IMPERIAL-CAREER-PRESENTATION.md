@@ -48,10 +48,12 @@ retroactively reroll an event.
 ## Review status
 
 This is an in-progress rollout. Selection/source-popup browser checks cover
-11 ordinary Core careers at desktop and phone widths. Exceptional routes and
-complete term/benefit flows require their dedicated checks before release.
-Navy is the first staged visual preview. No publication is implied by a
-registry entry or an individual passing presentation check.
+12 ordinary Core careers and two optional Companion careers (40 specialties)
+at desktop and phone widths. Eight costumed careers also have recorded final-
+benefit/reload checks. Prisoner/Psion exceptional routes retain their dedicated
+checks and do not have the same breadth of visual coverage. Required exact-head
+CI, independent review and user screen approval remain release gates; an
+individual passing presentation check does not imply publication.
 
 ## Controlled presentation extension
 
@@ -95,9 +97,9 @@ not one per specialty. Corsair/Pirate may be reviewed as cosmetic exceptions,
 possibly with a small skull-and-crossbones flag behind Crow, without obscuring
 his face or messages. Vargr implementation remains a separate later phase.
 
-Scout, Merchant and Entertainer outfit drafts are review-only under
-`verification/review-assets`; none is mapped to production pending visual review.
+The owner separately approved Scout, Merchant and Entertainer. Their exact shown
+images are mapped to their respective career guidance, information and results.
 
 The owner approved Noble Crow. The exact shown high-collared ivory/gold coat,
 blue sash and medal are used for Noble guidance, rule information and recorded
-results. Scout, Merchant and Entertainer remain review-only and unmapped.
+results. Scout, Merchant and Entertainer were subsequently approved separately.
