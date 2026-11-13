@@ -46,7 +46,7 @@ test('scope clearing hides an orphaned warning after its invalid effect control 
 });
 
 test('only the three approved costume roles are selected; absent artwork falls back to the real base',()=>{
- assert.equal(crowVariant('skills'),'professor');assert.equal(crowVariant('referee'),'referee');
+ assert.equal(crowVariant('military'),'military');assert.equal(crowAsset('military'),'./assets/crow-military.png');assert.equal(crowVariant('skills'),'professor');assert.equal(crowVariant('referee'),'referee');
  for(const type of ['starting','rolls','career','event','details','generic','unknown'])assert.equal(crowVariant(type),'technician');
  const base={verified:true},education={approved:true};assert.equal(crowAsset('skills',{professor:education},base),education);assert.equal(crowAsset('referee',{},base),base);assert.equal(crowAsset('skills',{},null),null);
 });
