@@ -33,6 +33,7 @@ export function aslanRuleInformation(model,state){
  if(d.id==='aslan.wanderer')notes.push('Wanderer entry requires a male second son; gender-marked awards still need their own source check.');
  if(['aslan.outcast','aslan.outlaw'].includes(d.id))notes.push('Historical Outcast or Outlaw service does not automatically restore ordinary clan career access. Use a recorded restoration, earned exception or outward route.');
  if(model.career.sourceConflict||['aslan.scientist','aslan.space-officer'].includes(d.id))notes.push('The source contains a documented discrepancy for this career. Preserve the recorded rule interpretation and any required referee decision; the summary is not permission to bypass it.');
+ if(state.stage==='failed-entry')notes.push('Failed native Aslan qualification uses the projected Outcast fallback or recorded outward route. This failure does not grant a Core draft; retain the recorded qualification roll.');
  const step=model.stepSource,page=step?.page??(phase===3?d.eventPage:d.page);
  return {title:model.career.name+' '+topic,summary:summary+(notes.length?' '+notes.join(' '):''),book:step?.book??book,page,url:step&&step.book!==book?step.url:url};
 }
