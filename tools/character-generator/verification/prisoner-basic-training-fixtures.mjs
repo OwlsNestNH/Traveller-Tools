@@ -15,6 +15,6 @@ export function prisonerBasicTrainingFixture(){
  r=run(r,'choose-effect',{index:0});assert.equal(r.state.character.sentenced,true);
  r=run(r,'leave-career');while(r.state.stage==='benefits')r=run(r,'benefit',{cash:true});
  r=run(r,'career',{id:'core.prisoner',assignment:'fixer'});
- assert.equal(r.state.stage,'effect-choice');assert.equal(r.state.effectNext,'new-career-training');
+ assert.equal(r.state.stage,'effect-choice');assert.equal(r.state.effectNext,'survival');assert.equal(r.state.pendingChoice.basicTraining,true);
  return {firstCareer,basic:r};
 }

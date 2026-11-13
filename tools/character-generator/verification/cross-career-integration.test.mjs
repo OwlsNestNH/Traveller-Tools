@@ -76,7 +76,7 @@ test('explicit extra-roll exception remains separately audited and consumes a fo
  r=force(r,'advisory-cash',{},[1]);assert.equal(r.state.cashRolls,4);assert.equal(r.state.character.advisoryServices.at(-1).cash.capException,true);assert.equal(r.state.character.advisoryServices.at(-1).cashLimitDecision.decision,'allow-extra');roundtrip(r);
 });
 test('revision .6 rejects earlier .5 save unchanged before reconstruction',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-09.31');const old=structuredClone(government.session);old.rulesRevision='character-preview-2026-11-08.5';const bytes=JSON.stringify(old);assert.equal(api({operation:'project',session:old}).ok,false);assert.equal(JSON.stringify(old),bytes);
+ assert.equal(RULES_REVISION,'character-preview-2026-11-13.32');const old=structuredClone(government.session);old.rulesRevision='character-preview-2026-11-08.5';const bytes=JSON.stringify(old);assert.equal(api({operation:'project',session:old}).ok,false);assert.equal(JSON.stringify(old),bytes);
 });
 
 test('explicit one-roll credits defer by default and reject duplicate, unknown and ineligible identifiers',()=>{
@@ -106,14 +106,14 @@ test('out-of-range advisory cash retains dice, consumes count/credits once and a
 test('legacy .20 ordinary out-of-range credit roll consumes exactly one benefit only after source resolution and retains its audit',()=>{
  let r=buildBenefitCreditFixture({credits:2});r.session.rulesRevision='character-preview-2026-11-09.20';r={session:r.session,...project(r.session)};const before=career(r).benefitRolls,ids=r.state.benefitCreditOptions.map(c=>c.id),cash=r.state.character.cash;
  r=force(r,'benefit',{cash:true,creditIds:ids},[6]);assert.equal(r.state.stage,'book-step');assert.equal(r.state.pending.kind,'benefit');assert.equal(r.state.pending.rollContext.result,8);assert.deepEqual(r.state.pending.rollContext.creditIds,ids);assert.equal(r.state.cashRolls,1);assert.equal(career(r).benefitRolls,before);roundtrip(r);
- r=run(r,'resolve-book',{confirmed:true,note:'Referee resolves the cash table result.',effects:[{kind:'cash',value:12345}]},{id:'ordinary-source-once'});assert.equal(career(r).benefitRolls,before-1);assert.equal(r.state.cashRolls,1);assert.equal(r.state.character.cash,cash+12345);assert.equal(r.state.character.benefitRollHistory.at(-1).completed,true);assert.equal(r.state.character.benefitRollHistory.at(-1).sourceAssisted,true);assert.deepEqual(r.state.character.benefitRollHistory.at(-1).creditIds,ids);
- assert.deepEqual(run(r,'resolve-book',{confirmed:true,note:'Referee resolves the cash table result.',effects:[{kind:'cash',value:12345}]},{id:'ordinary-source-once'}).session,r.session);roundtrip(r);
+ r=run(r,'resolve-book',{confirmed:true,awardReviewConfirmed:true,note:'Referee resolves the cash table result.',effects:[{kind:'cash',value:12345}]},{id:'ordinary-source-once'});assert.equal(career(r).benefitRolls,before-1);assert.equal(r.state.cashRolls,1);assert.equal(r.state.character.cash,cash+12345);assert.equal(r.state.character.benefitRollHistory.at(-1).completed,true);assert.equal(r.state.character.benefitRollHistory.at(-1).sourceAssisted,true);assert.deepEqual(r.state.character.benefitRollHistory.at(-1).creditIds,ids);
+ assert.deepEqual(run(r,'resolve-book',{confirmed:true,awardReviewConfirmed:true,note:'Referee resolves the cash table result.',effects:[{kind:'cash',value:12345}]},{id:'ordinary-source-once'}).session,r.session);roundtrip(r);
 });
 test('specialty source pause and over-cap retry keep borrowed source page and original training die',()=>{
  let r=buildAdvisorySkillCapFixture(),training=structuredClone(r.state.currentAdvisory.training);assert.equal(r.state.stage,'skill-choice');assert.equal(r.state.pendingChoice.source.page,272);assert.equal(r.state.cashRolls,0);
  r=run(r,'skill-award-source');assert.equal(r.state.pending.page,272);r=run(r,'retry-skill-choice');assert.equal(r.state.pendingChoice.source.page,272);
  r=run(r,'choose-skill',{name:'Drive (wheel)'});assert.equal(r.state.stage,'book-step');assert.equal(r.state.pending.page,272);roundtrip(r);
- r=run(r,'retry-skill-choice');r=run(r,'skill-award-source');r=run(r,'resolve-book',{confirmed:true,note:'Referee discards the over-cap skill award.',effects:[]});assert.equal(r.state.stage,'advisory-cash');assert.equal(r.state.cashRolls,0);r=run(r,'advisory-cash');assert.equal(r.state.stage,'advancement');assert.deepEqual(r.state.character.advisoryServices.at(-1).training,training);assert.equal(r.state.cashRolls,1);roundtrip(r);
+ r=run(r,'retry-skill-choice');r=run(r,'skill-award-source');r=run(r,'resolve-book',{confirmed:true,awardReviewConfirmed:true,note:'Referee discards the over-cap skill award.',effects:[]});assert.equal(r.state.stage,'advisory-cash');assert.equal(r.state.cashRolls,0);r=run(r,'advisory-cash');assert.equal(r.state.stage,'advancement');assert.deepEqual(r.state.character.advisoryServices.at(-1).training,training);assert.equal(r.state.cashRolls,1);roundtrip(r);
 });
 test('Agent assignment specialization retains Prole source through source-assisted interruption',()=>{
  let r=force(agent,'cross-career-training',{assignment:'colonist'},[1]);assert.equal(r.state.stage,'skill-choice');assert.equal(r.state.pendingChoice.source.page,272);assert.equal(r.state.character.deferredSkillAwards?.length??0,0);

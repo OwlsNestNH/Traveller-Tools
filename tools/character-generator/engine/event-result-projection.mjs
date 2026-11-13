@@ -90,7 +90,7 @@ export function decorateEventResults({log,snapshots,events}){
   const inherited=continuations.has(actual.type)?prior:[];
   const results=rolledResults(log[i],before,after,inherited);
   const context=results.length?[...inherited,...results]:inherited;
-  if(context.length)log[i].eventResults=structuredClone(actual.type==='roll-borrowed-event'?results:context);
+  if(context.length)log[i].eventResults=structuredClone(actual.type==='roll-borrowed-event'&&before.pendingBorrowedRoll?.nativeCareerIndex===undefined?results:context);
   contexts.push(command.type==='restore'||['notes','gm-mode','add-extra'].includes(actual.type)?prior:context);
  }
 }

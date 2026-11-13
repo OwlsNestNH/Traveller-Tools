@@ -83,15 +83,15 @@ test('old sessions without the new command project identically and keep RAW off'
  const entered=enter(old);assert.equal(entered.state.stage,'survival');assert.equal(entered.state.character.careers[0].academyServiceTraining,undefined);
 });
 
-test('nonmatching destination does not qualify; later careers retain a single ordinary roll',()=>{
+test('nonmatching destination does not qualify; later Core careers use basic training without another ordinary roll',()=>{
  let r=academy(true);r=force(r,'career',{id:'core.merchant',assignment:'free'},[6,6]);
  assert.equal(r.state.stage,'survival');assert.equal(r.state.character.careers[0].academyServiceTraining,undefined);
  const state=structuredClone(academy(true).state);state.character.careers.push({id:'core.scout',assignment:'courier',terms:1,exit:'voluntary',rank:0});state._override={index:0,values:[6,6]};
  a.apply(state,{type:'career',payload:{id:'core.merchant',assignment:'free'}},[]);
  assert.equal(state.character.careers.at(-1).academyServiceTraining,undefined);
  while(state.stage==='effect-choice')a.apply(state,{type:'choose-effect',payload:{index:0}},[]);
- assert.equal(state.stage,'training');
- delete state._override;a.apply(state,{type:'training',payload:{table:'personal'}},[]);assert.equal(state.stage,'survival');
+ assert.equal(state.stage,'survival');
+ delete state._override;assert.throws(()=>a.apply(state,{type:'training',payload:{table:'personal'}},[]),/No training roll/);
 });
 test('non-Academy and intervening education terms do not qualify',()=>{
  for(const modify of [s=>{s.character.educations=[]},s=>{s.character.terms++}]){

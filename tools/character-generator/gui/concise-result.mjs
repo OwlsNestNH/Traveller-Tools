@@ -7,7 +7,7 @@ const unique=values=>[...new Set(values.filter(Boolean))];
 const amount=n=>'Cr'+n.toLocaleString('en-US');
 const label=id=>String(id??'').replaceAll('-',' ');
 export function isBasicTrainingChoice(state){
- return state?.stage==='effect-choice'&&state.pendingChoice?.options?.length>0&&state.pendingChoice.options.every(option=>/^Basic-training option \d+$/.test(option.label));
+ return state?.stage==='effect-choice'&&state.pendingChoice?.options?.length>0&&(state.pendingChoice.basicTraining===true||state.pendingChoice.options.every(option=>/^Basic-training option \d+$/.test(option.label)));
 }
 function diceDetails(event){
  return (event.rolls??[]).filter(roll=>finite(roll.total)).map(roll=>roll.label+': ['+(roll.values??[]).join(', ')+']'+(roll.kept&&JSON.stringify(roll.kept)!==JSON.stringify(roll.values)?' → keep ['+roll.kept.join(', ')+']':'')+' = '+roll.total+'.');

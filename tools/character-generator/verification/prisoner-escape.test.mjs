@@ -8,6 +8,7 @@ import {prisonerEscapeView} from '../gui/prisoner-escape-view.mjs';
 import {rollResult} from '../gui/roll-result-view.mjs';
 import {createServer} from '../server.mjs';
 import {run,rejected} from './core-life-event-fixtures.mjs';
+import {lawyerFixture} from './prisoner-lawyer-fixtures.mjs';
 const legacy=JSON.parse(readFileSync(new URL('./prisoner-escape-legacy.json',import.meta.url),'utf8'));
 const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 function assertOriginal(result,expected){
@@ -31,7 +32,7 @@ test('escape result colors use the verified selected-skill outcome, never notes 
 });
 
 test('unmodified .16 checkpoints and earlier escape results replay exactly without changing save bytes',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-09.31');
+ assert.equal(RULES_REVISION,'character-preview-2026-11-13.32');
  for(const expected of legacy.checkpoints){
   const session={...legacy.session,events:legacy.session.events.slice(0,expected.count)},raw=JSON.stringify(session,null,2);
   const imported=importSession(raw);assert.equal(exportSession(imported),raw);assert.equal(imported.rulesRevision,'character-preview-2026-11-09.16');
@@ -105,8 +106,8 @@ test('new sessions use the current revision while .15 and older and deferred .16
 });
 
 test('fresh current-revision sessions reach the same opportunity without converting a legacy save',()=>{
- let r=api({operation:'create',seed:legacy.session.seed});
- for(const event of legacy.session.events)r=run(r,event.command.type,event.command.payload);
+ let r=lawyerFixture();const revision=r.session.events.findLastIndex(e=>e.command.type==='survival')+1;
+ r=run(r,'gm-replay',{revision,rollIndex:1,values:[1,2],reason:'Synthetic current-revision escape opportunity.'});
  assert.equal(r.session.rulesRevision,RULES_REVISION);assert.equal(prisonerEscapePending(r.state),true);
  const done=run(r,'prisoner-escape',{skill:'Stealth'});assert.equal(done.state.prisonerEscape,undefined);
  assert.deepEqual(project(importSession(exportSession(done.session))).state,done.state);

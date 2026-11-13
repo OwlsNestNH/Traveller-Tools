@@ -111,7 +111,7 @@ test('public career PSI gain elevates once without changing initial EDU or acqui
  r=run(r,'learn-talent',{talent:'Telepathy'});r=run(r,'finish-psionic-training');assert.equal(r.state.stage,'survival');assert.equal(r.state.character.psionics.training.length,1);roundtrip(r);
 });
 test('new rules revision rejects the prior candidate without silent migration',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-09.31');for(const revision of ['character-preview-2026-11-08.2','character-preview-2026-11-08.3','character-preview-2026-11-08.4']){
+ assert.equal(RULES_REVISION,'character-preview-2026-11-13.32');for(const revision of ['character-preview-2026-11-08.2','character-preview-2026-11-08.3','character-preview-2026-11-08.4']){
   const old=structuredClone(ordinary.session);old.rulesRevision=revision;const before=JSON.stringify(old);
   assert.equal(api({operation:'project',session:old}).ok,false);assert.equal(JSON.stringify(old),before);
  }
@@ -187,7 +187,7 @@ test('mandatory talent gains after permanent loss stop at an explicit source con
  for(const effect of [{kind:'skill',name:'Telepathy',value:1},{kind:'psionic-talent',name:'Telepathy',value:1},{kind:'skill-choice',scope:'psionic-talents',value:1},{kind:'skill-choice',scope:'any',allowed:['Telepathy'],value:1}]){
   const s=state();s.character.stats.PSI=0;s.character.psionicLoss={permanent:true,cause:'ageing'};
   a.queueEffects(s,[effect,{kind:'cash',value:111}],'term-end',[]);assert.equal(s.stage,'book-step');assert.equal(s.pending.kind,'native-effect');assert.match(s.pending.label,/permanently/);
-  raw(s,'resolve-book',{confirmed:true,note:'Referee discarded this unavailable award; no ability was restored.',effects:[]});
+  raw(s,'resolve-book',{confirmed:true,awardReviewConfirmed:true,note:'Referee discarded this unavailable award; no ability was restored.',effects:[]});
   assert.equal(s.stage,'term-end');assert.equal(s.character.cash,111);assert.equal(s.character.skills.Telepathy,0);assert.equal(s.character.stats.PSI,0);
  }
 });
@@ -199,7 +199,7 @@ test('public post-loss Merchant talent training preserves the roll at a source s
  r=settle(force(r,'career',{id:'zhodani.merchant',assignment:'broker'},[6,6]));
  r=force(r,'training',{table:'psionic'},[6]);assert.equal(r.state.stage,'book-step');assert.equal(r.state.pending.kind,'native-effect');
  assert.equal(r.log.at(-1).rolls[0].values[0],6);assert.match(r.state.pending.label,/permanently/);roundtrip(r);
- r=run(r,'gm-mode',{enabled:false});r=run(r,'resolve-book',{confirmed:true,note:'Referee discarded the unavailable talent award, retaining the original roll.',effects:[]});
+ r=run(r,'gm-mode',{enabled:false});r=run(r,'resolve-book',{confirmed:true,awardReviewConfirmed:true,note:'Referee discarded the unavailable talent award, retaining the original roll.',effects:[]});
  assert.equal(r.state.stage,'survival');assert.equal(r.state.character.skills.Telepathy,0);assert.equal(r.state.character.stats.PSI,0);assert.equal(r.state.character.psionicLoss.permanent,true);roundtrip(r);
 });
 

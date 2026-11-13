@@ -20,7 +20,7 @@ test('Aslan skirmish awards selected skill then rolls its check without source f
 test('Vargr pack leadership explicitly selects CHA or Leadership and records outcome without invented stat awards',()=>{
  assert.deepEqual(EXPANSION_TABLES['vargr.pack-events'].results[6][0].options.map(x=>x.label),['Leadership','CHA']);
  for(let index=0;index<2;index++){
-  const initial=pack();assert.equal(initial.state.stage,'effect-choice');replay(initial);rejected(initial,'choose-effect',{index:2});rejected(initial,'resolve-book',{confirmed:true,note:'Skip challenge',effects:[]});
+  const initial=pack();assert.equal(initial.state.stage,'effect-choice');replay(initial);rejected(initial,'choose-effect',{index:2});rejected(initial,'resolve-book',{confirmed:true,awardReviewConfirmed:true,note:'Skip challenge',effects:[]});
   for(const values of [[1,1],[6,6]]){
    let r=run(initial,'choose-effect',{index});r=run(r,'gm-replay',{revision:r.revision,rollIndex:0,values,reason:'Leadership source challenge dice'});
    const check=EXPANSION_TABLES['vargr.pack-events'].results[6][0].options[index].effects[0],natural=values.reduce((a,b)=>a+b,0);assert.equal(r.log.at(-1).rolls[0].total,natural);assert.equal(check.target,10);
@@ -62,11 +62,11 @@ test('paused, skipped and over-cap awards preserve an explicit required check bo
   }else r=run(r,'skill-award-source');
   assert.equal(r.state.pending.effect.kind,'skill-choice');assert.equal(r.state.effectsQueue[0].skillScope,'preceding-award');replay(r);
   if(!overCap){const retry=run(r,'retry-skill-choice'),completed=force(retry,'choose-skill',{name:'Drive (wheel)'},[3,3]);assert.equal(completed.state.stage,'advancement');replay(completed);}
-  r=run(r,'resolve-book',{confirmed:true,note:'Award explicitly disposed of under the source rule.',effects:[]});
+  r=run(r,'resolve-book',{confirmed:true,awardReviewConfirmed:true,note:'Award explicitly disposed of under the source rule.',effects:[]});
   assert.equal(r.state.stage,'book-step');assert.equal(r.state.pending.effect.kind,'check');
   assert.equal(r.state.pending.effect.awardedSkill,undefined);assert.match(r.state.pending.reason??r.state.pending.label??JSON.stringify(r.state.pending),/required skill check/);
   assert.equal(r.state.modifiers.some(m=>m.target==='advancement'&&m.value===2),false);assert.equal(r.log.at(-1).rolls.length,0);replay(r);
-  r=run(r,'resolve-book',{confirmed:true,note:'Referee resolves the required check as a failure; no advancement modifier.',effects:[]});
+  r=run(r,'resolve-book',{confirmed:true,awardReviewConfirmed:true,note:'Referee resolves the required check as a failure; no advancement modifier.',effects:[]});
   assert.equal(r.state.stage,'advancement');replay(r);
  }
 });
@@ -75,7 +75,7 @@ test('selected-specialty checks and unresolved source boundaries match HTTP and 
  try{
   const ready=run(competingSpecialty(2,'Drive (track)'),'choose-effect',{index:2});
   const paused=run(ready,'skill-award-source');
-  for(const [r,type,payload] of [[ready,'choose-skill',{name:'Drive (wheel)'}],[paused,'resolve-book',{confirmed:true,note:'Referee disposes of award; check remains required.',effects:[]}]]){
+  for(const [r,type,payload] of [[ready,'choose-skill',{name:'Drive (wheel)'}],[paused,'resolve-book',{confirmed:true,awardReviewConfirmed:true,note:'Referee disposes of award; check remains required.',effects:[]}]]){
    const request={operation:'command',session:r.session,command:{type,payload}};
    const response=await fetch('http://127.0.0.1:'+server.address().port+'/api/v1',{method:'POST',body:JSON.stringify(request)});
    assert.equal(response.status,200);const actual=await response.json();assert.deepEqual(actual,api(request));replay(actual);
@@ -85,11 +85,11 @@ test('selected-specialty checks and unresolved source boundaries match HTTP and 
 
 test('manual concrete awards and capped fixed-name awards never infer or discard the required check',()=>{
  let manual=run(run(military(),'choose-effect',{index:2}),'skill-award-source');
- manual=run(manual,'resolve-book',{confirmed:true,note:'Referee applies the wheel award manually.',effects:[{kind:'skill',name:'Drive (wheel)',value:1}]});
+ manual=run(manual,'resolve-book',{confirmed:true,awardReviewConfirmed:true,note:'Referee applies the wheel award manually.',effects:[{kind:'skill',name:'Drive (wheel)',value:1}]});
  assert.equal(manual.state.character.skills['Drive (wheel)'],1);assert.equal(manual.state.pending.effect.kind,'check');replay(manual);
  let capped=military();for(const stat of ['INT','EDU'])capped=run(capped,'gm-override',{field:'stat.'+stat,value:0,reason:'Exercise fixed-name award cap'});
  capped=run(capped,'choose-effect',{index:3});assert.equal(capped.state.pending.effect.kind,'skill');
- capped=run(capped,'resolve-book',{confirmed:true,note:'No skill gain permitted at cap.',effects:[]});
+ capped=run(capped,'resolve-book',{confirmed:true,awardReviewConfirmed:true,note:'No skill gain permitted at cap.',effects:[]});
  assert.equal(capped.state.pending.effect.kind,'check');assert.deepEqual(capped.state.pending.effect.source,{id:'aliens',page:31});
  assert.equal(capped.log.at(-1).rolls.length,0);replay(capped);
 });

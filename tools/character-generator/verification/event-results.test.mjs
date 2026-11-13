@@ -66,7 +66,7 @@ test('prison lawyer decline retains event context through notes and records its 
 
 test('ordinary disaster event resolves its known same-career nested mishap',()=>{
  let r=run(assignmentSetup('review-nested'),'skip-precareer');r=settleAssignment(force(r,'career',{id:'core.army',assignment:'support'},[6,6]));r=force(r,'survival-check',{},[6,6]);r=force(r,'career-event',{},[1,1]);
- const results=r.log.at(-1).eventResults;assert.equal(results[1].table,'core.army.mishaps');assert.ok(results[1].description);assert.ok(results[1].source);assert.match(results[1].summary,/ejection.*waived/);assert.doesNotMatch(results[1].summary,/recorded source resolution/);
+ assert.equal(r.state.stage,'borrowed-event-roll');r=run(r,'roll-borrowed-event',{pendingId:r.state.pendingBorrowedRoll.id});const results=r.log.at(-1).eventResults;assert.equal(results[1].table,'core.army.mishaps');assert.ok(results[1].description);assert.ok(results[1].source);assert.match(results[1].summary,/ejection.*waived/);assert.doesNotMatch(results[1].summary,/recorded source resolution/);
 });
 
 test('every formatted table outcome avoids invalid placeholder values',()=>{
@@ -75,7 +75,7 @@ test('every formatted table outcome avoids invalid placeholder values',()=>{
 
 test('failed event checks retain uniquely proven nested career table provenance',()=>{
  let r=run(assignmentSetup('review-scout8-0'),'skip-precareer');r=settleAssignment(force(r,'career',{id:'core.scout',assignment:'courier'},[6,6]));r=force(r,'survival-check',{},[6,6]);r=force(r,'career-event',{},[4,4]);
- const result=r.log.at(-1).eventResults.find(r=>r.table==='core.scout.mishaps');assert.ok(result);assert.ok(result.description);
+ assert.equal(r.state.stage,'borrowed-event-roll');r=force(r,'roll-borrowed-event',{pendingId:r.state.pendingBorrowedRoll.id},[1,1]);assert.equal(r.state.stage,'borrowed-event-roll');r=run(r,'roll-borrowed-event',{pendingId:r.state.pendingBorrowedRoll.id});const result=r.log.at(-1).eventResults.find(r=>r.table==='core.scout.mishaps');assert.ok(result);assert.ok(result.description);
 });
 
 test('Rite of Passage doubles show their source event, non-doubles do not invent one',()=>{
