@@ -75,7 +75,12 @@ The sheet-centred layout study under `verification/imperial-layout-concept*`
 is deferred at the owner's request. It is not run by CI or used by application
 navigation. Existing Education/Background screen layout remains in place.
 
-The lighter outfit images under `verification/review-assets` and their
-`crow-outfit-contrast-browser.mjs` comparison are review-only. They do not replace
-production artwork. Comparisons render current and proposed clothing at the same
-112 × 128 phone portrait size. Technical errors retain default Crow.
+The owner approved the clearer outfit comparison at head 091c98b. The exact
+shown lighter images now occupy the existing technician/professor/referee asset
+paths. Default Crow (`crow-pet.png`), image selection, screen layout and technical
+error behavior are unchanged. Original costumes are retained under
+`verification/review-assets/*-before.png`; the comparison renders previous and
+approved artwork at the same 112 × 128 phone portrait size.
+
+Military Crow remains a review-only draft under `verification/review-assets`; it
+has no production image mapping pending owner visual approval.
