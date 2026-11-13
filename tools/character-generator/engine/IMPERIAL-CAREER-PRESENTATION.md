@@ -71,11 +71,11 @@ Character-sheet history groups by recorded Pre-Term/Term timing, retaining
 individual timing labels and every current-branch entry. Unknown timing stays
 explicit. Print temporarily expands groups and restores their previous state.
 
-The sheet-centred layout under `verification/imperial-layout-concept*` is a
-review-only framing study, replacing the rejected redesigned content. CI loads
-the approved deployed Education/Background application at commit 8979189 with
-synthetic sessions, then changes only popup/sheet positioning in browser memory.
-It asserts identical screen text, controls and saved bytes before/after framing.
-No character command is submitted by the framing operation. Reference and framed
-screenshots are paired. Costume contrast comparisons are also review-only.
-The existing production sheet/popup structure and artwork remain in place.
+The sheet-centred layout study under `verification/imperial-layout-concept*`
+is deferred at the owner's request. It is not run by CI or used by application
+navigation. Existing Education/Background screen layout remains in place.
+
+The lighter outfit images under `verification/review-assets` and their
+`crow-outfit-contrast-browser.mjs` comparison are review-only. They do not replace
+production artwork. Comparisons render current and proposed clothing at the same
+112 × 128 phone portrait size. Technical errors retain default Crow.
