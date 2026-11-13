@@ -9,7 +9,7 @@ const auditLabels={careerTransitions:'Qualification',assignmentChanges:'Assignme
 export function recordedConsequenceCheck(event){
  if(event?.type!=='roll-borrowed-event'||event.rolls?.length!==1)return null;
  const m=event.summary?.match(/^(.+?) result (-?\d+)\. (-?\d+) against (\d+)\+: (succeeded|failed)\./),roll=event.rolls[0];
- if(!m||roll.values?.length!==2||!roll.values.every(n=>Number.isInteger(n)&&n>=1&&n<=6)||roll.values.reduce((a,b)=>a+b,0)!==roll.total||Number(m[2])!==roll.total||!['EDU check','INT check','SOC check','STR check','DEX check','END check','PSI check','CHA check','FOL check','Skill check'].includes(roll.label))return null;
+ if(!m||roll.values?.length!==2||!roll.values.every(n=>Number.isInteger(n)&&n>=1&&n<=6)||roll.values.reduce((a,b)=>a+b,0)!==roll.total||Number(m[2])!==roll.total||!['EDU check','INT check','SOC check','STR check','DEX check','END check','PSI check','CHA check','FOL check','Skill check','Independence acquisition'].includes(roll.label))return null;
  if(m[1]!==roll.label&&!(roll.label==='Skill check'&&/^[A-Za-z][A-Za-z ()/–-]* check$/.test(m[1])))return null;
  const total=Number(m[3]),target=Number(m[4]),success=m[5]==='succeeded';if(!Number.isFinite(total)||!Number.isFinite(target)||success!==(total>=target))return null;
  return {label:m[1],natural:roll.total,total,target,success};

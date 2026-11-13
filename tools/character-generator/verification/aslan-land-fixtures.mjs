@@ -5,7 +5,7 @@ export {run,force,rejected};
 export const landWorld={name:'Source fixture world',location:'Fixture sector / 0101',reference:'Referee-selected campaign world'};
 export function landPayload(r,{shares=3,world=landWorld,parcelRuling}={}){return {kind:'land',inputs:[{lotId:r.state.character.clanShareLots.find(l=>l.available>0).id,quantity:shares}],world:{...world},...(parcelRuling===undefined?{}:{parcelRuling})};}
 const cache=new Map();
-function trainIndependence(r){r=force(r,'training',{table:'personal'},[4]);assert.equal(r.state.stage,'effect-choice');return force(r,'choose-effect',{index:0},[6,6]);}
+function trainIndependence(r){r=force(r,'training',{table:'personal'},[4]);assert.equal(r.state.stage,'effect-choice');if(r.state.aslanRollCheckpoints){r=run(r,'choose-effect',{index:0});assert.equal(r.state.stage,'borrowed-event-roll');return force(r,'roll-borrowed-event',{pendingId:r.state.pendingBorrowedRoll.id},[6,6]);}return force(r,'choose-effect',{index:0},[6,6]);}
 export function buildLandClaimFixture({soc=9,shares=3,die=1,mature=false,relative=false,gm=true,parcelRuling,stage='precareer'}={}){
  const key=JSON.stringify({soc,shares,die,mature,relative,gm,parcelRuling,stage});if(cache.has(key))return structuredClone(cache.get(key));
  let r=buildMaleShareAssetsFixture({stage});r=run(r,'gm-override',{field:'stat.SOC',value:soc,reason:'Recorded current-SOC land redemption boundary.'});r=force(r,'redeem-clan-shares',landPayload(r,{shares,parcelRuling}),[die]);

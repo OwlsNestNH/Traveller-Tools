@@ -111,7 +111,7 @@ test('public career PSI gain elevates once without changing initial EDU or acqui
  r=run(r,'learn-talent',{talent:'Telepathy'});r=run(r,'finish-psionic-training');assert.equal(r.state.stage,'survival');assert.equal(r.state.character.psionics.training.length,1);roundtrip(r);
 });
 test('new rules revision rejects the prior candidate without silent migration',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-13.33');for(const revision of ['character-preview-2026-11-08.2','character-preview-2026-11-08.3','character-preview-2026-11-08.4']){
+ assert.equal(RULES_REVISION,'character-preview-2026-11-13.34');for(const revision of ['character-preview-2026-11-08.2','character-preview-2026-11-08.3','character-preview-2026-11-08.4']){
   const old=structuredClone(ordinary.session);old.rulesRevision=revision;const before=JSON.stringify(old);
   assert.equal(api({operation:'project',session:old}).ok,false);assert.equal(JSON.stringify(old),before);
  }

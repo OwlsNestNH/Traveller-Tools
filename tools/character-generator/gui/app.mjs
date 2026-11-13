@@ -513,7 +513,7 @@ function sheetView(state){
 function render(){
  backgroundDraft=reconcileBackgroundDraft(backgroundDraft,backgroundDraftKey(session,projection.state),projection.state);
  const lastRollResult=conciseResult(projection.log.at(-1),projection.state,catalog);
- const lastResult=projection.state.stage==='background'||projection.state.stage==='career'&&selectedCareer?'':statisticsRollFeedbackView(projection.log.at(-1),projection.state,{esc})??latestResultView(lastRollResult,{esc,crowType:careerResultCrowType(projection.log.at(-1),lastRollResult,projection.state),tagline:careerResultTagline(projection.log.at(-1),lastRollResult,projection.state)??trainingTagline});
+ const lastResult=projection.state.stage==='background'||projection.state.stage==='career'&&selectedCareer?'':statisticsRollFeedbackView(projection.log.at(-1),projection.state,{esc})??latestResultView(lastRollResult,{esc,crowType:careerResultCrowType(projection.log.at(-1),lastRollResult,projection.state),tagline:trainingTagline??careerResultTagline(projection.log.at(-1),lastRollResult,projection.state)});
  const nestedDraft=$('.education-nested-label select')?{kind:$('.education-nested-prompt').dataset.educationChoice,key:$('#workspace').dataset.educationStudyKey,value:$('.education-nested-label select').value}:null;
  const studyDraft=$('.education-result #education-subject')?{key:$('#workspace').dataset.educationStudyKey,subject:$('#education-subject').value,skill:$('#education-skill').value}:null;
  const lawyerPanel=$('#prisoner-lawyer'),lawyerDraft=lawyerPanel?{id:lawyerPanel.dataset.lawyerId,fields:[...lawyerPanel.querySelectorAll('input,select,textarea')].map(input=>({id:input.id,value:input.value,checked:input.checked}))}:null;
