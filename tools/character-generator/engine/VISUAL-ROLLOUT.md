@@ -47,3 +47,12 @@ Actual recorded benefit dice are shown; current Clan Share awards and unspent
 balances are distinguished. The sheet labels aggregate holdings separately from
 individual award rows. This is a display clarification, not an accounting repair
 or save migration.
+
+Completion follow-up uses a plain-text Result details disclosure and avoids
+duplicating fallback rank labels. Finish offers its existing sheet action before
+the full Crow explanation; phone heading and portrait spacing are compact while
+retaining all controls and full-width speech. The retirement fixture is Aslan:
+age14 plus one four-year term is18, not an age-calculation defect.
+
+Approved Scholar and Agent portraits are used for their career guidance, source
+information and recorded career results. Technical errors retain default Crow.

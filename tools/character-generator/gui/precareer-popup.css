@@ -449,3 +449,13 @@ dialog:has(.required-action-warning:not([hidden])) .crow-speaking-panel{display:
  .opening-help-dialog .opening-help-heading>[data-opening-help-close]{grid-row:1;justify-self:end}
  .opening-help-dialog #opening-help-copy .opening-help-crow>img{float:none;display:block;margin:0 auto 8px}
 }
+
+/* Keep completion actions visible before the full recorded explanation. */
+@media screen and (max-width:650px){
+ body[data-completion-shell="true"] #workspace .final-sheet-invitation{margin:12px 0}
+ body[data-completion-shell="true"] #workspace .final-sheet-invitation p{margin:8px 0;font-size:15px}
+ body[data-completion-shell="true"] #workspace .crow-speaking-panel{padding:10px;gap:6px}
+ body[data-completion-shell="true"] #workspace .crow-speaking-panel>img{height:96px}
+ body[data-completion-shell="true"] #workspace .crow-speaking-panel>blockquote{padding:10px}
+ body[data-completion-shell="true"] #workspace .crow-speaking-panel h3{font-size:20px}
+}

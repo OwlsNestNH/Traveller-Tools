@@ -20,7 +20,7 @@ test('failed survival at term end keeps the check, mishap and rival without repe
 test('later career entry shows the actual check and new career, not bookkeeping; choice is named accurately',()=>{
  const r=laterCareerFixture().after,result=conciseResult(r.log.at(-1),r.state,catalog),before=exportSession(r.session);
  assert.equal(result.title,'Entered Rogue / Thief.');assert.equal(result.details.length,1);assert.match(result.text,/\[6, 4\].*total 11 against 6\+; succeeded/);assert.doesNotMatch(result.text,/none → 0|Officer commission|Pending:/);assert.equal(isBasicTrainingChoice(r.state),true);
- const html=latestResultView(result,{esc});assert.match(html,/<details class="result-information"><summary><span aria-hidden="true">ⓘ<\/span> Result details/);assert.doesNotMatch(html,/<details[^>]* open/);assert.equal(exportSession(r.session),before);
+ const html=latestResultView(result,{esc});assert.match(html,/<details class="result-information"><summary>Result details/);assert.doesNotMatch(html,/<details[^>]* open/);assert.equal(exportSession(r.session),before);
  const replay=project(importSession(before));assert.deepEqual(conciseResult(replay.log.at(-1),replay.state,catalog),result);
 });
 test('first-career skill awards are grouped without omitting any skill; qualification failures stay failures',()=>{

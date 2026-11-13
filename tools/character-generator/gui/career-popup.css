@@ -151,3 +151,10 @@
 #army-career-dialog .career-result-guidance.outcome-tagline{background:none;font-style:normal}
 #army-career-dialog .career-result-comment{font-style:italic;margin:6px 0}
 #army-career-dialog .career-result-guidance .career-crow-speech{font-style:normal}
+
+/* Completion retains every toolbar control without dominating phone height. */
+@media screen and (max-width:650px){
+ body[data-completion-shell="true"]>header{padding-bottom:10px}
+ body[data-completion-shell="true"]>header .lead{font-size:14px;letter-spacing:.12em}
+
+}

@@ -8,7 +8,7 @@ export function completionReviewFixtures(){
  let finished=run(buildAssignmentFixture(),'leave-career');
  for(let i=0;i<12&&finished.state.stage==='benefits';i++)finished=settleAssignment(force(finished,'benefit',{cash:false},[2]));
  finished=run(finished,'finish');assert.equal(finished.state.stage,'finish');
- let retired=run(buildClanSharesFixture({stage:'term-end'}),'leave-career',{retire:true});retired=settle(force(retired,'benefit',{cash:false},[1]));retired=run(retired,'benefit',{cash:false});assert.equal(retired.state.stage,'retirement');assert.equal(retired.log.at(-1).type,'benefit');
+ let retired=run(buildClanSharesFixture({stage:'term-end'}),'leave-career',{retire:true});retired=settle(force(retired,'benefit',{cash:false},[1]));retired=run(retired,'benefit',{cash:false});assert.equal(retired.state.stage,'retirement');assert.equal(retired.log.at(-1).type,'benefit');assert.equal(retired.state.character.species,'aslan');assert.equal(retired.state.character.age,18,'Aslan starts at14 and completes one four-year term');
  let deceased=coverResult({row:2,end:1}),revision=deceased.log.findLast(l=>l.type==='cross-career-cover').number;
  for(let i=0;i<80&&!(deceased.state.stage==='injury-loss'&&deceased.state.character.injuries.at(-1).options[2]?.label.startsWith('END'));i++)deceased=forceAt(deceased,revision,1,[1,1]);
  assert.equal(deceased.state.stage,'injury-loss');deceased=run(deceased,'injury-loss',{index:2});assert.equal(deceased.state.pending.kind,'injury-zero');deceased=run(deceased,'resolve-book',{confirmed:true,note:'Synthetic referee confirmation of a fatal injury.',injurySurvives:false});assert.equal(deceased.state.stage,'deceased');

@@ -24,6 +24,8 @@ export function mountCrowSpeakingContent(document,content,{type='generic',tone='
 // Completion has no new decision/roll. Keep its existing result and next
 // instruction with one speaker, retaining the original nodes and wording.
 export function mountCrowCompletionGuidance(document,root){
+ const invitation=root?.querySelector('.final-sheet-invitation'),title=root?.querySelector('#step-title');
+ if(invitation&&title)title.after(invitation);
  const result=root?.querySelector('#last-action-result'),guide=root?.querySelector(':scope > .crow-speaking-panel');
  if(!result||!guide||result===guide)return null;
  const instructions=[...(guide.querySelector('blockquote')?.children??[])].filter(n=>n.tagName==='P');
