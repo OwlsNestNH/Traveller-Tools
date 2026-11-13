@@ -85,3 +85,7 @@ approved artwork at the same 112 × 128 phone portrait size.
 The owner approved Military Crow ("Love it"). The exact shown asset is used
 for Army/Marine career guidance, result commentary and rule-information panels.
 Other careers retain their contextual costumes; technical errors use default Crow.
+
+Navy and Imperial Rogue costume drafts are review-only, with no production
+mapping. Pirate/tricorn styling is reserved for the later Vargr Corsair phase;
+this candidate does not implement Vargr careers or a Corsair costume.
