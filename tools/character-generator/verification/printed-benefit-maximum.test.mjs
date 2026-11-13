@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-const url=new URL('../engine/session.mjs',import.meta.url);let src=await readFile(url,'utf8');src=src.replace(/from\s+'(\.\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));src+='\nexport const audit={initial,apply,queueEffects,rerollMaterialBenefit,RULE_PACK};';const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(src).toString('base64'));
+const url=new URL('../engine/session.mjs',import.meta.url);let src=await readFile(url,'utf8');src=src.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));src+='\nexport const audit={initial,apply,queueEffects,rerollMaterialBenefit,RULE_PACK};';const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(src).toString('base64'));
 function fixture(id='aslan.spacer',modern=true){const s=a.initial('printed-benefit');s.printedBenefitMaximum=modern;s.deferredSpecializations=true;s.correctedCareerEvents=true;s.character.species=id.startsWith('aslan.')?'aslan':'human';s.character.gender='male';s.character.stats={STR:8,DEX:8,END:8,INT:8,EDU:8,SOC:10};s.character.careers=[{id,assignment:'pilot',terms:1,rank:0,benefitRolls:10,totalBenefits:0,successfulTerms:1}];s.active=0;s.stage='benefits';return s;}
 function cmd(s,cash=false){const rolls=[];s._override={index:0,values:[6]};try{return a.apply(s,{type:'benefit',payload:{cash}},rolls);}finally{delete s._override;}}
 const context=s=>s.benefitRollContext??s.character.benefitRollHistory?.at(-1);

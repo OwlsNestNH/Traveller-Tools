@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {nativeEventRollPending} from '../engine/native-event-roll-checkpoints.mjs';
 import {createSession,project} from '../engine/session.mjs';
 const url=new URL('../engine/session.mjs',import.meta.url);
-let source=(await readFile(url,'utf8')).replace(/from\s+'(\.\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));
+let source=(await readFile(url,'utf8')).replace(/from\s+'(\.\.?\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));
 source+='\nexport const audit={initial,queueEffects,apply,enterCareer,findCareer};';
 const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 function state(id='core.army'){

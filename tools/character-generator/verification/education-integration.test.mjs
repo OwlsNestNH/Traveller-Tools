@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises';
 import {createSession,execute,project,importSession,exportSession} from '../engine/session.mjs';
 const sourceURL=new URL('../engine/session.mjs',import.meta.url);
 let source=await readFile(sourceURL,'utf8');
-source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,sourceURL).href));
+source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,sourceURL).href));
 source+='\nexport const educationAudit={queueEffects,apply};\n';
 const {educationAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const run=(r,type,payload={})=>execute(r.session??r,{type,payload});

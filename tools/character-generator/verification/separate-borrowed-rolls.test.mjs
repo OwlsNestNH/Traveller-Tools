@@ -54,7 +54,7 @@ test('borrowed Life injury retains separate dice and Life source provenance',()=
 });
 import {readFile} from 'node:fs/promises';
 const engineURL=new URL('../engine/session.mjs',import.meta.url);
-let engineSource=await readFile(engineURL,'utf8');engineSource=engineSource.replace(/from\s+'(\.\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,engineURL).href));engineSource+='\nexport const borrowedAudit={queueEffects,apply,borrowedEffects};';
+let engineSource=await readFile(engineURL,'utf8');engineSource=engineSource.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,engineURL).href));engineSource+='\nexport const borrowedAudit={queueEffects,apply,borrowedEffects};';
 const {borrowedAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(engineSource).toString('base64'));
 function auditState(){const state=structuredClone(separatedCover().state);delete state.pendingBorrowedRoll;state.stage='cross-career-cover';state.effectsQueue=[];return state;}
 const mark=effects=>a.borrowedEffects(effects,{tableCareerId:'core.rogue',crossCareerRouteId:'cross-career-1'});

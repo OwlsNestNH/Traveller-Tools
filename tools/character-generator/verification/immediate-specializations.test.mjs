@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {api,exportSession,project,RULES_REVISION} from '../engine/session.mjs';
 import {trainingFixture,run} from './training-information-fixtures.mjs';
 const url=new URL('../engine/session.mjs',import.meta.url);
-let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,url).href));
+let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,url).href));
 source+='\nexport const audit={initial,queueEffects,apply,skillCheckDM,rulesCheck};';
 const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const current=()=>{const s=a.initial('immediate');s.deferredSpecializations=true;s.correctedCareerEvents=true;s.immediateSpecializations=true;s.character.stats={STR:15,DEX:15,END:15,INT:15,EDU:15,SOC:15};s.stage='career';return s;};

@@ -5,7 +5,7 @@ import {api,project,exportSession,importSession} from '../engine/session.mjs';
 import {createServer} from '../server.mjs';
 import {awardFixture,coreGenericFixture,run,force} from './constrained-award-fixtures.mjs';
 import {rejected} from './core-life-event-fixtures.mjs';
-const url=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));source+='\nexport const audit={apply,queueEffects};';const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const url=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));source+='\nexport const audit={apply,queueEffects};';const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const choose=(s,name)=>a.apply(s,{type:'choose-skill',payload:{name}},[]);
 const roundtrip=r=>assert.deepEqual(project(importSession(exportSession(r.session))).state,r.state);
 

@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {api,createSession,exportSession,importSession,project} from '../engine/session.mjs';
 import {fallbackView} from '../gui/aslan-access-view.mjs';
 const url=new URL('../engine/session.mjs',import.meta.url);
-let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,url).href));
+let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,url).href));
 source+='\nexport const audit={initial,queueEffects,apply,closeTerm,fallbackOptions,finishOptions,RULE_PACK};';
 const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 function fixture(id,assignment,{rank=0,corrected=true}={}){const s=a.initial('career-regression');s.correctedCareerEvents=corrected;s.character.stats={STR:9,DEX:9,END:9,INT:9,EDU:9,SOC:9};s.character.careers=[{id,assignment,rank,highestRank:rank,terms:2,benefitRolls:3,totalBenefits:0,successfulTerms:2}];s.character.terms=2;s.active=0;s.stage='survival';return s;}

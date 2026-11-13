@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createSession,execute,project,exportSession,importSession} from '../engine/session.mjs';
-const url=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));source+='\nexport const audit={initial,apply,queueEffects,psionicHistory,startPsionicTraining,psionicOptions,applyEffects};';
+const url=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));source+='\nexport const audit={initial,apply,queueEffects,psionicHistory,startPsionicTraining,psionicOptions,applyEffects};';
 const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const run=(r,type,payload={},options)=>execute(r.session??r,{type,payload},options);
 function fixture(species='human',career='core.psion'){

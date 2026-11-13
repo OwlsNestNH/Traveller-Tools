@@ -119,7 +119,7 @@ test('new rules revision rejects the prior candidate without silent migration',(
 
 // Focused injected contexts cover otherwise very late ageing and queue combinations.
 const url=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(url,'utf8');
-source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));
+source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));
 source+='\nexport const audit={initial,apply,queueEffects,psionicHistory,closeTerm,finishAgeing};';
 const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 function raw(s,type,payload={},values){const rolls=[];if(values)s._override={index:0,values};const summary=a.apply(s,{type,payload},rolls);delete s._override;return {rolls,summary};}

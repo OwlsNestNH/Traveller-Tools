@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {CAREERS} from '../engine/catalog.mjs';
 const url=new URL('../engine/session.mjs',import.meta.url);
-let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));
+let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));
 source+='\nexport const audit={initial,apply,availableCareers,conditionMatches,RULE_PACK};';
 const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 function state(gender,soc,current=true){const s=a.initial('assignment-availability');if(current){s.deferredSpecializations=true;s.correctedCareerEvents=true;}s.stage='career';s.character.species='aslan';s.character.culture='native';s.character.gender=gender;s.character.stats={STR:9,DEX:9,END:9,INT:9,EDU:9,SOC:soc,RITE:6};return s;}

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {EXPANSION_PACK} from '../engine/expansion-pack.mjs';
 import {culturalSkillAward,culturalAwardLabel,aslanSkillLabel,ASLAN_SKILL_LEGEND} from '../engine/aslan-skill-culture.mjs';
-const url=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,url).href));source+='\nexport const audit={initial,queueEffects};';const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const url=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,url).href));source+='\nexport const audit={initial,queueEffects};';const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 function fixture(modern=true){const s=a.initial('aslan-cultural');s.deferredSpecializations=modern;s.character.species='aslan';s.character.gender='male';s.character.stats={STR:7,DEX:7,END:7,INT:7,EDU:7,SOC:7};s.stage='career';return s;}
 function collect(value,path='',out=[]){if(culturalSkillAward(value))out.push({effect:value,path});if(Array.isArray(value))value.forEach((v,i)=>collect(v,path+'.'+i,out));else if(value&&typeof value==='object')for(const [k,v] of Object.entries(value))collect(v,path+'.'+k,out);return out;}
 const marked=Object.entries(EXPANSION_PACK).filter(([id])=>id.startsWith('aslan.')).flatMap(([id,pack])=>collect({events:pack.events,mishaps:pack.mishaps},id));

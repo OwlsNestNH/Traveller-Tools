@@ -15,7 +15,7 @@ import {buildAslanOriginFixture} from './aslan-origin-fixtures.mjs';
 // from the engine or changing a saved session's authoritative command history.
 const engineURL=new URL('../engine/session.mjs',import.meta.url);
 let engineSource=await readFile(engineURL,'utf8');
-engineSource=engineSource.replace(/from\s+'(\.\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,engineURL).href));
+engineSource=engineSource.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,engineURL).href));
 engineSource+='\nexport const trainingTaglineAudit={initial,queueEffects,apply,markPsionicOrigin};';
 const {trainingTaglineAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(engineSource).toString('base64'));
 const outcome='aslan.training.female-associated';

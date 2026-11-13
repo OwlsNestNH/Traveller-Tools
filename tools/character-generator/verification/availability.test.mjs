@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createSession,execute,project,exportSession,importSession} from '../engine/session.mjs';
 import {findCareer} from '../engine/catalog.mjs';
-const url=new URL('../engine/session.mjs',import.meta.url);let code=await readFile(url,'utf8');code=code.replace(/from\s+'(\.\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));code+='\nexport const a={initial,apply,queueEffects,availableCareers,commissionAvailability,followingInteractionDM,exitOptions};';
+const url=new URL('../engine/session.mjs',import.meta.url);let code=await readFile(url,'utf8');code=code.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));code+='\nexport const a={initial,apply,queueEffects,availableCareers,commissionAvailability,followingInteractionDM,exitOptions};';
 const {a}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
 const run=(r,type,payload={},options)=>execute(r.session??r,{type,payload},options);
 function fixture(id='core.army',terms=0){

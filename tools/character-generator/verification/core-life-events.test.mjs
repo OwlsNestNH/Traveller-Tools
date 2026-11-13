@@ -8,7 +8,7 @@ const roundtrip=r=>assert.deepEqual(project(importSession(exportSession(r.sessio
 const decision=(r,p)=>run(r,'resolve-life-event',{confirmed:true,reason:'Original referee source decision.',...p});
 // Retain explicit-description legacy coverage; new generic artefacts are covered by equipment-finalization tests.
 const unusual=row=>lifeFixture({seed:'life-566',unusual:row,...([3,6].includes(row)?{rulesRevision:'character-preview-2026-11-09.20'}:{})});
-const sourceURL=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(sourceURL,'utf8');source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,sourceURL).href));source+='\nexport const lifeAudit={apply,queueEffects};';const {lifeAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const sourceURL=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(sourceURL,'utf8');source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,sourceURL).href));source+='\nexport const lifeAudit={apply,queueEffects};';const {lifeAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 
 test('Core p46 encodes every life and unusual row without source narration',()=>{
  assert.deepEqual(Object.keys(CORE_LIFE_TABLES['core.life-events'].results).map(Number),[2,3,4,5,6,7,8,9,10,11,12]);assert.deepEqual(Object.keys(CORE_LIFE_TABLES['core.unusual-events'].results).map(Number),[1,2,3,4,5,6]);
