@@ -1,3 +1,4 @@
+import {mountRecordBars} from './record-bars.mjs';
 import {mountCrowSpeakingContent} from './crow-speaking-panel.mjs';
 import {academyTrainingModel} from './academy-training-model.mjs';
 export {academyTrainingModel} from './academy-training-model.mjs';
@@ -167,15 +168,12 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  if(resultModel){info.querySelector('#precareer-information-result').innerHTML='<h3>'+esc(resultModel.name)+' '+esc(resultModel.kind)+'</h3><p>'+resultModel.dice.map(esc).join(' + ')+' '+(resultModel.modifier<0?'− ':'+ ')+Math.abs(resultModel.modifier)+' = '+esc(resultModel.total)+' · Target '+esc(resultModel.target)+'+</p><ul>'+[...(resultModel.details??[]),...(resultModel.benefits??[]),...(resultModel.retained??[]),...(resultModel.missed??[])].map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul>';workspace.querySelector('#precareer-result-open').remove();workspace.querySelector('#precareer-rules-open strong').textContent='Result details and sources';workspace.querySelector('#precareer-rules-open small').remove();}
  // Move existing record nodes, never clone editors or their IDs. Each top-level
  // bar is part of one exclusive group, with a fallback for older browsers.
- const rail=context.querySelector('#precareer-rail'),previousBar=rail.dataset.openBar;
+ const rail=context.querySelector('#precareer-rail');
  const nodes=[...sheet.children],stats=nodes.find(n=>n.querySelector('.stats')),skills=nodes.find(n=>n.querySelector('h3')?.textContent==='Skills'),notes=nodes.find(n=>n.id==='notes-connections'),origin=nodes.find(n=>n.matches('.aslan-origin-sheet'));
  const headerNodes=nodes.filter(n=>n.matches('.sheet-meta,.sheet-facts'));overview.append(...headerNodes);
  const groups=[['precareer-characteristics','Characteristics',stats?[stats]:[]],['precareer-aslan-origin','Aslan family and origin',origin?[origin]:[]],['precareer-skills','Skills',skills?[skills]:[]],['precareer-notes','Notes & connections',notes?[notes]:[]],['precareer-more-record','More character details',nodes.filter(n=>![stats,origin,skills,notes,...headerNodes].includes(n)&&n.tagName!=='H2'&&!n.matches('.eyebrow'))]];
  sheet.replaceChildren();
- for(const [id,label,contents] of groups){if(!contents.length)continue;const bar=root.createElement('details');bar.id=id;bar.dataset.precareerBar='';bar.name='precareer-record-bars';bar.innerHTML='<summary>'+label+' <span aria-hidden="true">+</span></summary>';bar.append(...contents);sheet.append(bar);bar.open=previousBar===id;
-  if(id==='precareer-notes')notes.open=bar.open;
-  bar.addEventListener('toggle',()=>{if(!bar.isConnected)return;if(id==='precareer-notes')notes.open=bar.open;if(bar.open){rail.dataset.openBar=id;for(const other of sheet.querySelectorAll(':scope > details'))if(other!==bar)other.open=false;}else if(rail.dataset.openBar===id)delete rail.dataset.openBar;});
- }
+ mountRecordBars(root,{sheet,host:rail,groups,notes,name:'precareer-record-bars'});
  if(eventModel?.kind==='graduation')for(const trigger of workspace.querySelectorAll('[data-education-info]'))trigger.addEventListener('click',()=>{
  const calculation=trigger.dataset.educationInfo==='calculation',p=eventModel.preview;
  info._restoreResult=info.querySelector('#precareer-information-result').innerHTML;
