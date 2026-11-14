@@ -274,7 +274,7 @@
  #army-career-dialog #workspace .aezorgh-career-groups>button.opening-info-trigger{flex:0 0 44px;width:44px;min-width:44px;max-width:44px;height:44px;min-height:44px;max-height:44px;margin:0;padding:0;align-self:center;border:1px solid #ffd34b;border-radius:50%;background:#061b29;color:#ffd34b;box-shadow:none}
 }
 
-#army-career-rail .army-record-section>.sheet-section>h3:first-child{display:none}
+@media screen{#army-career-rail .army-record-section>.sheet-section>h3:first-child{display:none}}
 /* Related accepted injury dice stay together above the treatment controls. */
 #army-career-dialog .injury-care-result>.army-recorded-dice{display:inline-flex;vertical-align:top;flex-direction:column;align-items:center;width:calc(50% - 8px);margin:4px;padding:10px;box-sizing:border-box}
 #army-career-dialog .injury-care-result>.army-recorded-dice p{margin:4px 0}

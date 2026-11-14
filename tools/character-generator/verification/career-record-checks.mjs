@@ -20,6 +20,9 @@ export async function checkCareerRecordBars(page){
  // Allow toggle callbacks to run while the print view is active.
  await page.waitForTimeout(30);
  assert.equal(await bars.evaluateAll(ns=>ns.every(n=>n.open)),true,'Screen exclusivity does not hide printed sections');
+ await page.emulateMedia({media:'print'});
+ assert.equal(await bars.locator(':scope > .sheet-section > h3').evaluateAll(ns=>ns.every(n=>n.getClientRects().length>0&&getComputedStyle(n).display!=='none')),true,'Printed record section headings remain visible when summaries are hidden');
+ await page.emulateMedia({media:'screen'});
  await page.evaluate(()=>window.dispatchEvent(new Event('afterprint')));
  await page.waitForFunction(()=>document.querySelectorAll('#sheet > details.army-record-section[open]').length===0);
  assert.equal(await bars.evaluateAll(ns=>ns.every(n=>n.name==='career-record-bars')),true,'Printing restores screen grouping');

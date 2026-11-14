@@ -1,3 +1,4 @@
+import {openRecordSection} from './read-record-sections-browser.mjs';
 import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -29,8 +30,8 @@ try{
    await page.locator('#life-reason').fill('Original source decision for this character.');await page.locator('#life-confirm').check();
    await page.locator('#workspace').screenshot({path:fileURLToPath(new URL('life-'+scenario+'-'+width+'-'+(transport?'http':'static')+'-pending.png',out))});
    await page.locator('[data-action=resolve-life-event]').dblclick();await ready(page);const after=await saved(page);assert.equal(after.revision,before.revision+1);assert.equal(after.state.stage,'advancement');assert.ok(after.state.character.lifeEvents.every(e=>e.status==='completed'));
-   assert.match(await page.locator('.core-life-ledger').innerText(),/Original source decision/);assert.ok(after.log.at(-1).changes.some(c=>c.path.startsWith('lifeEvents.')));
-   await page.reload();await page.locator('.core-life-ledger').waitFor();assert.deepEqual((await saved(page)).state,after.state);
+   await openRecordSection(page,page.locator('.core-life-ledger'));assert.match(await page.locator('.core-life-ledger').innerText(),/Original source decision/);assert.ok(after.log.at(-1).changes.some(c=>c.path.startsWith('lifeEvents.')));
+   await page.reload();await page.locator('.core-life-ledger').waitFor({state:'attached'});await openRecordSection(page,page.locator('.core-life-ledger'));assert.deepEqual((await saved(page)).state,after.state);
    await page.emulateMedia({media:'print'});assert.match(await page.locator('.core-life-ledger').innerText(),/Core life events/);await page.emulateMedia({media:'screen'});
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);checks.push({scenario,width,transport:transport?'http':'static',passed:true});
   }finally{await context.close();}
