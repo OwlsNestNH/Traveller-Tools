@@ -1,3 +1,4 @@
+import {aezorghCulture} from '../shared/aezorgh-culture.mjs';
 import {VARGR_CAREER_DEFINITIONS,vargrRuleInformation,vargrCareerGuidance} from './vargr-career-definitions.mjs';
 import {vargrResultCareer,vargrResultTagline,vargrResultCrowType} from './vargr-career-tags.mjs';
 import {ASLAN_CAREER_DEFINITIONS,aslanRuleInformation,aslanCareerGuidance} from './aslan-career-definitions.mjs';
@@ -22,7 +23,7 @@ export function careerTemplateModel(state,catalog,selectedCareer=''){
  const failed=failedQualificationModel(state,catalog);if(failed)return failed;
  // Native Aslan and Vargr use their own profiles; Imperial upbringing retains its separate route.
  const aslan=state.character?.species==='aslan'&&state.character.culture==='native';
- const vargr=state.character?.species==='vargr'&&state.character.culture==='native';
+ const vargr=state.character?.species==='vargr'&&state.character.culture==='native'||!!aezorghCulture(state.character);
  if(!supportsImperialCareerPresentation(state.character)&&!aslan&&!vargr)return null;
  if(state.stage==='career'&&!selectedCareer)return {selection:true,template:{id:'career-selection'},career:{name:'Careers'},careers:state.careerChoices??catalog.careers,phase:0,specialties:[]};
  const record=state.character.careers?.[state.active];

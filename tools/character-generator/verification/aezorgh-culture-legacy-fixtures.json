@@ -1,0 +1,490 @@
+[
+  {
+    "culture": "native",
+    "cha": false,
+    "session": {
+      "format": "traveller-character-session",
+      "version": 1,
+      "rulesRevision": "character-preview-2026-11-14.35",
+      "seed": "aezorgh-legacy-culture-native-false",
+      "events": [
+        {
+          "id": "synthetic-1",
+          "command": {
+            "type": "setup",
+            "payload": {
+              "species": "aezorgh",
+              "culture": "native"
+            }
+          },
+          "rolls": [],
+          "summary": "Started an unnamed Traveller (Aezorgh). Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions."
+        },
+        {
+          "id": "synthetic-2",
+          "command": {
+            "type": "configure",
+            "payload": {
+              "extras": []
+            }
+          },
+          "rolls": [],
+          "summary": "Generation options: 0 boon rolls; player placement on; below-30 reroll on; extras none; Zhodani PSI option off."
+        },
+        {
+          "id": "synthetic-3",
+          "command": {
+            "type": "roll-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "STR",
+              "values": [
+                5
+              ],
+              "kept": [
+                5
+              ],
+              "total": 5
+            },
+            {
+              "label": "DEX",
+              "values": [
+                3,
+                3
+              ],
+              "kept": [
+                3,
+                3
+              ],
+              "total": 6
+            },
+            {
+              "label": "END",
+              "values": [
+                4
+              ],
+              "kept": [
+                4
+              ],
+              "total": 4
+            },
+            {
+              "label": "INT",
+              "values": [
+                2,
+                3
+              ],
+              "kept": [
+                2,
+                3
+              ],
+              "total": 5
+            },
+            {
+              "label": "EDU",
+              "values": [
+                2
+              ],
+              "kept": [
+                2
+              ],
+              "total": 2
+            },
+            {
+              "label": "SOC",
+              "values": [
+                1
+              ],
+              "kept": [
+                1
+              ],
+              "total": 1
+            }
+          ],
+          "summary": "Rolled statistics. Base total 23. Species modifiers excluded; extra characteristics excluded."
+        },
+        {
+          "id": "synthetic-4",
+          "command": {
+            "type": "accept-statistics",
+            "payload": {}
+          },
+          "rolls": [],
+          "summary": "Accepted statistics and generated selected extra characteristics."
+        }
+      ]
+    },
+    "projectionSha256": "85b39cb91f63089eb33cd6b7c5f28c582acaa57fc57771173d54de55d0f457b1",
+    "exportSha256": "1e67cdde7f1c464364ce0b7dbd5717fd88c918de7c5a0257bf947ffb8eec5178",
+    "futureSha256": "04e2e696cd2a97aeadc94b4e014aa56e05c356cbdcd81add92358cf60bc12348"
+  },
+  {
+    "culture": "native",
+    "cha": true,
+    "session": {
+      "format": "traveller-character-session",
+      "version": 1,
+      "rulesRevision": "character-preview-2026-11-14.35",
+      "seed": "aezorgh-legacy-culture-native-true",
+      "events": [
+        {
+          "id": "synthetic-1",
+          "command": {
+            "type": "setup",
+            "payload": {
+              "species": "aezorgh",
+              "culture": "native"
+            }
+          },
+          "rolls": [],
+          "summary": "Started an unnamed Traveller (Aezorgh). Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions."
+        },
+        {
+          "id": "synthetic-2",
+          "command": {
+            "type": "configure",
+            "payload": {
+              "extras": [
+                "CHA"
+              ]
+            }
+          },
+          "rolls": [],
+          "summary": "Generation options: 0 boon rolls; player placement on; below-30 reroll on; extras CHA; Zhodani PSI option off."
+        },
+        {
+          "id": "synthetic-3",
+          "command": {
+            "type": "roll-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "STR",
+              "values": [
+                6
+              ],
+              "kept": [
+                6
+              ],
+              "total": 6
+            },
+            {
+              "label": "DEX",
+              "values": [
+                4,
+                1
+              ],
+              "kept": [
+                4,
+                1
+              ],
+              "total": 5
+            },
+            {
+              "label": "END",
+              "values": [
+                4
+              ],
+              "kept": [
+                4
+              ],
+              "total": 4
+            },
+            {
+              "label": "INT",
+              "values": [
+                3,
+                1
+              ],
+              "kept": [
+                3,
+                1
+              ],
+              "total": 4
+            },
+            {
+              "label": "EDU",
+              "values": [
+                4
+              ],
+              "kept": [
+                4
+              ],
+              "total": 4
+            },
+            {
+              "label": "SOC",
+              "values": [
+                5
+              ],
+              "kept": [
+                5
+              ],
+              "total": 5
+            }
+          ],
+          "summary": "Rolled statistics. Base total 28. Species modifiers excluded; extra characteristics excluded."
+        },
+        {
+          "id": "synthetic-4",
+          "command": {
+            "type": "accept-statistics",
+            "payload": {}
+          },
+          "rolls": [],
+          "summary": "Accepted statistics and generated selected extra characteristics."
+        }
+      ]
+    },
+    "projectionSha256": "b835ac3fa7eeb351f392c07f06596ddbc6f6198951a9a2581cd2dbe29af4da52",
+    "exportSha256": "752d66e5a8f74aacd9fa7b220367c66cc77d1a4e47a20330f87e7e6117d80f44",
+    "futureSha256": "a584afae76e839468963c97a63af37999c20da563178464ab626d8fc5176de08"
+  },
+  {
+    "culture": "imperial",
+    "cha": false,
+    "session": {
+      "format": "traveller-character-session",
+      "version": 1,
+      "rulesRevision": "character-preview-2026-11-14.35",
+      "seed": "aezorgh-legacy-culture-imperial-false",
+      "events": [
+        {
+          "id": "synthetic-1",
+          "command": {
+            "type": "setup",
+            "payload": {
+              "species": "aezorgh",
+              "culture": "imperial"
+            }
+          },
+          "rolls": [],
+          "summary": "Started an unnamed Traveller (Aezorgh). Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions."
+        },
+        {
+          "id": "synthetic-2",
+          "command": {
+            "type": "configure",
+            "payload": {
+              "extras": []
+            }
+          },
+          "rolls": [],
+          "summary": "Generation options: 0 boon rolls; player placement on; below-30 reroll on; extras none; Zhodani PSI option off."
+        },
+        {
+          "id": "synthetic-3",
+          "command": {
+            "type": "roll-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "STR",
+              "values": [
+                4
+              ],
+              "kept": [
+                4
+              ],
+              "total": 4
+            },
+            {
+              "label": "DEX",
+              "values": [
+                5,
+                1
+              ],
+              "kept": [
+                5,
+                1
+              ],
+              "total": 6
+            },
+            {
+              "label": "END",
+              "values": [
+                5
+              ],
+              "kept": [
+                5
+              ],
+              "total": 5
+            },
+            {
+              "label": "INT",
+              "values": [
+                2,
+                4
+              ],
+              "kept": [
+                2,
+                4
+              ],
+              "total": 6
+            },
+            {
+              "label": "EDU",
+              "values": [
+                1
+              ],
+              "kept": [
+                1
+              ],
+              "total": 1
+            },
+            {
+              "label": "SOC",
+              "values": [
+                1
+              ],
+              "kept": [
+                1
+              ],
+              "total": 1
+            }
+          ],
+          "summary": "Rolled statistics. Base total 23. Species modifiers excluded; extra characteristics excluded."
+        },
+        {
+          "id": "synthetic-4",
+          "command": {
+            "type": "accept-statistics",
+            "payload": {}
+          },
+          "rolls": [],
+          "summary": "Accepted statistics and generated selected extra characteristics."
+        }
+      ]
+    },
+    "projectionSha256": "1eaab0b547d51cbf5e552bacb36c55593faeea9b0e4d315866f564b15cb6c141",
+    "exportSha256": "447958062d4e29188c4e7fe243abe61294ed3474075a77b012249205c7472162",
+    "futureSha256": "debda50665d3caa5f7ead0f395fca7ae6d7384302a7e6d26c9472dbfcfc3d14f"
+  },
+  {
+    "culture": "imperial",
+    "cha": true,
+    "session": {
+      "format": "traveller-character-session",
+      "version": 1,
+      "rulesRevision": "character-preview-2026-11-14.35",
+      "seed": "aezorgh-legacy-culture-imperial-true",
+      "events": [
+        {
+          "id": "synthetic-1",
+          "command": {
+            "type": "setup",
+            "payload": {
+              "species": "aezorgh",
+              "culture": "imperial"
+            }
+          },
+          "rolls": [],
+          "summary": "Started an unnamed Traveller (Aezorgh). Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions."
+        },
+        {
+          "id": "synthetic-2",
+          "command": {
+            "type": "configure",
+            "payload": {
+              "extras": [
+                "CHA"
+              ]
+            }
+          },
+          "rolls": [],
+          "summary": "Generation options: 0 boon rolls; player placement on; below-30 reroll on; extras CHA; Zhodani PSI option off."
+        },
+        {
+          "id": "synthetic-3",
+          "command": {
+            "type": "roll-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "STR",
+              "values": [
+                3
+              ],
+              "kept": [
+                3
+              ],
+              "total": 3
+            },
+            {
+              "label": "DEX",
+              "values": [
+                3,
+                4
+              ],
+              "kept": [
+                3,
+                4
+              ],
+              "total": 7
+            },
+            {
+              "label": "END",
+              "values": [
+                1
+              ],
+              "kept": [
+                1
+              ],
+              "total": 1
+            },
+            {
+              "label": "INT",
+              "values": [
+                2,
+                4
+              ],
+              "kept": [
+                2,
+                4
+              ],
+              "total": 6
+            },
+            {
+              "label": "EDU",
+              "values": [
+                2
+              ],
+              "kept": [
+                2
+              ],
+              "total": 2
+            },
+            {
+              "label": "SOC",
+              "values": [
+                1
+              ],
+              "kept": [
+                1
+              ],
+              "total": 1
+            }
+          ],
+          "summary": "Rolled statistics. Base total 20. Species modifiers excluded; extra characteristics excluded."
+        },
+        {
+          "id": "synthetic-4",
+          "command": {
+            "type": "accept-statistics",
+            "payload": {}
+          },
+          "rolls": [],
+          "summary": "Accepted statistics and generated selected extra characteristics."
+        }
+      ]
+    },
+    "projectionSha256": "8bcfcb46121e7c3b66cac40c445048ccf5902e273a4965e0c82c575c5379abcd",
+    "exportSha256": "2cfadd705f763bf79d9eb3f56c3f6c31373be7bfd7ca581ff3ed2c155ea72121",
+    "futureSha256": "75940bfa9424846a3d7fd01215d0c0fe8f21399f3dec36af738292212f50e23d"
+  }
+]
