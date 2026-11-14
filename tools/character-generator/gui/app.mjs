@@ -348,7 +348,7 @@ function psionicTrainingView(state){
 }
 function injuryLossView(state){
  const injury=state.currentInjury;
- return '<p>The injury table result and severity dice are recorded. Choose which permitted characteristics take the loss.</p><p class="source">Core 2022, p. 49</p><div class="choice-list">'+state.injuryOptions.map((o,index)=>button(esc(o.label),'injury-loss','choice','data-index="'+index+'"')).join('')+'</div>';
+ return '<p>The injury roll is recorded. Choose which permitted characteristics take the loss.</p><p class="source">Core 2022, p. 49</p><div class="choice-list">'+state.injuryOptions.map((o,index)=>button(esc(o.label),'injury-loss','choice','data-index="'+index+'"')).join('')+'</div>';
 }
 function injuryTreatmentView(state){
  const loss=state.injuryRestorable;
