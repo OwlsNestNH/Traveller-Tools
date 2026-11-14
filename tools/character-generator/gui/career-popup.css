@@ -249,3 +249,20 @@
 
 /* Editable sheet values remain quiet record controls, not primary actions. */
 @media screen{body[data-support-shell="true"] #sheet .stat{background:#081f2d;color:#f1f5f8;border-color:#79a7bb;box-shadow:none}}
+
+/* Same exclusive record bars as Education; keep existing editors in place. */
+@media screen{
+ body[data-support-shell="true"] #support-notes>#notes-connections>summary{display:none}
+ body[data-support-shell="true"] #sheet>button[data-action="open-current-character-sheet"]{width:100%;margin-bottom:18px}
+ body[data-support-shell="true"] #support-characteristics .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ body[data-support-shell="true"] #support-more-record{overflow-wrap:anywhere}
+}
+
+/* Short current task; source and explanatory text use the accepted circled-i. */
+@media screen{
+ body[data-support-shell="true"] .support-guidance .opening-info-trigger{float:right;min-width:44px;width:44px;min-height:44px;height:44px;margin:0 0 8px 12px;padding:0;border:2px solid #ffd34b;border-radius:50%;background:#071c2a;color:#ffd34b;box-shadow:none;font-size:27px}
+ body[data-support-shell="true"] .support-guidance blockquote::after{content:'';display:block;clear:both}
+}
+
+/* Accepted recorded-dice treatment on the support roll states. */
+@media screen{body[data-support-shell="true"] .army-dice-calculation{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px}body[data-support-shell="true"] .army-dice-equation{font-size:32px;font-weight:800}body[data-support-shell="true"] .army-recorded-dice{text-align:center}}

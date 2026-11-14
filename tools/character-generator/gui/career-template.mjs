@@ -70,7 +70,7 @@ export function armyResultTagline(event,result,state){
  return context==='core.army'?armyTagline(event,result):null;
 }
 export function careerResultTagline(event,result,state){return result?.status==='error'?null:armyResultTagline(event,result,state)??imperialResultTagline(event,result,state)??aslanResultTagline(event,result,state)??vargrResultTagline(event,result,state);}
-export function armyRecordedDice(event,{esc}){
+export function armyRecordedDice(event,{esc,checks=[]}){
  // Resolving an offered choice records no new dice. Its validated event results
  // still identify the accepted table rolls; keep those faces on the main view.
  const recorded=event?.rolls?.length?event.rolls:['choose-effect','choose-skill'].includes(event?.type)?(event.eventResults??[]).map(result=>({...result.roll,label:result.title??'Recorded event'})):[];
@@ -80,9 +80,9 @@ export function armyRecordedDice(event,{esc}){
  if(match)try{const candidate=JSON.parse(match[1]);if(typeof candidate.success==='boolean'&&Number.isFinite(candidate.total)&&Number.isFinite(candidate.target)&&Number.isFinite(candidate.natural))check=candidate;}catch{}
  const nested=recordedConsequenceCheck(event),cover=recordedCoverCheck(event);if(nested||cover)check=nested??cover;
  return rolls.map(roll=>{
-  const checked=check&&roll.label===(nested?event.rolls[0].label:cover?cover.label:checkLabels[event.type])&&check.natural===roll.total,modifier=checked?check.total-roll.total:null;
+  const current=checks.find(c=>c.label===roll.label&&c.natural===roll.total)??(check&&roll.label===(nested?event.rolls[0].label:cover?cover.label:checkLabels[event.type])&&check.natural===roll.total?check:null),checked=!!current,modifier=checked?current.total-roll.total:null;
   const faces='<div class="army-dice-faces" role="img" aria-label="'+esc('Recorded dice: '+roll.values.join(', '))+'">'+roll.values.map(educationResultDie).join('')+'</div>';
-  return '<div class="army-recorded-dice"><p>'+esc(roll.label??'Recorded dice')+'</p><div class="army-dice-calculation">'+faces+(checked?'<span class="army-dice-equation">'+(modifier<0?'− ':'+ ')+esc(Math.abs(modifier))+' = '+esc(check.total)+'</span>':'')+'</div><p>'+(checked?'Total '+esc(check.total)+' · Target '+esc(check.target)+'+ · '+(check.success?'Success':'Failure'):'Recorded total: '+esc(roll.total)+'.')+'</p></div>';
+  return '<div class="army-recorded-dice"><p>'+esc(roll.label??'Recorded dice')+'</p><div class="army-dice-calculation">'+faces+(checked?'<span class="army-dice-equation">'+(modifier<0?'− ':'+ ')+esc(Math.abs(modifier))+' = '+esc(current.total)+'</span>':'')+'</div><p>'+(checked?'Total '+esc(current.total)+' · Target '+esc(current.target)+'+ · '+(current.success?'Success':'Failure'):'Recorded total: '+esc(roll.total)+'.')+'</p></div>';
  }).join('');
 }
 export function armyRuleInformation(phase){
