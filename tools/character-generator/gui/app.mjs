@@ -227,7 +227,7 @@ async function send(type,payload={},recoveryOptions={}){
   const result=await call({operation:'command',session,command:{type,payload},id:crypto.randomUUID(),expectedRevision:projection.revision});
   if(token!==operationGeneration)return false;
   if(!result.ok)throw new Error(result.error.message);
-  trainingTagline=aslanTrainingTagline(result.log.at(-1),result.state,{previousState,command:{type,payload}});
+  if(type!=='notes')trainingTagline=aslanTrainingTagline(result.log.at(-1),result.state,{previousState,command:{type,payload}});
   session=result.session;projection=result;committed=true;window.CrowStartupRecovery?.lock();if(recoveryOptions.discardDrafts){notesDraft=null;backgroundDraft=null;effects=[];selectedCareer='';recoveryDrafts.clear();}aslanManualReviewKey=null;if(type==='notes'&&notesDraft===payload.text)notesDraft=null;effects=[];persist();render();focusAfterAction(previousStage,focused);notify(storageWarning||actionNotice(type,result),!!storageWarning,rollResult(result.log.at(-1),result.state,catalog)?.status??'info',!storageWarning);return true;
  }catch(error){if(token===operationGeneration)notify(error.message,true,'info',false,{kind:committed?'presentation':'action',...(committed?{guidance:'The action was accepted. Show current step redraws its stored result without repeating a roll, purchase or action. Save accepted character keeps a backup; unsaved form fields stay on this page.',actions:[{id:'show-current-step',kind:'navigate',label:'Show current step',available:()=>!busy,run:()=>{render();return true;}}]}:{})});return false;}
  finally{if(token===operationGeneration)setBusy(false);}

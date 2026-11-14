@@ -63,8 +63,11 @@ try{
    await page.waitForFunction(()=>document.querySelector('#message').textContent.includes('Character loaded.'));await ready(page);
    assert.equal(await saved(page),raw);assert.equal(await downloadedActionLog(page),fullLog);if(text)assert.equal(await tag.locator('blockquote > p').first().innerText(),text);
    if(transport==='static'&&['direct','computers','historical-allocation'].includes(item.name))await page.screenshot({path:fileURLToPath(new URL('aslan-training-tagline-'+item.name+'-'+width+'.png',out)),fullPage:true});
-   // A later unrelated action removes, rather than rerolls, the previous line.
-   await load(page,run({...current,session},'notes',{text:'Synthetic review note'}).session);assert.equal(await tag.count(),0);
+   // Notes retain the accepted result and its contextual Crow line, without a new roll.
+   const noted=run({...current,session},'notes',{text:'Synthetic review note'}),notedRaw=exportSession(noted.session);
+   await load(page,noted.session);assert.equal(await tag.count(),shown?1:0);if(text)assert.equal(await tag.locator('blockquote > p').first().innerText(),text);
+   assert.equal(await saved(page),notedRaw);assert.equal(noted.state.rng,current.state.rng);assert.deepEqual(noted.log.at(-1).rolls,[]);
+   assert.equal(await restoredAslanTrainingTagline(noted.session,noted,async request=>api(request)),text);
    if(transport==='http')assert.ok(!requests.some(url=>/\/engine\//.test(url)),'HTTP UI stays independent of engine modules');
    checks.push(transport+'/'+width+'/'+item.name);
   }finally{await context.close();}

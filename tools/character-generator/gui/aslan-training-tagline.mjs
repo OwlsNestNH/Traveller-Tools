@@ -1,4 +1,5 @@
 import {outcomeTagline} from './outcome-taglines.mjs';
+import {currentResultEvent} from './current-result-event.mjs';
 
 // Presentation classification from Aliens of Charted Space Volume 1 Update 2026,
 // p. 19 (engine/aslan-skill-culture.mjs). These are cultural associations, not
@@ -51,14 +52,16 @@ export function aslanTrainingTagline(event,state,{previousState,command}={}){
 }
 
 export async function restoredAslanTrainingTagline(session,projection,call){
- const event=projection?.log?.at(-1),state=projection?.state,record=session?.events?.at(-1);
+ const event=currentResultEvent(projection,session),state=projection?.state;
+ const index=event===projection?.log?.at(-1)?(session?.events?.length??0)-1:session?.events?.findIndex(record=>record.id===event?.id);
+ const record=session?.events?.[index];
  if(!maleAslanIdentity(state)||!gains(event).length)return null;
  if(event.type==='training')return aslanTrainingTagline(event,state);
  if(!choices.has(event.type)||record?.id!==event.id)return null;
  try{
   // Recover provenance with the existing read-only API. No saved presentation
   // fields, commands, rolls or browser engine imports are added by this lookup.
-  const before=await call({operation:'project',session:{...session,events:session.events.slice(0,-1)}});
+  const before=await call({operation:'project',session:{...session,events:session.events.slice(0,index)}});
   if(!before.ok)return null;
   return aslanTrainingTagline(event,state,{previousState:before.state,command:record.command});
  }catch{return null;} // Missing provenance must never obstruct a valid save.

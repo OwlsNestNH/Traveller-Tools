@@ -300,3 +300,17 @@ test('the browser helper imports no engine, random generator or persistent stora
  const source=await readFile(new URL('../gui/aslan-training-tagline.mjs',import.meta.url),'utf8');
  assert.doesNotMatch(source,/from\s+['"][^'"]*engine|Math\.random|crypto\.randomUUID|state\.rng|localStorage|sessionStorage|operation:\s*['"]command['"]/);
 });
+
+
+test('notes preserve selected training provenance through import without changing saved dice',async()=>{
+ const {aslanTaglineFixtures}=await import('./aslan-tagline-fixtures.mjs');
+ const fixture=aslanTaglineFixtures().specialty;
+ let r=run(fixture.after,'choose-skill',{name:'Electronics (computers)'});
+ const expectedLine=await restoredAslanTrainingTagline(r.session,r,async request=>api(request)),rng=r.state.rng;
+ assert.ok(expectedLine);
+ for(const text of ['Synthetic note','Revised synthetic note']){
+  r=run(r,'notes',{text});const raw=exportSession(r.session),session=importSession(raw),loaded=project(session);
+  assert.equal(await restoredAslanTrainingTagline(session,loaded,async request=>api(request)),expectedLine);
+  assert.equal(loaded.state.rng,rng);assert.deepEqual(loaded.log.at(-1).rolls,[]);assert.equal(exportSession(session),raw);
+ }
+});
