@@ -104,7 +104,7 @@
  body[data-stage="background"] #workspace > #background-form .background-counter {min-height:64px;padding:12px 18px;}
  body[data-stage="background"] #workspace > #background-form .background-counter strong {font-size:24px;}
  body[data-stage="background"] #workspace > #background-form .background-options legend {margin-bottom:12px;}
- body[data-stage="background"] #workspace > #background-form .background-grid {gap:10px 12px;}
+ body[data-stage="background"] #workspace > #background-form .background-grid {gap:2px 12px;}
  body[data-stage="background"] #workspace > #background-form .background-tile,body[data-stage="background"] #workspace > #background-form .background-tile.is-selected {min-height:53px;padding:11px 12px;}
  body[data-stage="background"] #workspace > #background-form .background-tile span {font-size:17px;}
  body[data-stage="background"] #workspace > #background-form #background-selected-summary {margin:12px 0 14px;}
