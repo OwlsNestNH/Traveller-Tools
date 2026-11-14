@@ -1,3 +1,4 @@
+import {recordedResultDetails} from './recorded-result-details-browser.mjs';
 import {downloadedActionLog} from './download-log-browser.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -35,8 +36,8 @@ try{
    const checkpoint=await saved(page);assert.equal(checkpoint.events.length,fixture.session.events.length+1);assert.equal(project(checkpoint).state.stage,'career-event');assert.equal(checkpoint.events.at(-1).rolls.length,1);assert.equal(await page.locator('[data-action=choose-effect]').count(),0);
    await page.reload();await page.locator('[data-action=career-event]').waitFor();assert.deepEqual(await saved(page),checkpoint);
    await page.locator('[data-action=career-event]').click();await assertPending(page);
-   assert.match(await page.locator('#message').innerText(),/Vargr Life Event 10: Good Fortune/);
-   assert.match(await page.locator('#message').innerText(),/Benefit roll.*CHA \+1/);
+   assert.match(await recordedResultDetails(page),/Vargr Life Event 10: Good Fortune/);
+   assert.match(await recordedResultDetails(page),/Benefit roll.*CHA \+1/);
    assert.match(await downloadedActionLog(page),/vargr.life-events/);
    const pending=await saved(page),before=project(pending);
    assert.equal(pending.events.length,fixture.session.events.length+2);
@@ -53,7 +54,9 @@ try{
    assert.equal(after.state.character.stats.CHA,before.state.character.stats.CHA+(index===1?1:0));
    assert.equal(after.state.character.careers[0].benefitRolls,before.state.character.careers[0].benefitRolls+(index===0?1:0));
    const effect=index?'Charisma (CHA) +1.':'Gained 1 Benefit roll in the current career.';
-   assert.ok((await page.locator('#message').innerText()).includes(title+': '+effect));
+   assert.ok((await recordedResultDetails(page)).includes(title+': '+effect));
+   const label=index?'Charisma':'Benefit rolls',prior=index?before.state.character.stats.CHA:before.state.character.careers[0].benefitRolls,current=index?after.state.character.stats.CHA:after.state.character.careers[0].benefitRolls;
+   assert.ok((await page.locator('#last-action-result').innerText()).includes(label+': '+prior+' → '+current+'.'));
    await page.reload();await page.locator('#workspace [data-action=advancement]').waitFor();
    assert.deepEqual(await saved(page),afterSave);assert.equal(await page.locator('#workspace [data-action=choose-effect]').count(),0);
    assert.ok((await downloadedActionLog(page)).includes(after.log.at(-1).summary));

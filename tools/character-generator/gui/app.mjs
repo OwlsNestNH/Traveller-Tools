@@ -554,7 +554,7 @@ function render(){
  if(state.stage==='identity')mountCrowIntroduction(document);
  mountCareerTemplate(document,careerTemplateModel(state,catalog,selectedCareer),{esc,event:projection.log.at(-1),resultStatus:lastRollResult?.status,showDice:state.stage==='deceased'&&!!state.character.ironManDeath||!!careerResultTagline(projection.log.at(-1),lastRollResult,state)||state.stage==='retirement'&&projection.log.at(-1)?.type==='benefit',state,sessionKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id])});
  if(['finish','retirement','deceased'].includes(state.stage))mountCompletionPopup(document,state);
- mountResultInformation(document,lastRollResult);
+ mountResultInformation(document,lastRollResult,{crowType:careerResultCrowType(projection.log.at(-1),lastRollResult,state),tagline:careerResultTagline(projection.log.at(-1),lastRollResult,state)});
  mountSpeciesSkillPopup(document);
  mountAslanFamilyPopup(document,{onRoll:async()=>{if(!await send(aslanRitePopupModel(projection.state)?'roll-aslan-rite':aslanPridePopupModel(projection.state)?'roll-aslan-pride':aslanClanPopupModel(projection.state)?'roll-aslan-clan':aslanBirthPopupModel(projection.state)?'roll-aslan-birth-order':'roll-aslan-family'))throw new Error($('#message').textContent||'The family roll could not be recorded.');},onContinue:async(index)=>{
   const rite=aslanRitePopupModel(projection.state);if(rite){if(!await send(rite.equipment?'record-aslan-rite-equipment':'acknowledge-aslan-rite'))throw new Error($('#message').textContent||'Rite continuation could not be recorded.');return;}

@@ -1,0 +1,6 @@
+import {api,RULES_REVISION} from '../engine/session.mjs';
+import {assignmentSetup,run,force,settleAssignment,buildAssignmentFixture} from './assignment-fixtures.mjs';
+import {agentCoverFixture} from './agent-cover-fixtures.mjs';
+export function clarityEventFixture(){let r=run(assignmentSetup('army-pilot-1'),'skip-precareer');r=settleAssignment(run(r,'career',{id:'core.army',assignment:'infantry'}));r=run(r,'survival-check');r=run(r,'career-event');return settleAssignment(r);}
+export function clarityCoverFixture(revision=RULES_REVISION,command='cross-career-cover-check'){return run(agentCoverFixture({rulesRevision:revision}),command,{careerId:'core.citizen'});}
+export function clarityAgeingFixture(){const r=buildAssignmentFixture(),s=r.session;let a;for(let n=s.events.length;n>0;n--){const session={...s,events:s.events.slice(0,n)},x=api({operation:'project',session});if(x.ok&&x.state.stage==='advancement'){a={...x,session};break;}}if(!a)throw Error('No public advancement prefix');a=run(a,'gm-override',{field:'age',value:34,reason:'Synthetic source chronology for ageing presentation'});a=settleAssignment(force(a,'advancement',{},[4,5]));if(a.state.stage==='training')a=settleAssignment(force(a,'training',{table:'service'},[1]));return a;}

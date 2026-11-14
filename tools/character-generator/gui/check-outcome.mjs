@@ -6,6 +6,15 @@ function checked(label,check){
  return {status:check.success?'success':'failure',text:label+(check.automatic===true?(check.success?' succeeded automatically.':' failed.'):': '+check.total+(finite(check.target)?' against '+check.target+'+':'')+'; '+(check.success?'succeeded.':'failed.'))};
 }
 const auditLabels={careerTransitions:'Qualification',assignmentChanges:'Assignment qualification',aslanOfficerOffers:'Officer qualification',aslanCareerAccess:'Career qualification',aslanHistoricalEntries:'Career qualification',aslanRestorations:'Career qualification',benefitWagers:'Benefit wager'};
+export function recordedCoverCheck(event){
+ if(!['cross-career-cover','cross-career-cover-check'].includes(event?.type))return null;
+ const records=(event.changes??[]).filter(c=>/^crossCareerRoutes\.\d+\.check$/.test(c.path)&&JSON.stringify(c.before)!==JSON.stringify(c.after));
+ if(records.length!==1)return null;
+ const c=records[0].after,rolls=(event.rolls??[]).filter(r=>r.label==='Undercover Deception check');
+ if(rolls.length!==1)return null;const roll=rolls[0];
+ if(c?.skill!=='Deception'||![c.natural,c.modifier,c.total,c.target].every(finite)||typeof c.success!=='boolean'||c.total!==c.natural+c.modifier||c.success!==(c.total>=c.target)||roll.values?.length!==2||!roll.values.every(n=>Number.isInteger(n)&&n>=1&&n<=6)||roll.values.reduce((a,b)=>a+b,0)!==roll.total||roll.total!==c.natural)return null;
+ return {label:roll.label,natural:c.natural,modifier:c.modifier,total:c.total,target:c.target,success:c.success};
+}
 export function recordedConsequenceCheck(event){
  if(event?.type!=='roll-borrowed-event'||event.rolls?.length!==1)return null;
  const m=event.summary?.match(/^(.+?) result (-?\d+)\. (-?\d+) against (\d+)\+: (succeeded|failed)\./),roll=event.rolls[0];
@@ -19,7 +28,7 @@ export function checkOutcome(event){
  // those checks again. Replay-specific summary helpers remain responsible for
  // their own verified result; never infer one from historical audit deltas.
  if(['restore','gm-replay'].includes(event?.type))return null;
- const summary=event?.summary??'',evidence=[],consequence=recordedConsequenceCheck(event);if(consequence)evidence.push(checked(consequence.label,consequence));
+ const summary=event?.summary??'',evidence=[],consequence=recordedConsequenceCheck(event),cover=recordedCoverCheck(event);if(consequence)evidence.push(checked(consequence.label,consequence));if(cover)evidence.push(checked(cover.label,cover));
  // Exact engine summaries are replay-validated. Restrict to known commands so
  // a referee note that mentions a check cannot itself assert an outcome.
  const patterns={
