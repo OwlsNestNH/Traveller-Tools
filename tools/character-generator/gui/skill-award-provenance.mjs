@@ -1,7 +1,7 @@
 // Presentation only: origin is supplied by replay at the actual award producer.
 // A current rank or a matching skill name is never proof of an award's source.
 import {showOpeningInformation} from './opening-help.mjs';
-import {characterEffectDetails} from './roll-result-view.mjs';
+import {characterEffectDetails,pendingEffectDetails} from './roll-result-view.mjs';
 export function skillAwardSource(origin,catalog){
  if(!origin)return null;
  const career=catalog.careers?.find(c=>c.id===origin.careerId)?.name;
@@ -47,7 +47,15 @@ export function skillAwardResult(result,awards,catalog,{event=null}={}){
  // Remove only an exact duplicate of a producer-observed skill change. A later
  // unrelated change to the same skill must remain visible with other effects.
  const duplicated=new Set(characterEffectDetails({changes:(event?.changes??[]).filter(c=>known.some(a=>c.path==='skills.'+a.name&&(c.before??null)===(a.before??null)&&c.after===a.after))},catalog));
- const details=[...new Set([...(result.details??[]).filter(line=>!duplicated.has(line)),...lines.slice(1)])];
+ const outcome=['advancement','commission','preterm-commission'].includes(event?.type)?result.title:null;
+ // Routine term counters and consumed automatic-offer flags remain in full
+ // information, while rank, skill, check and other consequences stay visible.
+ const administrative=new Set(outcome?characterEffectDetails({changes:(event?.changes??[]).filter(c=>['age','terms'].includes(c.path)||/^careers\.\d+\.(terms|benefitRolls)$/.test(c.path))},catalog):[]);
+ if(outcome&&event?.pendingEffectChanges){const delta=event.pendingEffectChanges,before=delta.before?.careers??[],after=delta.after?.careers??[];
+  const settled={before:{careers:before.map((b,i)=>({id:b.id,automaticPromotion:!!b.automaticPromotion&&!after[i]?.automaticPromotion,automaticCommission:!!b.automaticCommission&&!after[i]?.automaticCommission}))},after:{careers:after.map(a=>({id:a.id}))}};
+  for(const line of pendingEffectDetails({pendingEffectChanges:settled},catalog))administrative.add(line);
+ }
+ const details=[...new Set([...(outcome?[outcome]:[]),...(result.details??[]).filter(line=>!duplicated.has(line)&&!administrative.has(line)),...lines.slice(1)])];
  const grouped=new Map();for(const a of known){const earlier=grouped.get(a.name);grouped.set(a.name,{...a,changed:a.changed||earlier?.changed});}
  const first=known[0],title=[...grouped.values()].map(a=>a.name+' '+a.after+(a.changed?'':' retained')).join(' · '),source=first.source+(first.changed?'.':'; no skill increase.');
  return {...result,title,details:[source,...details],text:[title,source,...details].join(' '),full:previous,compact:true,information:{...(result.information??{}),title:'Your earned skill and its source',label:'About this skill award',retainCrow:true,contextual:true,source:[...new Set(known.map(a=>sourceCitation(a.origin,catalog)).filter(Boolean))].join('; '),paragraphs:[...new Set([...(result.information?.paragraphs??[]),previous.title,...(previous.details??[]),...lines])]}};

@@ -33,7 +33,10 @@ try{
     await page.waitForFunction(()=>!document.querySelector('#new').disabled);
     const expected=advancementResult(after.log.at(-1));
     await assertResultColor(page,expected.status,{message:true});
-    assert.equal(await page.locator('#last-action-result h3').innerText(),expected.title);
+    const displayedTitle=success?'Persuade 1':expected.title;
+    assert.equal(await page.locator('#last-action-result h3').innerText(),displayedTitle);
+    assert.ok((await page.locator('#last-action-result').innerText()).includes(expected.title),'The actual advancement outcome remains visible beside any earned rank skill.');
+    if(success){assert.match(await page.locator('#last-action-result').innerText(),/Loner rank 1/);assert.equal(after.state.character.skills.Persuade,1);}
     assert.equal(await page.locator('#sheet .career-rank-value').innerText(),'Rank '+after.state.character.careers[after.state.active].rank);
     assert.equal(await page.locator('#sheet .career-rank-summary').evaluate(el=>el.compareDocumentPosition(document.querySelector('#sheet .stats')) & Node.DOCUMENT_POSITION_FOLLOWING),4);
     for(const detail of expected.details)assert.ok((await page.locator('#last-action-result').innerText()).includes(detail),detail);
@@ -43,7 +46,7 @@ try{
     assert.equal(saved.events.length,before.revision+1);assert.equal(exportSession(saved),raw);
     assert.equal(project(saved).log.at(-1).summary,after.log.at(-1).summary);
     await page.reload();await page.locator('#last-action-result').waitFor();
-    assert.equal(await page.locator('#last-action-result h3').innerText(),expected.title);
+    assert.equal(await page.locator('#last-action-result h3').innerText(),displayedTitle);
     await assertResultColor(page,expected.status);
     assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
@@ -57,7 +60,7 @@ try{
     assert.equal(await nextAction.count(),1,'An eligible next career action must be available.');
     await nextAction.click();
     await page.waitForFunction(revision=>JSON.parse(localStorage.getItem('traveller-character-generator.v1')).events.length===revision+2&&!document.querySelector('#new').disabled,before.revision);
-    assert.notEqual(await page.locator('#last-action-result h3').innerText(),expected.title);
+    assert.notEqual(await page.locator('#last-action-result h3').innerText(),displayedTitle);
     assert.ok((await downloadedActionLog(page)).includes(after.log.at(-1).summary));
     await page.reload();await page.waitForFunction(()=>!document.querySelector('#new').disabled);
     assert.ok(await page.locator('#last-action-result').count()<=1);
