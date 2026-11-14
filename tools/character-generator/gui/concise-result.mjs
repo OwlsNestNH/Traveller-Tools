@@ -31,6 +31,11 @@ function otherEffects(event,catalog,keep){
 }
 export function conciseResult(event,state,catalog){
  const full=rollResult(event,state,catalog);if(!full)return null;
+ const educationEvent=state?.stage==='education-graduation'&&(event.eventResults??[]).find(r=>r.table==='core.pre-career-events'&&r.row===state.character?.educations?.[state.education]?.event);
+ if(educationEvent){
+  const title=educationEvent.description,details=otherEffects(event,catalog,()=>true);
+  return {title,details,status:full.status,text:[title,...details].join(' '),full,compact:true,information:{title:'About your education event',label:'About your education event',paragraphs:unique([full.title,...full.details]),contextual:true}};
+ }
  const cover=recordedCoverCheck(event);
  if(cover&&!['deceased','finish','retirement'].includes(state?.stage)){
   const title='Undercover Deception check '+(cover.success?'succeeded.':'failed.'),details=['Total '+cover.total+' against '+cover.target+'+.',state?.stage==='borrowed-event-roll'?'Roll the pending '+state.pendingBorrowedRoll.label+' before continuing.':state?.stage==='cross-career-training'?'Choose an offered training table below.':'Follow the offered next step.'];

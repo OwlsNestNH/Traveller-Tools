@@ -459,3 +459,11 @@ dialog:has(.required-action-warning:not([hidden])) .crow-speaking-panel{display:
  body[data-completion-shell="true"] #workspace .crow-speaking-panel>blockquote{padding:10px}
  body[data-completion-shell="true"] #workspace .crow-speaking-panel h3{font-size:20px}
 }
+
+#precareer-dialog .education-current-event-dice{color:#ffd34b;text-align:center;margin:12px 0}
+#precareer-dialog .education-current-event-dice>svg{width:48px;height:48px;margin:0 4px}
+
+#precareer-dialog [data-current-education-event]{background:#061b29;color:#f4f7fa;border:1px solid #85dae6;border-radius:12px;padding:16px}
+#precareer-dialog [data-current-education-event] h3{color:#ffd34b}
+#precareer-dialog [data-current-education-event] .merchant-benefit-heading{display:flex;align-items:center;gap:12px}
+#precareer-dialog [data-current-education-event] .opening-info-trigger{flex:0 0 44px;min-width:44px;min-height:44px}
