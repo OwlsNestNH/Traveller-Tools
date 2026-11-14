@@ -25,3 +25,10 @@ test('ordinary skills in defer-enabled mixed choices need no specialty control',
  const s={...state,skillChoiceBases:['Admin','Science'],skillChoiceSuggestions:['Admin']};assert.deepEqual(awardBases(s),['Admin','Science']);
  const nodes={'#award-base':{value:'Admin'},'#award-skill':{},'#award-skill-options':{},'#award-speciality-controls':{}},root={querySelector:id=>nodes[id]??null};syncAwardBase(s,catalog,root,esc);assert.equal(nodes['#award-skill'].value,'Admin');assert.equal(nodes['#award-speciality-controls'].innerHTML,'');
 });
+
+test('eligible award controls identify held levels without changing canonical values or adding specialties',()=>{
+ const s={pendingChoice:{allowed:['Medic','Gun Combat'],deferSpeciality:false},skillChoiceBases:['Medic','Gun Combat'],skillChoiceSuggestions:['Medic','Gun Combat (energy)'],character:{skills:{Medic:0,'Gun Combat (energy)':1,'Gun Combat (slug)':2}}},before=JSON.stringify(s);
+ const html=skillAwardView(s,catalog,helpers);assert.match(html,/<option value="Medic"[^>]*>Medic — already known: Medic 0/);assert.deepEqual(awardNames(s,'Gun Combat'),['Gun Combat (energy)']);
+ const nodes={'#award-base':{value:'Gun Combat'},'#award-skill':{},'#award-skill-options':{},'#award-speciality-controls':{}},root={querySelector:id=>nodes[id]??null};syncAwardBase(s,catalog,root,esc);
+ assert.match(nodes['#award-speciality-controls'].innerHTML,/<option value="Gun Combat \(energy\)">Gun Combat \(energy\) — already known: Gun Combat \(energy\) 1/);assert.doesNotMatch(nodes['#award-speciality-controls'].innerHTML,/<option value="Gun Combat \(slug\)"/);assert.match(nodes['#award-skill-options'].innerHTML,/value="Gun Combat \(energy\)" label=/);assert.equal(JSON.stringify(s),before);
+});
