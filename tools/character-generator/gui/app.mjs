@@ -4,7 +4,7 @@ import {mountSupportInformation} from './support-information.mjs';
 import {isSupportStage,mountSupportRecord} from './support-record.mjs';
 import {vargrDraftView,vargrFallbackChoiceView} from './vargr-draft-view.mjs';
 import {mountCompletionPopup,sourceAssistedCoverageView} from './completion-popup.mjs';
-import {crowSpeakingPanel,mountCrowStageGuidance,mountCrowCompletionGuidance} from './crow-speaking-panel.mjs';
+import {crowSpeakingPanel,mountCrowStageGuidance,mountCrowCompletionGuidance,mountCrowTaglineAttribution} from './crow-speaking-panel.mjs';
 import {careerTemplateModel,careerCrowType,mountCareerTemplate,careerResultTagline,careerResultCrowType,syncCareerSpecialty} from './career-template.mjs';
 import {mountRewindConfirmation,createNavigationDrafts} from './recovery-actions.mjs';
 import {mountCrowIntroduction} from './crow-assistance.mjs';
@@ -568,6 +568,7 @@ function render(){
  if(['finish','retirement','deceased'].includes(state.stage))mountCompletionPopup(document,state);
  mountSupportRecord(document,state,{sessionKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id])});
  mountResultInformation(document,lastRollResult,{crowType:careerResultCrowType(projection.log.at(-1),lastRollResult,state),tagline:careerResultTagline(projection.log.at(-1),lastRollResult,state)});
+ mountCrowTaglineAttribution(document,$('#workspace'));
  mountSpeciesSkillPopup(document);
  mountAslanFamilyPopup(document,{onRoll:async()=>{if(!await send(aslanRitePopupModel(projection.state)?'roll-aslan-rite':aslanPridePopupModel(projection.state)?'roll-aslan-pride':aslanClanPopupModel(projection.state)?'roll-aslan-clan':aslanBirthPopupModel(projection.state)?'roll-aslan-birth-order':'roll-aslan-family'))throw new Error($('#message').textContent||'The family roll could not be recorded.');},onContinue:async(index)=>{
   const rite=aslanRitePopupModel(projection.state);if(rite){if(!await send(rite.equipment?'record-aslan-rite-equipment':'acknowledge-aslan-rite'))throw new Error($('#message').textContent||'Rite continuation could not be recorded.');return;}

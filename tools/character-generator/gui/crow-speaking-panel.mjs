@@ -36,3 +36,25 @@ export function mountCrowCompletionGuidance(document,root,{actionId}={}){
  for(const instruction of instructions){instruction.classList.add('completion-next-instruction');if(audit)audit.before(instruction);else result.append(instruction);}
  return speaker;
 }
+
+// Cosmetic comments are explicitly marked by their renderers. Move only those
+// nodes, leaving the recorded outcome, dice, controls and listeners untouched.
+// Prefer the stage's existing speaker so a comment does not add a second Crow.
+export function mountCrowTaglineAttribution(document,root,{type='generic'}={}){
+ if(!root)return [];
+ const attributed=[];
+ for(const comment of root.querySelectorAll('[data-crow-comment]')){
+  if(comment.closest('.crow-speaking-panel'))continue;
+  const scope=comment.closest('dialog')??root;
+  const existing=[...scope.children].find(n=>n.matches('.crow-speaking-panel')&&!n.matches('.outcome-tagline'));
+  let quote=existing?.querySelector('blockquote');
+  if(quote){quote.insertBefore(comment,quote.querySelector('p'));}
+  else{
+   const holder=document.createElement('div');holder.innerHTML=crowSpeakingPanel({message:'',type,className:'crow-tagline-panel'});
+   const panel=holder.firstElementChild;quote=panel.querySelector('blockquote');quote.lastElementChild.remove();comment.before(panel);quote.append(comment);
+  }
+  if(scope.id==='aslan-family-dialog')for(const guide of root.children)if(guide.matches('.crow-speaking-panel'))guide.dataset.crowCommentBackground='true';
+  comment.classList.add('crow-speaking-aside');attributed.push(comment);
+ }
+ return attributed;
+}

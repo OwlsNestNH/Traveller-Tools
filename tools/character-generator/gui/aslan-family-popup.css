@@ -454,3 +454,14 @@ body[data-family-popup="true"] #workspace,body[data-family-popup="true"] #sheet,
 #aslan-rite-doubles-dialog #rite-doubles-outcome{font-size:40px;line-height:1.15;font-weight:850;color:#ffd34b;margin:0 0 14px;overflow-wrap:anywhere}
 #aslan-rite-doubles-dialog .aslan-family-narrative{font-size:20px;line-height:1.4;font-weight:500;color:#c4d8e7;margin:16px 0}
 @media(max-width:650px){#aslan-rite-doubles-dialog #rite-doubles-outcome{font-size:30px}#aslan-rite-doubles-dialog .aslan-family-narrative{font-size:18px}}
+
+/* The mechanical result stays outside this cosmetic, explicitly spoken aside. */
+#aslan-family-dialog .crow-tagline-panel{gap:12px;align-items:center;margin:12px 0}
+#aslan-family-dialog .crow-tagline-panel>img{width:96px;height:96px;flex-basis:96px}
+#aslan-family-dialog .crow-tagline-panel>blockquote{flex:1;padding:12px;text-align:left}
+#aslan-family-dialog .crow-tagline-panel .aslan-family-tagline{font-size:18px;line-height:1.45;margin:6px 0 0;color:#f5f7fa}
+@media(max-width:600px){#aslan-family-dialog .crow-tagline-panel{display:block}#aslan-family-dialog .crow-tagline-panel>img{float:left;width:88px;height:88px;margin:0 8px 4px 0}#aslan-family-dialog .crow-tagline-panel>blockquote{display:block;width:100%;box-sizing:border-box;padding:10px}#aslan-family-dialog .crow-tagline-panel::after{content:'';display:block;clear:both}}
+
+#workspace>.crow-speaking-panel[data-crow-comment-background]{display:none}
+
+#aslan-family-dialog .aslan-family-die{color:#ffd34b}
