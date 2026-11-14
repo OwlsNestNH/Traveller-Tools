@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';import {createRequire} from 'node:module';import {mkdir,writeFile} from 'node:fs/promises';
+import {createServer} from '../server.mjs';import {exportSession} from '../engine/session.mjs';import {aslanTemplateStart} from './aslan-template-fixtures.mjs';
+const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright'),key='traveller-character-generator.v1',out=new URL('./artifacts/',import.meta.url);await mkdir(out,{recursive:true});
+const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({headless:true}),checks=[],errors=[];
+try{for(const http of [false,true])for(const width of [1440,390,320])for(const [gender,target] of [['male',10],['female',7]]){
+ const p=await browser.newPage({viewport:{width,height:1000}}),raw=exportSession(aslanTemplateStart(gender).session);p.on('pageerror',e=>errors.push(e.message));await p.addInitScript(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await p.goto('http://127.0.0.1:'+server.address().port+(http?'/?api=local':'/'));await p.waitForFunction(()=>!document.querySelector('#export').disabled);
+ await p.locator('[data-action=select-career][data-id="aslan.scientist"]').click();await p.locator('[data-army-specialty=healer]').click();const expected='INT '+target+'+';
+ assert.match(await p.locator('.army-specialty-information').innerText(),new RegExp(expected.replace('+','\\+')));assert.equal(await p.evaluate(k=>localStorage.getItem(k),key),raw);
+ if(!http&&width!==320)await p.screenshot({path:new URL('qualification-'+gender+'-'+width+'.png',out).pathname});
+ const info=p.getByRole('button',{name:'Scientist rules and source information',exact:true});await info.click();await p.locator('#army-rule-information[open]').waitFor();assert.match(await p.locator('#army-rule-information .army-specialty-requirements').innerText(),new RegExp(expected.replace('+','\\+')));assert.match(await p.locator('#army-rule-information').innerText(),/34/);
+ if(!http&&width!==320)await p.screenshot({path:new URL('qualification-info-'+gender+'-'+width+'.png',out).pathname});await p.keyboard.press('Escape');assert.equal(await info.evaluate(n=>n===document.activeElement),true);assert.equal(await p.evaluate(k=>localStorage.getItem(k),key),raw);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+ checks.push({http,width,gender,target,application:true,information:true,focus:true,savedBytesPreserved:true});await p.close();
+}assert.deepEqual(errors,[]);await writeFile(new URL('contextual-qualification-status.json',out),JSON.stringify({checks,errors},null,2));console.log(checks.length,'contextual qualification checks passed');}
+finally{await browser.close();server.closeAllConnections();await new Promise(r=>server.close(r));}

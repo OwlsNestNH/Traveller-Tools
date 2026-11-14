@@ -760,7 +760,7 @@ export function availableCareers(state) {
  const groups=accessContext(state)?['aslan','core','companion']:species==='aezorgh'?['core','vargr','companion']:species==='human'||culture==='imperial'?['core','companion']:[species,'companion'];
  return CAREERS.filter(c=>groups.includes(c.group)||c.id===state.forcedCareer).map(original=>{
  const pack=RULE_PACK[original.id],pre=pack?.prerequisites??{};
- const c={...original,qualification:pre.qualification===undefined?original.qualification:pre.qualification,assignments:original.assignments.map(a=>({...a,...pack?.checks?.[a.id]}))};
+ const c={...original,qualification:pre.qualificationByGender?.[state.character.gender]??(pre.qualification===undefined?original.qualification:pre.qualification),assignments:original.assignments.map(a=>({...a,...pack?.checks?.[a.id]}))};
  let reason='';
  if(nativeAslan(state)&&c.group==='core'&&!accessCoreAllowed(state,c.id)&&state.forcedCareer!==c.id)reason='This Core career is outside the recorded outward route.';
  if(accessMandatory(state)&&c.group!=='core')reason='The accepted expedition requires a Core career attempt next term.';
