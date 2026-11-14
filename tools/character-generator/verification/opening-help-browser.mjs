@@ -22,8 +22,10 @@ try{
    assert.equal(await page.locator('#setup-gender').inputValue(),'','Species changes must not assign physical sex');
    assert.deepEqual(await page.locator('#setup-gender option:not(:disabled)').allTextContents(),['Female','Male']);
    assert.equal(await page.locator('label[for=setup-gender]').innerText(),'Physical sex');
-   assert.equal(await page.locator('#culture-choice').isVisible(),['aslan','vargr'].includes(species));
-   assert.equal(await page.locator('[name=culture]').isEnabled(),['aslan','vargr'].includes(species));
+   assert.equal(await page.locator('#culture-choice').isVisible(),['aslan','vargr','aezorgh'].includes(species));
+   assert.equal(await page.locator('[name=culture]').isEnabled(),['aslan','vargr','aezorgh'].includes(species));
+   if(['aslan','vargr','aezorgh'].includes(species))assert.deepEqual(await page.locator('[name=culture] option').evaluateAll(ns=>ns.map(n=>n.value)),species==='aezorgh'?['imperial','vargr']:['native','imperial'],'Each species retains its own culture choices');
+   if(species==='aezorgh'){await page.locator('[name=culture]').selectOption('vargr');assert.equal(await page.locator('[name=culture]').inputValue(),'vargr');assert.equal(await page.locator('#setup-aezorgh-method').isChecked(),true,'Culture leaves the separate default House method intact');}
    assert.equal(await page.locator('#variant-choice').isVisible(),species==='vargr');
    assert.equal(await page.locator('[name=variant]').isEnabled(),species==='vargr');
   }

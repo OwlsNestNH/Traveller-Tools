@@ -1,3 +1,4 @@
+import {AEZORGH_CULTURES} from '../shared/aezorgh-culture.mjs';
 import {vargrDraftLabel,vargrDraftMappings} from './vargr-draft.mjs';
 import {ironManOptionAvailable} from '../shared/iron-man.mjs';
 import {nativeEventRollPending,validNativeEventContext} from './native-event-roll-checkpoints.mjs';
@@ -2395,10 +2396,12 @@ function apply(state,command,rolls) {
   need(!(species.id==='zhodani'&&payload.culture==='imperial'),'Zhodani rules assume Consulate childhood. Select Human for outside-Consulate upbringing.');
   if(payload.variant!==undefined)need(species.id==='vargr','Only Vargr have this strain option.');
   if(species.id==='vargr'){const variant=payload.variant??'standard';need(variant==='standard'||Object.hasOwn(SPECIES_RULES.vargr.variants,variant),'Choose a supported Vargr strain.');state.character.variant=variant;}
+  if(payload.aezorghCulture!==undefined)need(species.id==='aezorgh'&&AEZORGH_CULTURES.includes(payload.aezorghCulture),'Choose Imperial or Vargr culture for an Aezorgh.');
   state.character.name=text(payload.name??'',80);state.character.species=species.id;
   state.character.gender=text(payload.gender??'',20);state.character.culture=payload.culture==='imperial'?'imperial':'native';
+  if(payload.aezorghCulture!==undefined){state.character.culture=payload.aezorghCulture;state.character.aezorghCulture=payload.aezorghCulture;}
   state.character.homeworld=text(payload.homeworld??'',160);state.character.age=species.startAge;state.character.traits=copy(SPECIES_RULES[species.id]?.traits??[]);
-  state.stage='statistics';return 'Started '+(state.character.name||'an unnamed Traveller')+' ('+species.name+').'+(species.id==='vargr'?' Vargr strain: '+state.character.variant+'.':'')+(species.id==='aezorgh'?(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals; reroll minimum '+statisticsRerollThreshold(state)+' before placement and halving; free swaps; one-die destinations halve rounding '+(state.aezorghRoundUp?'up':'down')+' before species bonuses.':' Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum '+statisticsRerollThreshold(state)+'; swaps within matching formula groups, with GM exceptions.'):'');
+  state.stage='statistics';return 'Started '+(state.character.name||'an unnamed Traveller')+' ('+species.name+').'+(species.id==='vargr'?' Vargr strain: '+state.character.variant+'.':'')+(payload.aezorghCulture!==undefined?' Aezorgh culture: '+payload.aezorghCulture+'. Initial career display only; Core and Vargr careers remain available (JTAS Vol. 11 p. 67).':'')+(species.id==='aezorgh'?(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals; reroll minimum '+statisticsRerollThreshold(state)+' before placement and halving; free swaps; one-die destinations halve rounding '+(state.aezorghRoundUp?'up':'down')+' before species bonuses.':' Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum '+statisticsRerollThreshold(state)+'; swaps within matching formula groups, with GM exceptions.'):'');
  }
  case 'configure': {
   need(state.stage==='identity'||state.stage==='statistics'&&!state.pool.length,'Options must be set before rolling.');

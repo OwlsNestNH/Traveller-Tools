@@ -1,9 +1,10 @@
+import {aezorghCulture} from '../shared/aezorgh-culture.mjs';
 import {imperialOutcome,IMPERIAL_OUTCOME_LINES} from './imperial-career-tags.mjs';
 import {outcomeTagline} from './outcome-taglines.mjs';
 import {VARGR_CAREER_DEFINITIONS} from './vargr-career-definitions.mjs';
 // Cosmetic selection hashes recorded action IDs, never game RNG.
 export function vargrResultCareer(event,state){
- if(state.character?.species!=='vargr'||state.character.culture!=='native')return null;
+ if(!aezorghCulture(state.character)&&(state.character?.species!=='vargr'||state.character.culture!=='native'))return null;
  const records=state.character.careers??[],indices=[...new Set((event?.changes??[]).flatMap(c=>{const m=c.path.match(/^careers\.(\d+)\.benefitRolls$/);return m?[Number(m[1])]:[];}))];
  const id=event?.type==='career'?state.character.careerTransitions?.at(-1)?.toCareerId:records[state.active]?.id??(event?.type==='benefit'?records.at(-1)?.id:indices.length===1?records[indices[0]]?.id:null);
  const record=records[state.active]?.id===id?records[state.active]:event?.type==='benefit'&&records.at(-1)?.id===id?records.at(-1):null;

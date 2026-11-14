@@ -266,3 +266,10 @@
 
 /* Accepted recorded-dice treatment on the support roll states. */
 @media screen{body[data-support-shell="true"] .army-dice-calculation{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px}body[data-support-shell="true"] .army-dice-equation{font-size:32px;font-weight:800}body[data-support-shell="true"] .army-recorded-dice{text-align:center}}
+
+@media screen{
+ #army-career-dialog #workspace .aezorgh-career-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) 44px;gap:12px;align-items:center}
+ #army-career-dialog #workspace .aezorgh-career-groups>button[data-group]{width:100%;min-height:52px;padding:8px;font-size:18px;line-height:1.2;white-space:normal}
+ #army-career-dialog #workspace .aezorgh-career-groups [aria-pressed="true"]{background:#f7c91f linear-gradient(#ffe265,#f7c91f);color:#071b29;border-color:#ffe78a}
+ #army-career-dialog #workspace .aezorgh-career-groups>button.opening-info-trigger{flex:0 0 44px;width:44px;min-width:44px;max-width:44px;height:44px;min-height:44px;max-height:44px;margin:0;padding:0;align-self:center;border:1px solid #ffd34b;border-radius:50%;background:#061b29;color:#ffd34b;box-shadow:none}
+}
