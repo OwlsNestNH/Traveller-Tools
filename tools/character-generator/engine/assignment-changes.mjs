@@ -4,7 +4,7 @@ export const CORE_ASSIGNMENT_MODES=Object.freeze({
  'core.army':'retain','core.marine':'retain','core.navy':'retain','core.noble':'retain','core.rogue':'retain','core.scholar':'retain','core.scout':'retain',
  'core.agent':'restart','core.citizen':'restart','core.entertainer':'restart','core.merchant':'restart'
 });
-export function nobleAutomaticQualification(careerId,stats={}){return careerId==='core.noble'&&Number.isFinite(stats.SOC)&&stats.SOC>=10;}
+export {nobleAutomaticQualification} from '../shared/automatic-qualification.mjs';
 export function careerReentryPlan({careerId,assignment,previous,generationTerms,drafted=false}={}){
  if(!previous||previous.id!==careerId)return {allowed:true,mode:'new',reason:''};
  if(careerId==='core.drifter'||drafted)return {allowed:true,mode:drafted?'draft':'return',reason:''};
