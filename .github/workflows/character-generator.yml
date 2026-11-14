@@ -431,6 +431,8 @@ jobs:
           node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install --with-deps chromium
       - name: Pending results and mishaps desktop and phone
         run: node tools/character-generator/verification/pending-event-clarity-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+      - name: Contextual Crow and follow-up check results
+        run: node tools/character-generator/verification/contextual-event-guidance-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - name: Upload actual result clarity previews
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -439,4 +441,5 @@ jobs:
           path: |
             tools/character-generator/verification/artifacts/event-clarity-*
             tools/character-generator/verification/artifacts/pending-event-clarity-status.json
+            tools/character-generator/verification/artifacts/contextual-event-*
           if-no-files-found: error
