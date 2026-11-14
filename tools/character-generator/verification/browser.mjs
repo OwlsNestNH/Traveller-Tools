@@ -47,7 +47,7 @@ try{
   let releaseCareerResponse,careerResponseReady;
   const heldCareerResponse=new Promise(resolve=>{releaseCareerResponse=resolve;}),careerResponse=new Promise(resolve=>{careerResponseReady=resolve;});
   if(transport==='http')await page.route('**/api/v1',async route=>{if(route.request().postDataJSON().command?.type!=='career')return route.continue();const response=await route.fetch();careerResponseReady();await heldCareerResponse;await route.fulfill({response});});
-  await page.getByRole('button',{name:'Attempt this career'}).click();
+  await page.getByRole('button',{name:'Enter this career',exact:true}).click();
   if(transport==='http'){await careerResponse;assert.equal(await page.locator('#export').isDisabled(),true);assert.equal(await page.locator('#workspace').evaluate(el=>Number(el.dataset.revision)),beforeCareer);releaseCareerResponse();}
   // The specialty heading already changes before this asynchronous command.
   // Observe its accepted revision, stage and idle state before reading the save.
