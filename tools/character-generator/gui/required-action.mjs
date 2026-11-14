@@ -24,6 +24,7 @@ export function requiredHeadline(type,key='',context=''){
 const field=(selector,type,detail)=>({selector,type,detail});
 // Each selector is an existing required input, not an inference from its label.
 const ACTION_FIELDS={
+ 'resolve-vargr-draft':[['#vargr-draft-mapping','referee','Choose the referee-approved destination for the recorded draft result.'],['#vargr-draft-reason','details','Record the source and referee mapping reason.'],['#vargr-draft-confirmed','referee','Confirm the referee interpretation before entering the career.']],
  'resolve-prisoner-lawyer':[['#lawyer-outcome','event','Choose Hire or Decline for the lawyer opportunity.'],['#lawyer-level','details','Enter the lawyer Advocate level.'],['#lawyer-zero','referee','Confirm the referee permits a level-0 lawyer at the printed Cr0 cost.'],['#lawyer-reason','referee','Record the level-0 lawyer ruling.']],
  'spend-equipment-credit':[['#credit-category','event','Choose the item category.'],['#credit-name','details','Enter the item name.'],['#credit-cost','details','Enter the listed unit cost.'],['#credit-quantity','details','Enter the item quantity.'],['#credit-note','referee','Record the item source and restriction check.'],['#credit-confirm','referee','Confirm the item, listed price and category.']],
  'choose-skill':[['#award-skill','skills','Choose the awarded skill and its required specialisation, or use the offered deferral.']],
@@ -111,6 +112,7 @@ export function mountRequiredActions({document:root,getState,isBusy,backgroundSe
  const fail=(control,type,detail)=>{const state=getState();showRequiredAction(root,{control,type,detail,key:requiredActionKey(state,control),actions:getRecoveryActions({control,state})});return true;};
  function validate(action,trigger){
   const state=getState();
+  if(action==='choose-vargr-fallback'&&!root.querySelector('#career-assignment')?.value)return fail(root.querySelector('[data-army-specialty]:not(:disabled)')??root.querySelector('#career-assignment'),'career','Choose a specialty for this automatic fallback.');
   if(action==='background'){
    const form=root.querySelector('#background-form'),selected=[...form.querySelectorAll('[name=skills]:checked')].map(n=>n.value),s=backgroundSelection(state,selected);
    if(!s.valid)return fail(form.querySelector(s.remaining<0?'[name=skills]:checked':'[name=skills]:not(:checked)')??form.querySelector('[name=skills]')??form,'skills','Choose exactly '+s.required+' distinct background skills. '+s.skills.length+' selected; '+(s.remaining<0?'remove '+(-s.remaining):'choose '+s.remaining+' more')+'.');

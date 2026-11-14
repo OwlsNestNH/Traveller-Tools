@@ -368,10 +368,14 @@ jobs:
       - name: Native Vargr specialties, information and state preservation
         run: |
           node tools/character-generator/verification/vargr-career-template-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+      - name: Vargr fallback choices and recorded referee mappings
+        run: node tools/character-generator/verification/vargr-fallback-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - name: Upload Vargr desktop and phone screens
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: vargr-career-template-review-${{ github.event.pull_request.head.sha }}
-          path: tools/character-generator/verification/artifacts/vargr-career-template-*
+          path: |
+            tools/character-generator/verification/artifacts/vargr-career-template-*
+            tools/character-generator/verification/artifacts/vargr-fallback-*
           if-no-files-found: error

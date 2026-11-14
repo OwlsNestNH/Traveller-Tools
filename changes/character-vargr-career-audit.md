@@ -4,7 +4,7 @@ The presentation candidate covers the nine native Vargr careers and 27 specialti
 
 ## Verified rules and current gaps
 
-- Page 186 explicitly permits Core Drifter (with its Core p. 28 reference), Loner or the Vargr draft after failed qualification. Current engine projection/guards expose only Loner to native Vargr. This is an existing coverage gap; the presentation candidate does not claim to fix it.
+- Page 186 explicitly permits Core Drifter (with its Core p. 28 reference), Loner or the Vargr draft after failed qualification. New revision .35 exposes all three alternatives, preserving eligibility and one recorded draft die. Compatible .34 and earlier saves retain their original behavior without automatic migration.
 - Loner lasts one term. Native Vargr do not take a qualification penalty for previous careers.
 - The draft has printed outcome weights, but its destination labels do not explicitly identify revised career IDs or assignments. The revised Vargr profiles have no standalone Marine career.
 - Military/Army and Spacer/Navy have matching assignment names. Military/Raider is described on p. 198 as a shipboard fighting role, making it a plausible Marine interpretation, not an explicit mapping instruction.
@@ -23,3 +23,9 @@ Any implementation must preserve source-authorized Drifter and Loner alternative
 The [publisher-hosted 2026 feedback thread](https://forum.mongoosepublishing.com/threads/aliens-of-charted-space-vol-1-update-2026-feedback-and-errata.126808/) reports the missing Marine destination. A [reader reply](https://forum.mongoosepublishing.com/threads/aliens-of-charted-space-vol-1-update-2026-feedback-and-errata.126808/page-2) proposes Military/Raider. These are community reports, not a verified publisher correction. No authoritative draft mapping was found in the authorized 2026 text or the checked clarification material. Older-edition career lists are not substituted for the 2026 profiles.
 
 No rulebook tables, private source files or personal character histories are included here. The [publisher's book listing](https://www.mongoosepublishing.com/products/aliens-of-charted-space-vol-1-update-2026) identifies the source edition.
+
+## Implemented referee-resolution policy
+
+The reviewed candidate uses option 3: the recorded draft result opens a bounded destination list, with no default, and requires a referee confirmation plus source/reason. Marine can be interpreted as native Military/Raider or a Core Marine specialty only through that explicit ruling; neither is asserted as corrected RAW. Closing or reloading retains the die. Drifter and Loner each offer their three specialties without a qualification roll. The separate forced Core draft from Drifter event 11 keeps its original destination and redraft permission.
+
+A synthetic 52-action .34 replay and its next continuation match the deployed baseline in state, logs, RNG and exported bytes. No personal character file is included.

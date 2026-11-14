@@ -30,6 +30,8 @@ function otherEffects(event,catalog,keep){
 }
 export function conciseResult(event,state,catalog){
  const full=rollResult(event,state,catalog);if(!full)return null;
+ if(event?.type==='fallback'&&state?.pending?.kind==='vargr-draft'&&event.rolls?.some(r=>r.label==='Vargr draft')){const title='Draft result: '+state.pending.vargrDraft.label+'.',details=['The die is recorded. Confirm a source/referee mapping before entering a career.'];return {title,details,status:'pending',text:[title,...details].join(' '),full,compact:true};}
+ if(event?.type==='fallback'&&state?.stage==='vargr-fallback-choice'){const career=catalog.careers.find(c=>c.id===state.pendingVargrFallback?.careerId),title=(career?.name??'Fallback')+' selected.',details=['Choose a specialty; no new qualification roll is needed.'];return {title,details,status:'info',text:[title,...details].join(' '),full,compact:true};}
  // Project awarded credits from the recorded changes; never rewrite replay-verified summaries.
  const credits=awardedBenefitCredits(event);
  if(credits.length){
