@@ -1,3 +1,4 @@
+import {preCareerEventName} from '../shared/precareer-event-presentation.mjs';
 import {medicalContinuationEvent} from './medical-continuation.mjs';
 import {careerTemplateModel} from './career-template.mjs';
 import {benefitRollEvidence,benefitAwardHeadline} from './benefit-presentation.mjs';
@@ -34,9 +35,9 @@ function otherEffects(event,catalog,keep){
 }
 export function conciseResult(event,state,catalog){
  const full=rollResult(event,state,catalog);if(!full)return null;
- const educationEvent=state?.stage==='education-graduation'&&(event.eventResults??[]).find(r=>r.table==='core.pre-career-events'&&r.row===state.character?.educations?.[state.education]?.event);
+ const educationEvent=!['deceased','finish','retirement'].includes(state?.stage)&&(state?.stage==='education-graduation'||catalog?.careers&&careerTemplateModel(state,catalog))&&(event.eventResults??[]).find(r=>r.table==='core.pre-career-events');
  if(educationEvent){
-  const title=educationEvent.description,details=otherEffects(event,catalog,()=>true);
+  const title=preCareerEventName(educationEvent.row)??educationEvent.description,details=unique([educationEvent.description,...((event.changes??[]).some(c=>/^educations\.\d+\.graduation\.graduated$/.test(c.path)&&c.after===false)?['Graduation failed.']:[]),...otherEffects(event,catalog,c=>c.path!=='age'&&c.path!=='terms')]);
   return {title,details,status:full.status,text:[title,...details].join(' '),full,compact:true,information:{title:'About your education event',label:'About your education event',paragraphs:unique([full.title,...full.details]),contextual:true}};
  }
  const treatmentBills=(event.changes??[]).filter(change=>/^medicalBills\.\d+$/.test(change.path)&&!change.before&&finite(change.after?.personalCost)).map(change=>change.after);
