@@ -138,7 +138,17 @@ export function mountCareerTemplate(document,model,{esc,event=null,resultStatus=
  const overview=rail.querySelector('#army-career-overview');overview.replaceChildren();const eyebrow=document.createElement('p');eyebrow.className='eyebrow';eyebrow.textContent='YOUR TRAVELLER';const name=document.createElement('h2');name.textContent=state?.character.name||'Your Traveller';overview.append(eyebrow,name);
  const nodes=[...sheet.children],facts=nodes.find(n=>n.matches('.sheet-facts')),meta=nodes.find(n=>n.matches('.sheet-meta'));if(meta)overview.append(meta);if(facts)overview.append(facts);
  for(const node of nodes)if(node.tagName==='H2'||node.matches('.eyebrow'))node.remove();
- for(const [id,label,node] of [['army-record-characteristics','Characteristics',nodes.find(n=>n.querySelector('.stats'))],['army-record-skills','Skills',nodes.find(n=>n.querySelector('h3')?.textContent==='Skills')]]){if(!node)continue;const group=document.createElement('details');group.id=id;group.className='army-record-section';group.name='career-record-bars';group.addEventListener('toggle',()=>{if(group.open&&group.isConnected&&!group.hasAttribute('data-print-expanded'))for(const other of sheet.querySelectorAll(':scope > details.army-record-section'))if(other!==group)other.open=false;});const summary=document.createElement('summary');summary.textContent=label;node.before(group);group.append(summary,node);}
+ // Every record section uses the same disclosure; move original nodes so
+ // editors, recorded data and their listeners are preserved.
+ for(const node of nodes){
+  if(node.parentElement!==sheet)continue;
+  const label=node.querySelector('.stats')?'Characteristics':node.matches('.sheet-section')?node.querySelector(':scope > h3')?.textContent:null;
+  const existing=node.matches('details#notes-connections');if(!label&&!existing)continue;
+  const group=existing?node:document.createElement('details');
+  if(!existing){group.id='army-record-'+label.toLowerCase().replace(/[^a-z0-9]+/g,'-');const summary=document.createElement('summary');summary.textContent=label;node.before(group);group.append(summary,node);}
+  group.classList.add('army-record-section');group.name='career-record-bars';
+  group.addEventListener('toggle',()=>{if(group.open&&group.isConnected&&!group.hasAttribute('data-print-expanded'))for(const other of sheet.querySelectorAll(':scope > details.army-record-section'))if(other!==group)other.open=false;});
+ }
  const stepKey=sessionKey+'|'+state?.stage+'|'+(model.selection?'selection':model.career.id);if(newlyCreated||dialog.dataset.stepKey!==stepKey){if(!dialog.open)dialog.show();dialog.dataset.stepKey=stepKey;dialog.scrollTop=0;if(document.defaultView.matchMedia('(max-width:850px)').matches)dialog.scrollIntoView({block:'start'});}if(newlyCreated)title.focus({preventScroll:true});
 }
 
