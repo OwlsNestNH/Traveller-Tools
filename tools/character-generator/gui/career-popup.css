@@ -309,3 +309,4 @@
 @media screen and (max-width:400px){#army-career-dialog .army-specialty-choices[data-count="3"][data-long-labels="true"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}#army-career-dialog .army-specialty-choices[data-count="3"][data-long-labels="true"] button:last-child{grid-column:1 / -1}}
 
 @media screen and (max-width:360px){#army-career-dialog .army-specialty-choices[data-count="3"][data-narrow-long-labels="true"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}#army-career-dialog .army-specialty-choices[data-count="3"][data-narrow-long-labels="true"] button:last-child{grid-column:1 / -1}}
+@media screen and (max-width:360px){#army-career-dialog .career-pilot-guidance{grid-template-columns:72px minmax(0,1fr)}#army-career-dialog .crow-assistance-image{width:72px;height:96px;flex-basis:72px}#army-career-dialog .career-crow-bubble{padding:8px}#army-career-dialog .career-crow-speech{font-size:16px}}

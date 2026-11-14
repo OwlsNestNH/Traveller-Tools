@@ -25,9 +25,12 @@ jobs:
       - name: Career labels, entry semantics, notes and printing
         run: |
           node tools/character-generator/verification/career-control-clarity-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/toolbar-fit-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
           name: career-control-clarity-${{ github.event.pull_request.head.sha }}
-          path: tools/character-generator/verification/artifacts/career-control-*.png
+          path: |
+            tools/character-generator/verification/artifacts/career-control-*.png
+            tools/character-generator/verification/artifacts/toolbar-fit-*.png
           if-no-files-found: error
