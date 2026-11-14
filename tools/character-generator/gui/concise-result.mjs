@@ -41,7 +41,7 @@ export function conciseResult(event,state,catalog){
  }
  const treatmentBills=(event.changes??[]).filter(change=>/^medicalBills\.\d+$/.test(change.path)&&!change.before&&finite(change.after?.personalCost)).map(change=>change.after);
  if(['injury-treatment','resolve-book'].includes(event.type)&&treatmentBills.length&&catalog?.careers&&careerTemplateModel(state,catalog)){
-  const title='Injury treatment complete.',details=treatmentBills.map(bill=>bill.personalCost?'Your medical bill: '+amount(bill.personalCost)+', due at the end of character creation.':'No personal medical bill.');
+  const personal=treatmentBills.reduce((sum,bill)=>sum+bill.personalCost,0),title=personal?'Medical bill: '+amount(personal)+'.':'No personal medical bill.',details=personal?['Due at the end of character creation.']:['Treatment choice recorded.'];
   details.push(...otherEffects(medicalContinuationEvent(event,state,treatmentBills),catalog,()=>true));
   const forcedExit=state.character?.careers?.[state.active]?.forcedExit;
   if(state.stage==='term-end')details.push(forcedExit?'Leave this career and resolve any remaining benefits.':'Choose whether to continue this career or leave.');
@@ -50,9 +50,8 @@ export function conciseResult(event,state,catalog){
  }
  const injury=state?.currentInjury;
  if(injury&&['injury-loss','injury-treatment'].includes(state.stage)&&catalog?.careers&&careerTemplateModel(state,catalog)){
-  const choosing=state.stage==='injury-loss',title='Injury table result '+injury.tableResult+'.';
-  const losses=Object.entries(injury.losses??{}).filter(([,n])=>n>0).map(([name,n])=>name+' −'+n);
-  const details=choosing?['Choose which characteristics take the recorded loss.']:['Loss recorded: '+losses.join(', ')+'.'];
+  const choosing=state.stage==='injury-loss',losses=Object.entries(injury.losses??{}).filter(([,n])=>n>0).map(([name,n])=>name+' −'+n),title=choosing?'Injury table result '+injury.tableResult+'.':losses.length?losses.join(' · ')+'.':'No physical characteristic loss recorded.';
+  const details=choosing?['Choose which characteristics take the recorded loss.']:['Injury table result '+injury.tableResult+'. Choose treatment below.'];
   const care=['Medical care can restore up to the points lost in this injury, at Cr5,000 per restored point.','If this injury occurred in service, the applicable employer contribution is resolved separately using 2D plus the rank recorded at injury.','Personal medical costs are settled from available cash at the end of creation; any unpaid balance becomes debt.','Core Rulebook Update 2022 pp. 49, 51.'];
   return {title,details,status:'failure',text:[title,...details].join(' '),full,compact:true,information:{title:'Your injury and medical care',label:'About your injury and medical care',retainCrow:true,panelClass:'injury-care-result',paragraphs:unique([...care,full.title,...full.details]),contextual:true}};
  }
@@ -93,12 +92,14 @@ export function conciseResult(event,state,catalog){
  if(full.status!=='error'&&state?.stage==='deceased'&&state.character?.deceased===true){const title='This life path ended in death.',injury=state.character.injuries?.findLast(i=>i.deceased&&i.zeroRuling?.survives===false),details=state.character.ironManDeath?['Iron Man: failed Survival was fatal instead of rolling a mishap. Companion Update 2024 p. 13.',...diceDetails(event)]:injury?['Recorded referee injury ruling; this was not automatic death from a failed Survival check or a single zero score.','Referee reason: '+injury.zeroRuling.note]:[];return {title,details,status:'failure',text:[title,...details].join(' '),full,compact:true};}
  if(full.status!=='error'&&state?.stage==='finish'){const title='Recorded character ready for review.',details=['Source-assisted steps remain listed in the record.'];return {title,details,status:'info',text:[title,...details].join(' '),full,compact:true};}
  if(full.status!=='error'&&state?.stage==='retirement'&&state.character?.retirementFromCreation===true){
-  const title='Retired from character creation.';let details=[];
+  let title='Retired from character creation.',details=[];
   if(event.type==='benefit'){
    const awards=(event.changes??[]).filter(c=>/^benefitAwards\.\d+$/.test(c.path)&&!c.before&&c.after?.definitionId==='aslan.clan-share').map(c=>c.after);
    const quantity=awards.length&&awards.every(a=>Number.isSafeInteger(a.quantity)&&a.quantity>=0)?awards.reduce((sum,a)=>sum+a.quantity,0):null,known=Number.isSafeInteger(quantity);
    const changes=known?(event.changes??[]).filter(c=>!/^clanShareLots\./.test(c.path)&&!(/^benefits\.\d+$|^benefitAwards\.\d+$/.test(c.path)&&c.after?.definitionId==='aslan.clan-share')):event.changes;
-   details=unique([...diceDetails(event),...(known?['Clan Shares awarded: '+quantity+'.']:[]),...characterEffectDetails({...event,changes},catalog),...(known&&Number.isSafeInteger(state.clanShareOptions?.balance)?['Unspent Clan Shares: '+state.clanShareOptions.balance+'.']:[])]);
+   const award=benefitAwardHeadline(event),assets=(event.changes??[]).filter(c=>/^assets\.\d+$/.test(c.path)&&!c.before&&c.after?.name).map(c=>c.after.name);
+   title=known?'Clan Shares awarded: '+quantity+'.':award?.title??(assets.length?'Received '+assets.join(', ')+'.':title);
+   details=unique([...characterEffectDetails({...event,changes},catalog),...(known&&Number.isSafeInteger(state.clanShareOptions?.balance)?['Unspent Clan Shares: '+state.clanShareOptions.balance+'.']:[])]);
   }
   details=details.filter(detail=>!detail.startsWith('Benefit rolls:'));
   return {title,details,status:'info',text:[title,...details].join(' '),full,compact:true};

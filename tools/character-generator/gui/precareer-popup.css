@@ -467,3 +467,5 @@ dialog:has(.required-action-warning:not([hidden])) .crow-speaking-panel{display:
 #precareer-dialog [data-current-education-event] h3{color:#ffd34b}
 #precareer-dialog [data-current-education-event] .merchant-benefit-heading{display:flex;align-items:center;gap:12px}
 #precareer-dialog [data-current-education-event] .opening-info-trigger{flex:0 0 44px;min-width:44px;min-height:44px}
+
+#precareer-dialog [data-current-education-event]>p{font-size:20px;font-weight:600}
