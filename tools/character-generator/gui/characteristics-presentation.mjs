@@ -52,5 +52,5 @@ export function statisticsRollFeedback(event,state){
 export function statisticsRollFeedbackView(event,state,{esc}){
  const text=statisticsRollFeedback(event,state);if(!text)return null;
  const tagline=statisticsTagline(event,state);
- return '<section id="last-action-result" class="statistics-roll-feedback" data-result-status="info" aria-label="Latest result"><div><p>'+esc(text)+'</p>'+(tagline?'<p class="outcome-tagline">'+esc(tagline)+'</p>':'')+'</div><button type="button" class="quiet" data-action="statistics-roll-details" aria-haspopup="dialog" aria-controls="simple-action-log"><span aria-hidden="true">i</span> Roll details</button></section>';
+ return '<section id="last-action-result" class="statistics-roll-feedback" data-result-status="info" aria-label="Latest result"><div><p>'+esc(text)+'</p>'+(tagline?'<p class="outcome-tagline" data-crow-comment>'+esc(tagline)+'</p>':'')+'</div><button type="button" class="quiet" data-action="statistics-roll-details" aria-haspopup="dialog" aria-controls="simple-action-log"><span aria-hidden="true">i</span> Roll details</button></section>';
 }

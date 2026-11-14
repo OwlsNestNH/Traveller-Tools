@@ -1,0 +1,28 @@
+{
+  "scope": "Current generated cosmetic tag renderers, not every random rules outcome",
+  "corrected": [
+    {"view": "statistics-roll-feedback", "file": "gui/characteristics-presentation.mjs", "ownership": "existing stage Crow", "browserCases": ["statistics-high", "statistics-low", "statistics-aezorgh-imperial-high", "statistics-aezorgh-vargr-low"]},
+    {"view": "Aslan family", "file": "gui/aslan-family-popup.mjs", "ownership": "active origin popup Crow", "browserCases": ["aslan-family"]},
+    {"view": "Aslan birth order", "file": "gui/aslan-birth-popup.mjs", "ownership": "active origin popup Crow", "browserCases": ["aslan-birth"]},
+    {"view": "Aslan estate", "file": "gui/aslan-estate-popup.mjs", "ownership": "active origin popup Crow", "browserCases": ["aslan-estate"]},
+    {"view": "Aslan clan", "file": "gui/aslan-clan-popup.mjs", "ownership": "active origin popup Crow", "browserCases": ["aslan-clan"]},
+    {"view": "Aslan pride", "file": "gui/aslan-pride-popup.mjs", "ownership": "active origin popup Crow", "browserCases": ["aslan-pride"]},
+    {"view": "Aslan Rite", "file": "gui/aslan-rite-popup.mjs", "ownership": "active origin popup Crow", "browserCases": ["aslan-rite"]}
+  ],
+  "alreadyAttributed": [
+    {"view": "Core and Companion career outcome banks", "renderer": "gui/concise-result.mjs", "ownership": "pictured Crow blockquote", "sample": "core-career"},
+    {"view": "Aslan career and training banks", "renderer": "gui/concise-result.mjs", "ownership": "pictured Crow blockquote", "sample": "aslan-career"},
+    {"view": "Vargr career banks", "renderer": "gui/concise-result.mjs", "ownership": "pictured Crow blockquote", "sample": "vargr-career"},
+    {"view": "Education outcome banks", "renderer": "gui/education-result-view.mjs", "ownership": "pictured Crow blockquote", "sample": "education"},
+    {"view": "Completion commentary", "renderer": "gui/crow-speaking-panel.mjs", "ownership": "pictured Crow blockquote", "verification": "code-reviewed; existing completion browser checks retained"},
+    {"view": "Required-action headline banks", "renderer": "gui/required-action.mjs", "ownership": "existing pictured Crow warning", "verification": "code-reviewed; existing headline browser checks retained"},
+    {"view": "Career rule asides and guidance", "renderer": "gui/career-template.mjs", "ownership": "existing explicit Crow label and portrait", "verification": "shared presentation reviewed"}
+  ],
+  "deliberateBoundaries": [
+    "Actual outcomes, source narratives, mechanical instructions, dice and saved logs remain distinct from cosmetic comments.",
+    "Technical errors remain factual with default Crow; no new jokes are generated.",
+    "User notes, imported text and unsupported legacy outcomes are not reclassified by keyword matching.",
+    "No changes to humor banks, source rules, engine commands, RNG or saved data.",
+    "Deferred Zhodani state coverage and the centered-sheet redesign remain outside this correction."
+  ]
+}
