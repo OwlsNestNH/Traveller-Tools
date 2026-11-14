@@ -38,7 +38,7 @@ export function aslanRuleInformation(model,state){
  return {title:model.career.name+' '+topic,summary:summary+(notes.length?' '+notes.join(' '):''),book:step?.book??book,page,url:step&&step.book!==book?step.url:url};
 }
 export function aslanCareerGuidance(model,state){
- if(state?.stage==='ageing')return 'Roll ageing before choosing your next term. Your completed term is recorded. Even your ancestors cannot negotiate with the calendar.';
+ if(state?.stage==='ageing')return 'Roll ageing to complete this term’s review. Your completed term is recorded. Even your ancestors cannot negotiate with the calendar.';
  if(model.selection)return 'Choose a permitted career. The clan has expectations. Unfortunately, they concern you.';
  if(state.stage==='failed-entry')return 'Qualification failed. Choose the permitted next step below. Your ancestors have requested a quieter descendant.';
  if(state.stage==='borrowed-event-roll')return 'Roll the pending '+state.pendingBorrowedRoll.label+'. The previous result is already recorded. Your optimism cannot replace the dice.';
@@ -46,5 +46,5 @@ export function aslanCareerGuidance(model,state){
  if(state.stage==='career-mishap')return 'Roll the mishap and resolve its consequences. Your reputation has developed a paperwork problem.';
  if(state.stage==='aslan-officer-entry')return 'Choose the permitted officer assignment and resolve qualification. An invitation is not a promotion, genius.';
  if(state.stage==='aslan-officer-rank')return 'Record the referee’s rank-table mapping. Guessing loudly is still guessing.';
- return ['Choose an available assignment. Even questionable judgement needs a job title.','Resolve the training offered below. The clan cannot train a blank.','Roll Survival. Those new skills would be more impressive if you lived to use them.','Resolve every offered consequence. The clan is not cleaning up your loose ends.','Resolve advancement and any earned rewards. A title will not do the work for you.','Review the recorded term before staying or leaving. Nostalgia is not a qualification.','Resolve the remaining benefits and source decisions. Read the conditions before claiming the glory.'][model.phase]??'Follow the current Aslan procedure below. Tradition is complicated enough without your improvisation.';
+ return ['Choose an available assignment. Even questionable judgement needs a job title.','Resolve the training offered below. The clan cannot train a blank.','Roll Survival. Those new skills would be more impressive if you lived to use them.','Resolve every offered consequence. The clan is not cleaning up your loose ends.','Resolve advancement and any earned rewards. A title will not do the work for you.','Review the recorded term and the permitted next step below. Nostalgia is not a qualification.','Resolve the remaining benefits and source decisions. Read the conditions before claiming the glory.'][model.phase]??'Follow the current Aslan procedure below. Tradition is complicated enough without your improvisation.';
 }

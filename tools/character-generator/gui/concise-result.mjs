@@ -78,15 +78,20 @@ export function conciseResult(event,state,catalog){
    const mainDetails=[...credits.map(c=>(c.value>=0?'+':'')+c.value+' to one future Benefit roll.'),...otherEffects(event,catalog,c=>!/^benefitCredits\./.test(c.path))];
    return {title,details:mainDetails,status:full.status,text:[title,...mainDetails].join(' '),full,compact:true,information:{title:'Your Benefit roll bonus',paragraphs:unique([...details,...full.details]),crowType:'merchant'}};
   }
+  if(catalog?.careers&&careerTemplateModel(state,catalog)){
+   const mainDetails=unique([...credits.map(c=>(c.value>=0?'+':'')+c.value+' to one future Benefit roll'+(c.scope==='career'?' from this career.':' from any career.')),...otherEffects(event,catalog,c=>!/^benefitCredits\./.test(c.path))]);
+   return {title,details:mainDetails,status:full.status,text:[title,...mainDetails].join(' '),full,compact:true,information:{title:'Your Benefit roll bonus',label:'About your Benefit roll bonus',paragraphs:unique([...details,...full.details]),contextual:true}};
+  }
   return {title,details,status:full.status,text:[title,...details].join(' '),full,compact:true};
  }
  // A resolved table's alternatives are provenance, not awards. Keep the story
  // and actual changes here; the unchanged complete result belongs in the info.
- if(!['deceased','finish','retirement'].includes(state?.stage)&&['career-event','choose-effect','choose-skill'].includes(event?.type)&&event.eventResults?.length&&event.eventResults.every(r=>/^(core|aslan|vargr)\./.test(r.table)&&r.table!=='core.pre-career-events')){
+ if(catalog?.careers&&careerTemplateModel(state,catalog)&&!['deceased','finish','retirement'].includes(state?.stage)&&['career-event','career-mishap','choose-effect','choose-skill'].includes(event?.type)&&event.eventResults?.length&&event.eventResults.every(r=>/^(core|companion|aslan|vargr)\./.test(r.table)&&r.table!=='core.pre-career-events')){
   const narratives=unique(event.eventResults.map(r=>r.description)),title=narratives[0];
   if(title){
-   const details=unique([...narratives.slice(1),...otherEffects(event,catalog,()=>true),...(state?.stage==='book-step'?['Source resolution is pending; unresolved effects have not been awarded.']:[])]);
-   return {title,details,status:full.status,text:[title,...details].join(' '),full,compact:true,information:{title:'About your career event',label:'About your career event',paragraphs:unique([title,full.title,...full.details]),contextual:true}};
+   const details=unique([...narratives.slice(1),...otherEffects(event,catalog,c=>c.path!=='terms'&&!/^careers\.\d+\.(terms|successfulTerms)$/.test(c.path)),...(state?.stage==='book-step'?['Source resolution is pending; unresolved effects have not been awarded.']:[])]);
+   const mishap=event.eventResults.some(r=>/\.mishaps$/.test(r.table)),status=mishap&&full.status!=='error'&&!['success','failure'].includes(full.status)?'failure':full.status;
+   return {title,details,status,text:[title,...details].join(' '),full,compact:true,information:{title:mishap?'About your career mishap':'About your career event',label:mishap?'About your career mishap':'About your career event',paragraphs:unique([title,...full.details]),contextual:true,...(mishap?{retainCrow:true}:{})}};
   }
  }
  if(full.status!=='error'&&state?.stage==='deceased'&&state.character?.deceased===true){const title='This life path ended in death.',injury=state.character.injuries?.findLast(i=>i.deceased&&i.zeroRuling?.survives===false),details=state.character.ironManDeath?['Iron Man: failed Survival was fatal instead of rolling a mishap. Companion Update 2024 p. 13.',...diceDetails(event)]:injury?['Recorded referee injury ruling; this was not automatic death from a failed Survival check or a single zero score.','Referee reason: '+injury.zeroRuling.note]:[];return {title,details,status:'failure',text:[title,...details].join(' '),full,compact:true};}

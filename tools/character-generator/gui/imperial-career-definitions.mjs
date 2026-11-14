@@ -54,7 +54,7 @@ export function imperialRuleInformation(model){
 
 export function imperialCareerGuidance(model,state){
  if(model.fallback)return 'Your application failed. Pick the next permitted route. Your paperwork has finally acquired a plot.';
- if(state?.stage==='ageing')return 'Roll ageing before reviewing whether to stay or leave. Your completed term is recorded. Time has reviewed your application.';
+ if(state?.stage==='ageing')return 'Roll ageing to complete this term’s review. Your completed term is recorded. Time has reviewed your application.';
  if(model.selection)return 'Pick a career. Optimism is still not a qualification.';
  if(state?.stage==='borrowed-event-roll')return 'Roll the pending '+state.pendingBorrowedRoll.label+'. The previous result is recorded. The dice are not decorations.';
  if(state?.stage==='career-event')return 'You survived. Roll your career event. Try not to make it embarrassing.';
@@ -62,5 +62,5 @@ export function imperialCareerGuidance(model,state){
  if(model.phase===4&&model.template.exceptions.progression==='following')return 'Follow the offered progression step. A Following is not a rank, however loudly it applauds.';
  if(model.phase===4&&model.template.exceptions.progression==='parole')return 'Review progression and the recorded Parole Threshold. Your sentence has opinions about your exit.';
  if(model.phase===4&&!model.career.commission)return 'Resolve the offered progression and earned rewards. The title does not do the work for you.';
- return ['Choose your specialty. Even your questionable ambitions need a department.','Choose the training offered here. Wishful thinking remains unaccredited.','Training is recorded. Now find out whether it kept you alive.','Resolve the event and every required choice. A loose end is still your problem.','Review advancement or an available commission. Ambition is not a modifier.','Review the recorded term before deciding to stay or leave. Nostalgia is not a plan.','Resolve the remaining benefits. Payroll will not chase you.'][model.phase]??'Follow the current step below. Even your detours need an ending.';
+ return ['Choose your specialty. Even your questionable ambitions need a department.','Choose the training offered here. Wishful thinking remains unaccredited.','Training is recorded. Now find out whether it kept you alive.','Resolve the event and every required choice. A loose end is still your problem.','Review advancement or an available commission. Ambition is not a modifier.','Review the recorded term and the permitted next step below. Nostalgia is not a plan.','Resolve the remaining benefits. Payroll will not chase you.'][model.phase]??'Follow the current step below. Even your detours need an ending.';
 }
