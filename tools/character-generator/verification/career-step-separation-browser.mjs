@@ -1,3 +1,4 @@
+import {recordedResultDetails} from './recorded-result-details-browser.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -42,11 +43,11 @@ try{
   await page.screenshot({path:fileURLToPath(new URL('separate-step-'+width+'-'+http+'-'+failed+'-checkpoint.png',out)),fullPage:true});
   await page.locator('[data-action='+step+']').dblclick();
   await page.waitForFunction(({key,count})=>JSON.parse(localStorage.getItem(key)).events.length===count,{key,count:afterCheck.events.length+1});
-  await page.locator('#last-action-result').filter({hasText:'Table outcome:'}).waitFor();
+  await page.locator('#last-action-result').waitFor();
   const afterEvent=await saved(page);assert.equal(afterEvent.events.at(-1).command.type,step);assert.equal(afterEvent.events.length,afterCheck.events.length+1);
   assert.equal(await page.locator('[data-action='+step+']').count(),0);
-  const result=await page.locator('#last-action-result').innerText();assert.match(result,/Table outcome:/);assert.match(result,/Roll \[[1-6](, [1-6])?\] = [0-9]+/);
-  await page.reload();await page.locator('#last-action-result').filter({hasText:'Table outcome:'}).waitFor();assert.deepEqual(await saved(page),afterEvent);assert.match(await page.locator('#last-action-result').innerText(),/Table outcome:/);
+  const result=await recordedResultDetails(page);assert.match(result,/Table outcome:/);assert.match(result,/Roll \[[1-6](, [1-6])?\] = [0-9]+/);
+  await page.reload();await page.locator('#last-action-result').waitFor();assert.deepEqual(await saved(page),afterEvent);assert.match(await recordedResultDetails(page),/Table outcome:/);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   await page.screenshot({path:fileURLToPath(new URL('separate-step-'+width+'-'+http+'-'+failed+'-outcome.png',out)),fullPage:true});checks.push({http,width,step,pass:true});await context.close();
  }

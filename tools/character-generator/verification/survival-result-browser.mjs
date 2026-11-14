@@ -1,3 +1,4 @@
+import {recordedResultDetails} from './recorded-result-details-browser.mjs';
 import {downloadedActionLog} from './download-log-browser.mjs';
 import {assertResultColor} from './result-color-browser-assertions.mjs';
 import assert from 'node:assert/strict';
@@ -41,7 +42,7 @@ try{
     await page.reload();await page.locator('[data-action=career-event]').waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),checkpoint);
 
     await page.locator('[data-action=career-event]').evaluate(button=>{button.click();button.click();});await page.waitForFunction(()=>!document.querySelector('#new').disabled);
-    const eventText=await page.locator('#last-action-result').innerText();assert.match(eventText,/Table outcome:/);assert.match(eventText,/Roll \[.*\] = \d+/);
+    const eventText=await page.locator('#last-action-result').innerText(),details=await recordedResultDetails(page);assert.match(details,/Table outcome:/);assert.match(details,/Roll \[.*\] = \d+/);
     if(term===3)assert.match(await page.locator('#sheet').innerText(),/Contact/);
     else assert.match(eventText,/EDU check/);
     const raw=await page.evaluate(key=>localStorage.getItem(key),key),saved=importSession(raw);
