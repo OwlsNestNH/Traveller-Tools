@@ -1,7 +1,7 @@
 {
   "scope": "Current generated cosmetic tag renderers, not every random rules outcome",
   "corrected": [
-    {"view": "statistics-roll-feedback", "file": "gui/characteristics-presentation.mjs", "ownership": "existing stage Crow", "browserCases": ["statistics-high", "statistics-low"]},
+    {"view": "statistics-roll-feedback", "file": "gui/characteristics-presentation.mjs", "ownership": "existing stage Crow", "browserCases": ["statistics-high", "statistics-low", "statistics-aezorgh-imperial-high", "statistics-aezorgh-vargr-low"]},
     {"view": "Aslan family", "file": "gui/aslan-family-popup.mjs", "ownership": "active origin popup Crow", "browserCases": ["aslan-family"]},
     {"view": "Aslan birth order", "file": "gui/aslan-birth-popup.mjs", "ownership": "active origin popup Crow", "browserCases": ["aslan-birth"]},
     {"view": "Aslan estate", "file": "gui/aslan-estate-popup.mjs", "ownership": "active origin popup Crow", "browserCases": ["aslan-estate"]},
