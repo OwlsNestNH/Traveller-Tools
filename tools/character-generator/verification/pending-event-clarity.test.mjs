@@ -43,3 +43,10 @@ test('legacy Aezorgh keeps its original recorded dice without a selected career 
 
 
 test('pending Vargr decisions are not described as advancement',()=>{for(const stage of ['effect-choice','skill-choice','book-step']){const text=vargrCareerGuidance({phase:4},{stage});assert.doesNotMatch(text,/advancement/);assert.match(text,/choice|decision/);}});
+
+
+test('completed-term counters stay in information while the actual mishap consequence remains clear',()=>{
+ const r=pendingEventFixture('core.army','support',2,true),raw=exportSession(r.session),result=conciseResult(r.log.at(-1),r.state,catalog);
+ assert.equal(r.state.stage,'term-end');assert.ok(r.log.at(-1).changes.some(c=>c.path==='terms'));assert.match(result.text,/Enemy|enemy/);assert.match(result.text,/Must leave/);assert.doesNotMatch(result.text,/Completed terms:|Career terms:/);
+ assert.match(result.information.paragraphs.join(' '),/Completed terms:|Career terms:/);assert.equal(exportSession(r.session),raw);
+});

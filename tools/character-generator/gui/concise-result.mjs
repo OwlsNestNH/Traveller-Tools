@@ -89,7 +89,7 @@ export function conciseResult(event,state,catalog){
  if(catalog?.careers&&careerTemplateModel(state,catalog)&&!['deceased','finish','retirement'].includes(state?.stage)&&['career-event','career-mishap','choose-effect','choose-skill'].includes(event?.type)&&event.eventResults?.length&&event.eventResults.every(r=>/^(core|companion|aslan|vargr)\./.test(r.table)&&r.table!=='core.pre-career-events')){
   const narratives=unique(event.eventResults.map(r=>r.description)),title=narratives[0];
   if(title){
-   const details=unique([...narratives.slice(1),...otherEffects(event,catalog,()=>true),...(state?.stage==='book-step'?['Source resolution is pending; unresolved effects have not been awarded.']:[])]);
+   const details=unique([...narratives.slice(1),...otherEffects(event,catalog,c=>c.path!=='terms'&&!/^careers\.\d+\.(terms|successfulTerms)$/.test(c.path)),...(state?.stage==='book-step'?['Source resolution is pending; unresolved effects have not been awarded.']:[])]);
    const mishap=event.eventResults.some(r=>/\.mishaps$/.test(r.table)),status=mishap&&full.status!=='error'&&!['success','failure'].includes(full.status)?'failure':full.status;
    return {title,details,status,text:[title,...details].join(' '),full,compact:true,information:{title:mishap?'About your career mishap':'About your career event',label:mishap?'About your career mishap':'About your career event',paragraphs:unique([title,...full.details]),contextual:true,...(mishap?{retainCrow:true}:{})}};
   }
