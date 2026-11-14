@@ -1,3 +1,4 @@
+import {medicalContinuationEvent} from './medical-continuation.mjs';
 import {careerTemplateModel} from './career-template.mjs';
 import {benefitRollEvidence,benefitAwardHeadline} from './benefit-presentation.mjs';
 import {crowSpeakingPanel} from './crow-speaking-panel.mjs';
@@ -41,6 +42,7 @@ export function conciseResult(event,state,catalog){
  const treatmentBills=(event.changes??[]).filter(change=>/^medicalBills\.\d+$/.test(change.path)&&!change.before&&finite(change.after?.personalCost)).map(change=>change.after);
  if(['injury-treatment','resolve-book'].includes(event.type)&&treatmentBills.length&&catalog?.careers&&careerTemplateModel(state,catalog)){
   const title='Injury treatment complete.',details=treatmentBills.map(bill=>bill.personalCost?'Your medical bill: '+amount(bill.personalCost)+', due at the end of character creation.':'No personal medical bill.');
+  details.push(...otherEffects(medicalContinuationEvent(event,state,treatmentBills),catalog,()=>true));
   const forcedExit=state.character?.careers?.[state.active]?.forcedExit;
   if(state.stage==='term-end')details.push(forcedExit?'Leave this career and resolve any remaining benefits.':'Choose whether to continue this career or leave.');
   const costs=treatmentBills.map(bill=>'Treatment '+amount(bill.totalCost)+'; employer contribution '+amount(bill.coveredCost)+'; personal balance '+amount(bill.personalCost)+'.');

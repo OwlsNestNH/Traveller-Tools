@@ -81,9 +81,12 @@ export function medicalContributionEvidence(event,state){
  return {natural:medical.roll,modifier:injury.rank,total:medical.effectiveRoll,coveragePercent:medical.coveragePercent};
 }
 export function injuryRecordedDiceEvent(state,event){
- const injury=state?.currentInjury;if((event?.changes??[]).some(c=>/^medicalBills\.\d+$/.test(c.path)&&!c.before&&Number.isFinite(c.after?.personalCost)))return event;if(!injury||!['injury-loss','injury-treatment'].includes(state.stage))return event;
+ const bill=(event?.changes??[]).find(c=>/^medicalBills\.\d+$/.test(c.path)&&!c.before&&Number.isFinite(c.after?.personalCost))?.after;
+ if(bill&&event.rolls?.length)return event;
+ const injury=bill?state?.character?.injuries?.find(r=>r.id===bill.injuryId):state?.currentInjury;
+ if(!injury||!bill&&!['injury-loss','injury-treatment'].includes(state.stage))return event;
  // Read accepted injury evidence; a fixed table result has no invented die.
- return {rolls:[...(injury.tableRolls??[]).map((total,i,rows)=>({label:'Injury table'+(rows.length>1?' '+(i+1):''),values:[total],total})),...(Number.isInteger(injury.severityDie)?[{label:'Injury severity',values:[injury.severityDie],total:injury.severityDie}]:[])]};
+ return {...event,rolls:[...(injury.tableRolls??[]).map((total,i,rows)=>({label:'Injury table'+(rows.length>1?' '+(i+1):''),values:[total],total})),...(Number.isInteger(injury.severityDie)?[{label:'Injury severity',values:[injury.severityDie],total:injury.severityDie}]:[])]};
 }
 export function armyRecordedDice(event,{esc,checks=[],medicalContext=null,benefitContext=null}){
  // Resolving an offered choice records no new dice. Its validated event results

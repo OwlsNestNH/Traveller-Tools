@@ -1,3 +1,4 @@
+import{nobleInjuryTreatmentFixture}from'./injury-presentation-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {catalog} from '../engine/session.mjs';
@@ -23,7 +24,24 @@ test('no-career education and unsupported legacy species keep their complete est
  }
 });
 for(const personalCost of[0,10000])test('treatment completion leads with the actual personal bill '+personalCost,()=>{
- const state={stage:'term-end',active:0,character:{species:'human',careers:[{id:'core.army',assignment:'infantry',rank:0,forcedExit:true}],stats:{},skills:{}}};
- const event={type:'injury-treatment',summary:'Treatment recorded.',rolls:[{label:'Medical contribution',values:[2,3],total:5}],changes:[{path:'medicalBills.0',before:null,after:{totalCost:40000,coveredCost:40000-personalCost,personalCost}},{path:'stats.STR',before:3,after:7}]};const before=JSON.stringify({state,event}),r=conciseResult(event,state,catalog());
+ const state={stage:'term-end',active:0,character:{species:'human',careers:[{id:'core.army',assignment:'infantry',rank:0,forcedExit:true}],stats:{},skills:{},injuries:[{id:'injury-1',restoration:{STR:4}}]}};
+ const event={type:'injury-treatment',summary:'Treatment recorded.',rolls:[{label:'Medical contribution',values:[2,3],total:5}],changes:[{path:'medicalBills.0',before:null,after:{injuryId:'injury-1',totalCost:40000,coveredCost:40000-personalCost,personalCost}},{path:'stats.STR',before:3,after:7}]};const before=JSON.stringify({state,event}),r=conciseResult(event,state,catalog());
  assert.equal(r.title,'Injury treatment complete.');assert.match(r.details.join(' '),personalCost?/Your medical bill: Cr10,000/:/No personal medical bill/);assert.match(r.details.join(' '),/Leave this career/);assert.doesNotMatch(r.details.join(' '),/Strength|Source|Mishap/);assert.match(r.information.paragraphs.join(' '),/Treatment Cr40,000; employer contribution/);assert.equal(injuryRecordedDiceEvent(state,event),event);assert.equal(JSON.stringify({state,event}),before);
+});
+
+test('treatment keeps newly drained consequences visible while suppressing restoration duplication',()=>{
+ const state={stage:'skill-choice',active:0,character:{species:'human',careers:[{id:'core.noble',assignment:'administrator',rank:0}],stats:{STR:7,SOC:7},skills:{},injuries:[{id:'injury-1',restoration:{STR:4,DEX:2,END:2}}]}};
+ const event={type:'injury-treatment',summary:'Treatment recorded.',rolls:[],changes:[{path:'stats.STR',before:3,after:7},{path:'stats.SOC',before:8,after:7},{path:'medicalBills.0',before:null,after:{injuryId:'injury-1',totalCost:40000,coveredCost:30000,personalCost:10000}},{path:'relationships.0',before:null,after:{role:'Enemy',name:'Duel opponent'}}]};
+ const r=conciseResult(event,state,catalog());assert.match(r.details.join(' '),/Social standing: 8 → 7/);assert.match(r.details.join(' '),/Duel opponent/);assert.doesNotMatch(r.details.join(' '),/Strength: 3 → 7/);assert.match(r.details.join(' '),/Cr10,000/);
+});
+
+test('actual Noble duel retains its SOC penalty when treatment drains the event continuation',()=>{
+ const r=nobleInjuryTreatmentFixture(),event=r.log.at(-1),before=JSON.stringify(r),view=conciseResult(event,r.state,catalog());
+ assert.equal(event.type,'injury-treatment');assert.deepEqual(event.changes.find(c=>c.path==='stats.SOC'),{path:'stats.SOC',before:11,after:10});assert.match(view.details.join(' '),/Social standing: 11 → 10/);assert.doesNotMatch(view.details.join(' '),/Strength:|Dexterity:|Endurance:/);assert.match(view.details.join(' '),/Cr40,000/);assert.deepEqual(injuryRecordedDiceEvent(r.state,event).rolls.map(v=>v.values),[[1],[4]]);assert.equal(JSON.stringify(r),before);
+});
+
+test('a distinct physical continuation loss remains visible after recorded restoration',()=>{
+ const state={stage:'effect-choice',active:0,character:{species:'human',careers:[{id:'core.noble',assignment:'administrator',rank:0}],stats:{STR:6},skills:{},injuries:[{id:'injury-1',restoration:{STR:4}}]}};
+ const event={type:'injury-treatment',summary:'Treatment recorded.',rolls:[],changes:[{path:'stats.STR',before:3,after:6},{path:'medicalBills.0',before:null,after:{injuryId:'injury-1',totalCost:20000,coveredCost:0,personalCost:20000}}]};
+ const view=conciseResult(event,state,catalog());assert.match(view.details.join(' '),/Strength: 7 → 6/);assert.doesNotMatch(view.details.join(' '),/Strength: 3 → 6/);
 });

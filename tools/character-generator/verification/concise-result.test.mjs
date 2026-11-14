@@ -26,9 +26,9 @@ test('later career entry shows the actual check and new career, not bookkeeping;
 test('first-career skill awards are grouped without omitting any skill; qualification failures stay failures',()=>{
  for(const success of [true,false]){const r=qualificationOutcomeFixture(success).after,result=conciseResult(r.log.at(-1),r.state,catalog);assert.equal(result.status,success?'success':'failure');assert.match(result.text,success?/succeeded/:/failed/);if(success){assert.match(result.text,/Basic training: Pilot 0, Vacc Suit 0/);assert.ok(result.details.length<4);}}
 });
-test('treatment shows restored characteristics and personal bill, not old injury losses again',()=>{
- const r=treatmentFixture().after,result=conciseResult(r.log.at(-1),r.state,catalog);assert.equal(result.title,'Injury treatment complete.');assert.match(result.text,/Strength: 7 → 11/);assert.match(result.text,/Cr20,000 due/);assert.doesNotMatch(result.text,/Injury loss|Treatment restores|Career terms|Completed terms/);assert.match(result.full.text,/Injury loss/);
- const pending=treatmentFixture().before;assert.equal(conciseResult(pending.log.at(-1),pending.state,catalog).compact,false);
+test('treatment keeps the bill visible and restoration breakdown in information',()=>{
+ const r=treatmentFixture().after,result=conciseResult(r.log.at(-1),r.state,catalog);assert.equal(result.title,'Injury treatment complete.');assert.doesNotMatch(result.text,/Strength: 7 → 11/);assert.match(result.information.paragraphs.join(' '),/Strength: 7 → 11/);assert.match(result.text,/Cr20,000, due at the end of character creation/);assert.doesNotMatch(result.text,/Injury loss|Treatment restores|Career terms|Completed terms/);assert.match(result.full.text,/Injury loss/);
+ const pending=treatmentFixture().before;const injuryResult=conciseResult(pending.log.at(-1),pending.state,catalog);assert.equal(pending.state.pending.kind,'injury-medical');assert.equal(injuryResult.compact,false,'Unresolved employer source ruling retains its complete established result');
 });
 test('equipment appears once with material ownership, mortgage and redemption restrictions retained',()=>{
  const r=equipmentFixture().after,result=conciseResult(r.log.at(-1),r.state,catalog);assert.equal(result.title,'Received Synthetic weapon.');assert.doesNotMatch(result.text,/Asset:|Benefit:|Benefit award recorded|Owned by Traveller|Benefit rolls/);
