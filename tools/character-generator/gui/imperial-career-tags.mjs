@@ -1,6 +1,6 @@
 import {outcomeTagline} from './outcome-taglines.mjs';
 import {recordedConsequenceCheck} from './check-outcome.mjs';
-import {IMPERIAL_CAREER_DEFINITIONS} from './imperial-career-definitions.mjs';
+import {IMPERIAL_CAREER_DEFINITIONS,supportsImperialCareerPresentation} from './imperial-career-definitions.mjs';
 export const IMPERIAL_OUTCOME_LINES=Object.freeze({
  success:['Competence. Try not to make it look accidental.','You met the standard. The standard is relieved.','Well done. Do not expect applause from payroll.','A useful result. Someone will give you more work.','You passed. Your excuses will need updating.','Success. Try remembering how you managed that.'],
  exceptional:['Show-off. Now they will expect that every time.','Congratulations. You have volunteered for harder work.','An excellent result. Try surviving your new reputation.','You made that look easy. Management noticed. Unfortunate.','Exceptional work. Your reward is responsibility.','Your résumé has briefly overtaken your excuses.'],
@@ -31,10 +31,13 @@ export function imperialOutcome(event,result){
  return null;
 }
 export function imperialResultCareer(event,state){
- if(state.character?.species!=='human')return null;
+ if(!supportsImperialCareerPresentation(state.character))return null;
  const records=state.character.careers??[];
  const indices=[...new Set((event?.changes??[]).flatMap(c=>{const m=c.path.match(/^careers\.(\d+)\.benefitRolls$/);return m?[Number(m[1])]:[];}))];
  const id=event?.type==='career'?state.character.careerTransitions?.at(-1)?.toCareerId:records[state.active]?.id??(event?.type==='benefit'?records.at(-1)?.id:indices.length===1?records[indices[0]]?.id:null);
+ const record=records[state.active]?.id===id?records[state.active]:event?.type==='benefit'&&records.at(-1)?.id===id?records.at(-1):indices.length===1?records[indices[0]]:null;
+ // Preserve the established native Vargr fallback/draft comment routing.
+ if(state.character.species==='vargr'&&state.character.culture==='native'&&record&&(record.vargrFallback||record.vargrDraftId||record.vargrForcedCoreDraft))return null;
  return Object.hasOwn(IMPERIAL_CAREER_DEFINITIONS,id)?id:null;
 }
 export function imperialResultTagline(event,result,state){
