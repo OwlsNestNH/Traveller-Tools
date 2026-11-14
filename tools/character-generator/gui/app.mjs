@@ -757,9 +757,9 @@ $('#log-view').onclick=()=>{if(!busy&&projection?.ok)logViewer.open();};
 $('#log-download').onclick=()=>download('traveller-action-log.txt',fullActionLog(projection.log),'text/plain');
 let printDetails=null;
 window.addEventListener('beforeprint',()=>{
- if(printDetails)return;printDetails=[...document.querySelectorAll('#final-sheet-content details,#sheet details.army-record-section')].map(element=>({element,open:element.open}));printDetails.forEach(item=>item.element.open=true);
+ if(printDetails)return;printDetails=[...document.querySelectorAll('#final-sheet-content details,#sheet details.army-record-section')].map(element=>({element,open:element.open,name:element.getAttribute('name')}));for(const {element} of printDetails){element.setAttribute('data-print-expanded','');element.removeAttribute('name');}printDetails.forEach(item=>item.element.open=true);
 });
-window.addEventListener('afterprint',()=>{for(const item of printDetails??[])item.element.open=item.open;printDetails=null;});
+window.addEventListener('afterprint',()=>{for(const item of printDetails??[]){item.element.open=item.open;if(item.name!==null)item.element.setAttribute('name',item.name);item.element.removeAttribute('data-print-expanded');}printDetails=null;});
 $('#print').onclick=async()=>{
  if(busy)return;
  if(!await saveDraftNotes())return;
