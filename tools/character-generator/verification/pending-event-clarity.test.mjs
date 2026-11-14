@@ -47,6 +47,6 @@ test('pending Vargr decisions are not described as advancement',()=>{for(const s
 
 test('completed-term counters stay in information while the actual mishap consequence remains clear',()=>{
  const r=pendingEventFixture('core.army','support',2,true),raw=exportSession(r.session),result=conciseResult(r.log.at(-1),r.state,catalog);
- assert.equal(r.state.stage,'term-end');assert.ok(r.log.at(-1).changes.some(c=>c.path==='terms'));assert.match(result.text,/Enemy|enemy/);assert.match(result.text,/Must leave/);assert.doesNotMatch(result.text,/Completed terms:|Career terms:/);
+ assert.equal(r.state.stage,'term-end');assert.ok(r.log.at(-1).changes.some(c=>c.path==='terms'));assert.match(result.text,/Enemy|enemy/);assert.equal(result.title,'Army career has ended.');assert.equal(r.state.character.careers[r.state.active].forcedExit,true);assert.doesNotMatch(result.text,/Completed terms:|Career terms:/);
  assert.match(result.information.paragraphs.join(' '),/Completed terms:|Career terms:/);assert.equal(exportSession(r.session),raw);
 });

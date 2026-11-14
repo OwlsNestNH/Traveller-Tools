@@ -1,5 +1,6 @@
 // Assignment choices are projected by the rules API; this view does not classify careers.
 export function assignmentChangeView(state,{esc,button,sourceLabel}){
+ if(state.character?.careers?.[state.active]?.forcedExit===true)return '';
  const choices=state.assignmentChangeOptions??[];if(!choices.length)return '';
  const mode=choices[0].mode,available=choices.some(choice=>choice.available);
  const label=mode==='retain'?'Start next term and try assignment':'Leave for this assignment';
