@@ -49,6 +49,7 @@ export function imperialRuleInformation(model){
 
 export function imperialCareerGuidance(model,state){
  if(model.fallback)return 'Your application failed. Pick the next permitted route. Your paperwork has finally acquired a plot.';
+ if(state?.stage==='ageing')return 'Roll ageing before reviewing whether to stay or leave. Your completed term is recorded. Time has reviewed your application.';
  if(model.selection)return 'Pick a career. Optimism is still not a qualification.';
  if(state?.stage==='borrowed-event-roll')return 'Roll the pending '+state.pendingBorrowedRoll.label+'. The previous result is recorded. The dice are not decorations.';
  if(state?.stage==='career-event')return 'You survived. Roll your career event. Try not to make it embarrassing.';

@@ -38,6 +38,7 @@ export function aslanRuleInformation(model,state){
  return {title:model.career.name+' '+topic,summary:summary+(notes.length?' '+notes.join(' '):''),book:step?.book??book,page,url:step&&step.book!==book?step.url:url};
 }
 export function aslanCareerGuidance(model,state){
+ if(state?.stage==='ageing')return 'Roll ageing before choosing your next term. Your completed term is recorded. Even your ancestors cannot negotiate with the calendar.';
  if(model.selection)return 'Choose a permitted career. The clan has expectations. Unfortunately, they concern you.';
  if(state.stage==='failed-entry')return 'Qualification failed. Choose the permitted next step below. Your ancestors have requested a quieter descendant.';
  if(state.stage==='borrowed-event-roll')return 'Roll the pending '+state.pendingBorrowedRoll.label+'. The previous result is already recorded. Your optimism cannot replace the dice.';

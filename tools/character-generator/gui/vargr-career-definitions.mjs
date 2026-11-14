@@ -32,6 +32,7 @@ export function vargrRuleInformation(model,state){
  const step=model.stepSource;return {title:model.career.name+' '+topic,summary:summary+' '+notes.join(' '),book:step?.book??book,page:step?.page??(model.phase===3?d.eventPage:d.page),url:step&&step.book!==book?step.url:url};
 }
 export function vargrCareerGuidance(model,state){
+ if(state?.stage==='ageing')return 'Roll ageing before deciding your next term. Your completed term is recorded. The pack cannot outvote the calendar.';
  if(model.selection)return 'Choose a permitted career. The pack needs a plan. Apparently, it has delegated that mistake to you.';
  if(state.stage==='failed-entry'&&state.fallbackOptions?.drifter)return 'Qualification failed. Choose Core Drifter, Loner or the Vargr draft if permitted. Your accepted result stays recorded. Confidence was never a qualification.';
  if(state.pending?.kind==='vargr-draft')return 'Your draft result is recorded. The book left the destination mapping unclear. Get an explicit referee ruling; confidence is still not errata.';

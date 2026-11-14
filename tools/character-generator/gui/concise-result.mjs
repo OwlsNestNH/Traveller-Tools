@@ -4,6 +4,7 @@ import {eventResultDetails} from './event-result-view.mjs';
 // Presentation only. The full result and immutable action log remain available.
 import {rollResult,characterEffectDetails,modifierEffectDetails,pendingEffectDetails} from './roll-result-view.mjs';
 import {survivalResult} from './survival-result.mjs';
+import {recordedCoverCheck} from './check-outcome.mjs';
 const finite=n=>typeof n==='number'&&Number.isFinite(n);
 const unique=values=>[...new Set(values.filter(Boolean))];
 const amount=n=>'Cr'+n.toLocaleString('en-US');
@@ -30,6 +31,11 @@ function otherEffects(event,catalog,keep){
 }
 export function conciseResult(event,state,catalog){
  const full=rollResult(event,state,catalog);if(!full)return null;
+ const cover=recordedCoverCheck(event);
+ if(cover&&!['deceased','finish','retirement'].includes(state?.stage)){
+  const title='Undercover Deception check '+(cover.success?'succeeded.':'failed.'),details=['Total '+cover.total+' against '+cover.target+'+.',state?.stage==='borrowed-event-roll'?'Roll the pending '+state.pendingBorrowedRoll.label+' before continuing.':state?.stage==='cross-career-training'?'Choose an offered training table below.':'Follow the offered next step.'];
+  return {title,details,status:cover.success?'success':'failure',text:[title,...details].join(' '),full,compact:true,information:{title:'About your undercover result',label:'About your undercover result',paragraphs:unique([title,...details,full.title,...full.details]),contextual:true}};
+ }
  if(event?.type==='fallback'&&state?.pending?.kind==='vargr-draft'&&event.rolls?.some(r=>r.label==='Vargr draft')){const title='Draft result: '+state.pending.vargrDraft.label+'.',details=['The die is recorded. Confirm a source/referee mapping before entering a career.'];return {title,details,status:'pending',text:[title,...details].join(' '),full,compact:true};}
  if(event?.type==='fallback'&&state?.stage==='vargr-fallback-choice'){const career=catalog.careers.find(c=>c.id===state.pendingVargrFallback?.careerId),title=(career?.name??'Fallback')+' selected.',details=['Choose a specialty; no new qualification roll is needed.'];return {title,details,status:'info',text:[title,...details].join(' '),full,compact:true};}
  // Project awarded credits from the recorded changes; never rewrite replay-verified summaries.
@@ -49,6 +55,15 @@ export function conciseResult(event,state,catalog){
    return {title,details:mainDetails,status:full.status,text:[title,...mainDetails].join(' '),full,compact:true,information:{title:'Your Benefit roll bonus',paragraphs:unique([...details,...full.details]),crowType:'merchant'}};
   }
   return {title,details,status:full.status,text:[title,...details].join(' '),full,compact:true};
+ }
+ // A resolved table's alternatives are provenance, not awards. Keep the story
+ // and actual changes here; the unchanged complete result belongs in the info.
+ if(!['deceased','finish','retirement'].includes(state?.stage)&&['career-event','choose-effect','choose-skill'].includes(event?.type)&&event.eventResults?.length&&event.eventResults.every(r=>/^(core|aslan|vargr)\./.test(r.table)&&r.table!=='core.pre-career-events')){
+  const narratives=unique(event.eventResults.map(r=>r.description)),title=narratives[0];
+  if(title){
+   const details=unique([...narratives.slice(1),...otherEffects(event,catalog,()=>true),...(state?.stage==='book-step'?['Source resolution is pending; unresolved effects have not been awarded.']:[])]);
+   return {title,details,status:full.status,text:[title,...details].join(' '),full,compact:true,information:{title:'About your career event',label:'About your career event',paragraphs:unique([title,full.title,...full.details]),contextual:true}};
+  }
  }
  if(full.status!=='error'&&state?.stage==='deceased'&&state.character?.deceased===true){const title='This life path ended in death.',injury=state.character.injuries?.findLast(i=>i.deceased&&i.zeroRuling?.survives===false),details=state.character.ironManDeath?['Iron Man: failed Survival was fatal instead of rolling a mishap. Companion Update 2024 p. 13.',...diceDetails(event)]:injury?['Recorded referee injury ruling; this was not automatic death from a failed Survival check or a single zero score.','Referee reason: '+injury.zeroRuling.note]:[];return {title,details,status:'failure',text:[title,...details].join(' '),full,compact:true};}
  if(full.status!=='error'&&state?.stage==='finish'){const title='Recorded character ready for review.',details=['Source-assisted steps remain listed in the record.'];return {title,details,status:'info',text:[title,...details].join(' '),full,compact:true};}
@@ -124,12 +139,13 @@ export function conciseResult(event,state,catalog){
 export function latestResultView(result,{esc,tagline=null,crowType='generic'}){
  if(!result)return '';
  const paragraphs=details=>details.map(detail=>'<p>'+esc(detail)+'</p>').join('');
- if(result.information)return '<section id="last-action-result" class="result-panel result-'+result.status+' merchant-benefit-result" data-result-status="'+result.status+'" aria-label="Latest result"><div class="merchant-benefit-heading"><h3>'+esc(result.title)+'</h3><button type="button" class="opening-info-trigger" data-result-information aria-label="About your Benefit roll bonus" aria-haspopup="dialog" aria-controls="opening-help-dialog"><span aria-hidden="true">i</span></button></div>'+paragraphs(result.details)+'</section>';
+ if(result.information)return '<section id="last-action-result" class="result-panel result-'+result.status+' merchant-benefit-result" data-result-status="'+result.status+'" aria-label="Latest result">'+(result.information.contextual&&['success','failure'].includes(result.status)?'<p class="result-status">'+(result.status==='success'?'Success':'Failure')+'</p>':'')+'<div class="merchant-benefit-heading"><h3>'+esc(result.title)+'</h3><button type="button" class="opening-info-trigger" data-result-information aria-label="'+esc(result.information.label??'About your Benefit roll bonus')+'" aria-haspopup="dialog" aria-controls="opening-help-dialog"><span aria-hidden="true">i</span></button></div>'+paragraphs(result.details)+'</section>';
  return '<section id="last-action-result" class="result-panel result-'+result.status+'" data-result-status="'+result.status+'" aria-label="Latest result"><p class="result-status">'+({success:'Success',failure:'Failure',pending:'Pending resolution',info:'Information'}[result.status]??'Information')+'</p><h3>'+esc(result.title)+'</h3>'+paragraphs(result.details)+(tagline&&result.status!=='error'?crowSpeakingPanel({message:tagline,type:crowType,tone:result.status==='success'?'success':result.status==='failure'?'failure':'information',className:'outcome-tagline'}):'')+(result.compact?'<details class="result-information"><summary>Result details</summary><h4>'+esc(result.full.title)+'</h4>'+paragraphs(result.full.details)+'</details>':'')+'</section>';
 }
-export function mountResultInformation(document,result){
+export function mountResultInformation(document,result,{crowType='generic',tagline=null}={}){
  const trigger=document.querySelector('[data-result-information]');if(!trigger||!result?.information)return;
- trigger.addEventListener('click',()=>showOpeningInformation(document,result.information,trigger));
+ const info=result.information.contextual?{...result.information,crowType,paragraphs:unique([tagline,...result.information.paragraphs])}:result.information;
+ trigger.addEventListener('click',()=>showOpeningInformation(document,info,trigger));
  // The existing career popup has already supplied the progression control and recorded dice.
  // Supporting Crow guidance now belongs with the event's informational, not a second main panel.
  document.querySelector('#workspace>.career-pilot-guidance')?.remove();
