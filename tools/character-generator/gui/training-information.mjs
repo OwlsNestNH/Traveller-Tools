@@ -1,11 +1,13 @@
+import {knownSkillOptions} from './skill-knowledge.mjs';
 function informationId(name){let hash=2166136261;for(const c of name)hash=Math.imul(hash^c.codePointAt(0),16777619);return 'training-information-'+(hash>>>0).toString(36);}
-export function trainingInformationView(info,name,esc,identity=name){
+export function trainingInformationView(info,name,esc,identity=name,skills={}){
  if(!info)return '';
+ const known=knownSkillOptions(info.skills,skills);
  const entries=info.entries??[...(info.skills??[]),...(info.characteristics??[]),...(info.other??[])],id=informationId(identity),label='View skills and outcomes: '+name;
- return '<button type="button" class="training-info-trigger" aria-haspopup="dialog" popovertarget="'+id+'" aria-label="'+esc(label)+'" title="'+esc(label)+'"><span aria-hidden="true">ⓘ</span></button><div popover="auto" id="'+id+'" class="training-information" role="dialog" aria-label="'+esc(name+' table information')+'"><div class="training-info-heading"><h3>'+esc(name)+'</h3><button type="button" class="training-info-close" popovertarget="'+id+'" popovertargetaction="hide" aria-label="Close table information">×</button></div><ul>'+entries.map(entry=>'<li>'+esc(entry)+'</li>').join('')+'</ul>'+(info.legend?'<p class="help training-culture-legend">'+esc(info.legend)+'</p>':'')+'<p class="tiny">In table order. Choosing the table rolls one result; some results require a further choice.</p></div>';
+ return '<button type="button" class="training-info-trigger" aria-haspopup="dialog" popovertarget="'+id+'" aria-label="'+esc(label)+'" title="'+esc(label)+'"><span aria-hidden="true">ⓘ</span></button><div popover="auto" id="'+id+'" class="training-information" role="dialog" aria-label="'+esc(name+' table information')+'"><div class="training-info-heading"><h3>'+esc(name)+'</h3><button type="button" class="training-info-close" popovertarget="'+id+'" popovertargetaction="hide" aria-label="Close table information">×</button></div><ul>'+entries.map(entry=>'<li>'+esc(entry)+'</li>').join('')+'</ul>'+(known.length?'<h4>Already known</h4><ul>'+known.map(name=>'<li>'+esc(name)+'</li>').join('')+'</ul>':'')+(info.legend?'<p class="help training-culture-legend">'+esc(info.legend)+'</p>':'')+'<p class="tiny">In table order. Choosing the table rolls one result; some results require a further choice.</p></div>';
 }
-export function trainingChoiceView(label,info,action,attributes,{esc,button}){
- return '<div class="training-choice">'+button(esc(label),action,'choice',attributes)+trainingInformationView(info,label,esc,action+' '+attributes+' '+label)+'</div>';
+export function trainingChoiceView(label,info,action,attributes,{esc,button,skills={}}){
+ return '<div class="training-choice">'+button(esc(label),action,'choice',attributes)+trainingInformationView(info,label,esc,action+' '+attributes+' '+label,skills)+'</div>';
 }
 // Describe confirmed changes from the audit, not an assumed table award. Keep
 // saved summaries untouched so existing characters still replay identically.
