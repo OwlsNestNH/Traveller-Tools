@@ -1,0 +1,34 @@
+name: Visible academy event review
+on:
+  pull_request:
+    paths:
+      - 'tools/character-generator/**'
+      - '.github/workflows/visible-academy-event-review.yml'
+permissions:
+  contents: read
+jobs:
+  visible-academy-event:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - name: Install pinned browser runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/character-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
+          node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install chromium
+      - name: Accepted academy event and next-term chronology
+        run: |
+          node --test tools/character-generator/verification/visible-education-event.test.mjs
+          node tools/character-generator/verification/visible-education-event-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: visible-academy-event-${{ github.event.pull_request.head.sha }}
+          path: tools/character-generator/verification/artifacts/visible-academy-*.png
+          if-no-files-found: error
