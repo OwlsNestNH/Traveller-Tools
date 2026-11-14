@@ -171,7 +171,7 @@ function syncClanShareControls(savedLot){
 function notify(message,error=false,status='info',action=false,context={}){$('#message').style.overflowWrap='anywhere';$('#message').className=error?'error':'result-'+status+(action?' action-announcement':'');$('#message').textContent=message;const popupError=$('#species-skill-error');if(popupError)popupError.textContent=error?message:'';if(error)window.CrowTechnicalError?.show(message,context);}
 function clearActionNotice(){if($('#message').classList.contains('action-announcement'))notify('');}
 function actionNotice(type,result){
- return statisticsRollFeedback(result.log.at(-1),result.state)??conciseResult(result.log.at(-1),result.state,catalog)?.text??'Action recorded.';
+ return statisticsRollFeedback(result.log.at(-1),result.state)??conciseResult(result.log.at(-1),result.state,catalog,{recordedDiceVisible:!!careerTemplateModel(result.state,catalog)})?.text??'Action recorded.';
 }
 
 function updateRecovery(){
@@ -518,7 +518,7 @@ function sheetView(state){
 
 function render(){
  backgroundDraft=reconcileBackgroundDraft(backgroundDraft,backgroundDraftKey(session,projection.state),projection.state);
- const lastRollResult=conciseResult(projection.log.at(-1),projection.state,catalog);
+ const lastRollResult=conciseResult(projection.log.at(-1),projection.state,catalog,{recordedDiceVisible:!!careerTemplateModel(projection.state,catalog,selectedCareer)});
  const lastResult=projection.state.stage==='background'||projection.state.stage==='career'&&selectedCareer?'':statisticsRollFeedbackView(projection.log.at(-1),projection.state,{esc})??latestResultView(lastRollResult,{esc,crowType:careerResultCrowType(projection.log.at(-1),lastRollResult,projection.state),tagline:trainingTagline??careerResultTagline(projection.log.at(-1),lastRollResult,projection.state)});
  const nestedDraft=$('.education-nested-label select')?{kind:$('.education-nested-prompt').dataset.educationChoice,key:$('#workspace').dataset.educationStudyKey,value:$('.education-nested-label select').value}:null;
  const studyDraft=$('.education-result #education-subject')?{key:$('#workspace').dataset.educationStudyKey,subject:$('#education-subject').value,skill:$('#education-skill').value}:null;

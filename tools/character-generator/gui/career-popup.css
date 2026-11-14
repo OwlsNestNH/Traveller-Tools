@@ -266,3 +266,7 @@
 
 /* Accepted recorded-dice treatment on the support roll states. */
 @media screen{body[data-support-shell="true"] .army-dice-calculation{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px}body[data-support-shell="true"] .army-dice-equation{font-size:32px;font-weight:800}body[data-support-shell="true"] .army-recorded-dice{text-align:center}}
+
+/* Long nested-event narratives keep the established heading and circled-i
+   layout, with a readable phone scale that leaves the recorded dice in view. */
+@media screen and (max-width:500px){#army-career-dialog .nested-event-guidance{padding-bottom:6px;margin-bottom:4px}#army-career-dialog .nested-career-result .merchant-benefit-heading h3{font-size:24px;line-height:1.3}}

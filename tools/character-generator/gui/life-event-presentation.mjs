@@ -13,6 +13,7 @@ const names={
  'core.life-events':{2:'Sickness or Injury',3:'Birth or Death',4:'Ending of Relationship',5:'Improved Relationship',6:'New Relationship',7:'New Contact',8:'Betrayal',9:'Travel',10:'Good Fortune',11:'Crime',12:'Unusual Event'},
  'core.unusual-events':{1:'Psionics',2:'Aliens',3:'Alien Artefact',4:'Amnesia',5:'Contact with Government',6:'Ancient Technology'}
 };
+export const lifeEventTableLabel=table=>Object.hasOwn(tables,table)?tables[table]:null;
 export function lifeEventIdentity(table,row){
  if(!tables[table]||!Number.isInteger(row))return null;
  const name=names[table]?.[row];

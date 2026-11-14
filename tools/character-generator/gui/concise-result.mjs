@@ -29,7 +29,7 @@ function diceDetails(event){
 function otherEffects(event,catalog,keep){
  return [...characterEffectDetails({...event,changes:(event.changes??[]).filter(keep)},catalog),...modifierEffectDetails(event.modifierChanges?{modifiers:event.modifierChanges.before}:null,{modifiers:event.modifierChanges?.after},catalog),...pendingEffectDetails(event,catalog)];
 }
-export function conciseResult(event,state,catalog){
+export function conciseResult(event,state,catalog,{recordedDiceVisible=false}={}){
  const full=rollResult(event,state,catalog);if(!full)return null;
  const cover=recordedCoverCheck(event);
  if(cover&&!['deceased','finish','retirement'].includes(state?.stage)){
@@ -58,11 +58,14 @@ export function conciseResult(event,state,catalog){
  }
  // A resolved table's alternatives are provenance, not awards. Keep the story
  // and actual changes here; the unchanged complete result belongs in the info.
- if(!['deceased','finish','retirement'].includes(state?.stage)&&['career-event','choose-effect','choose-skill'].includes(event?.type)&&event.eventResults?.length&&event.eventResults.every(r=>/^(core|aslan|vargr)\./.test(r.table)&&r.table!=='core.pre-career-events')){
-  const narratives=unique(event.eventResults.map(r=>r.description)),title=narratives[0];
-  if(title){
-   const details=unique([...narratives.slice(1),...otherEffects(event,catalog,()=>true),...(state?.stage==='book-step'?['Source resolution is pending; unresolved effects have not been awarded.']:[])]);
-   return {title,details,status:full.status,text:[title,...details].join(' '),full,compact:true,information:{title:'About your career event',label:'About your career event',paragraphs:unique([title,full.title,...full.details]),contextual:true}};
+ if(full.status!=='error'&&!['deceased','finish','retirement'].includes(state?.stage)&&(['career-event','choose-effect','choose-skill'].includes(event?.type)||event?.type==='roll-borrowed-event'&&recordedDiceVisible)&&event.eventResults?.length&&event.eventResults.every(r=>/^(core|aslan|vargr)\./.test(r.table)&&r.table!=='core.pre-career-events')){
+  const nested=event.type==='roll-borrowed-event',narratives=unique(event.eventResults.map(r=>r.description)),title=nested?event.eventResults.at(-1)?.description:narratives[0];
+  if(typeof title==='string'&&title.trim()){
+   // The parent table explains why the nested roll happened, not what just
+   // happened. Its complete provenance stays in the information dialog.
+   // Pending controls below remain the authority for the next required action.
+   const details=nested?unique(otherEffects(event,catalog,()=>true)):unique([...narratives.slice(1),...otherEffects(event,catalog,()=>true),...(state?.stage==='book-step'?['Source resolution is pending; unresolved effects have not been awarded.']:[])]);
+   return {title,details,status:full.status,text:[title,...details].join(' '),full,compact:true,information:{title:'About your career event',label:'About your career event',paragraphs:unique([title,full.title,...full.details]),contextual:true,...(nested?{keepGuidance:true,compactDecision:state?.pending?.kind==='core-life-decision'}:{})}};
   }
  }
  if(full.status!=='error'&&state?.stage==='deceased'&&state.character?.deceased===true){const title='This life path ended in death.',injury=state.character.injuries?.findLast(i=>i.deceased&&i.zeroRuling?.survives===false),details=state.character.ironManDeath?['Iron Man: failed Survival was fatal instead of rolling a mishap. Companion Update 2024 p. 13.',...diceDetails(event)]:injury?['Recorded referee injury ruling; this was not automatic death from a failed Survival check or a single zero score.','Referee reason: '+injury.zeroRuling.note]:[];return {title,details,status:'failure',text:[title,...details].join(' '),full,compact:true};}
@@ -139,7 +142,7 @@ export function conciseResult(event,state,catalog){
 export function latestResultView(result,{esc,tagline=null,crowType='generic'}){
  if(!result)return '';
  const paragraphs=details=>details.map(detail=>'<p>'+esc(detail)+'</p>').join('');
- if(result.information)return '<section id="last-action-result" class="result-panel result-'+result.status+' merchant-benefit-result" data-result-status="'+result.status+'" aria-label="Latest result">'+(result.information.contextual&&['success','failure'].includes(result.status)?'<p class="result-status">'+(result.status==='success'?'Success':'Failure')+'</p>':'')+'<div class="merchant-benefit-heading"><h3>'+esc(result.title)+'</h3><button type="button" class="opening-info-trigger" data-result-information aria-label="'+esc(result.information.label??'About your Benefit roll bonus')+'" aria-haspopup="dialog" aria-controls="opening-help-dialog"><span aria-hidden="true">i</span></button></div>'+paragraphs(result.details)+'</section>';
+ if(result.information)return '<section id="last-action-result" class="result-panel result-'+result.status+' merchant-benefit-result'+(result.information.keepGuidance?' nested-career-result':'')+'" data-result-status="'+result.status+'" aria-label="Latest result">'+(result.information.contextual&&['success','failure'].includes(result.status)?'<p class="result-status">'+(result.status==='success'?'Success':'Failure')+'</p>':'')+'<div class="merchant-benefit-heading"><h3>'+esc(result.title)+'</h3><button type="button" class="opening-info-trigger" data-result-information aria-label="'+esc(result.information.label??'About your Benefit roll bonus')+'" aria-haspopup="dialog" aria-controls="opening-help-dialog"><span aria-hidden="true">i</span></button></div>'+paragraphs(result.details)+'</section>';
  return '<section id="last-action-result" class="result-panel result-'+result.status+'" data-result-status="'+result.status+'" aria-label="Latest result"><p class="result-status">'+({success:'Success',failure:'Failure',pending:'Pending resolution',info:'Information'}[result.status]??'Information')+'</p><h3>'+esc(result.title)+'</h3>'+paragraphs(result.details)+(tagline&&result.status!=='error'?crowSpeakingPanel({message:tagline,type:crowType,tone:result.status==='success'?'success':result.status==='failure'?'failure':'information',className:'outcome-tagline'}):'')+(result.compact?'<details class="result-information"><summary>Result details</summary><h4>'+esc(result.full.title)+'</h4>'+paragraphs(result.full.details)+'</details>':'')+'</section>';
 }
 export function mountResultInformation(document,result,{crowType='generic',tagline=null}={}){
@@ -147,7 +150,14 @@ export function mountResultInformation(document,result,{crowType='generic',tagli
  const info=result.information.contextual?{...result.information,crowType,paragraphs:unique([tagline,...result.information.paragraphs])}:result.information;
  trigger.addEventListener('click',()=>showOpeningInformation(document,info,trigger));
  // The existing career popup has already supplied the progression control and recorded dice.
- // Supporting Crow guidance now belongs with the event's informational, not a second main panel.
- document.querySelector('#workspace>.career-pilot-guidance')?.remove();
+ // Supporting Crow guidance normally belongs in the informational. Nested
+ // pending decisions retain their existing pictured next-step instruction.
+ const guidance=document.querySelector('#workspace>.career-pilot-guidance');
+ if(result.information.keepGuidance){
+  guidance?.classList.add('nested-event-guidance');
+  if(result.information.compactDecision){const title=document.getElementById('step-title');if(title)title.textContent='Your career event';const decision=document.getElementById('core-life-decision');const heading=decision?.querySelector(':scope > h3');if(heading)heading.textContent='Your decision';decision?.querySelector(':scope > .source')?.remove();}
+  // These references duplicate the accepted event's complete informational.
+  document.querySelector('#workspace > .army-career-source')?.remove();
+ }else guidance?.remove();
  for(const p of document.querySelectorAll('#workspace>p'))if(p.textContent==='Your term events are recorded. Resolve advancement for your assignment.')p.remove();
 }
