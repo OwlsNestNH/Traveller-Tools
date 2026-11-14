@@ -17,6 +17,7 @@ export function benefitAwardHeadline(event){
 
 export function benefitRecordedDiceEvent(event,state){
  const record=benefitRollEvidence(event,state);if(!record||event.rolls?.some(r=>r.label===(record.table==='cash'?'Cash benefit':'Material benefit')))return event;
- const rolls=(record.rolls??[]).filter(r=>Number.isInteger(r.natural)&&r.natural>=1&&r.natural<=6).map(r=>({label:record.table==='cash'?'Cash benefit':'Material benefit',values:[r.natural],total:r.natural}));
+ const evidence=record.rolls?.length?record.rolls:[record];
+ const rolls=evidence.map(r=>({label:record.table==='cash'?'Cash benefit':'Material benefit',total:r?.natural??record.natural}));
  return rolls.length?{...event,rolls:[...rolls,...(event.rolls??[])]}:event;
 }

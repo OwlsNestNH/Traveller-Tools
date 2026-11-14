@@ -30,7 +30,7 @@ test('unknown or exceptional steps never invent a mustering-out instruction',()=
 
 test('a verified failed event check uses failure copy rather than the neutral event bank',()=>{assert.equal(armyOutcome({id:'checked-event',type:'career-event'},{status:'failure'}),'army.failure');assert.equal(armyOutcome({id:'checked-event',type:'career-event'},{status:'pending'}),'army.event');assert.equal(armyOutcome({id:'checked-event',type:'career-event'},{status:'success'}),'army.success');});
 
-test('gold dice use recorded faces without RNG or fabricated placeholders',()=>{const event={rolls:[{label:'Survival',values:[2,6],total:8}]},before=JSON.stringify(event),esc=s=>String(s).replaceAll('<','&lt;');const html=armyRecordedDice(event,{esc});assert.equal((html.match(/<svg/g)??[]).length,2);assert.match(html,/Recorded dice: 2, 6/);assert.match(html,/Recorded total: 8/);assert.equal(JSON.stringify(event),before);assert.equal(armyRecordedDice({rolls:[{values:[0,7]}]},{esc}),'');});
+test('gold dice use recorded faces without RNG or fabricated placeholders',()=>{const event={rolls:[{label:'Survival',values:[2,6],total:8}]},before=JSON.stringify(event),esc=s=>String(s).replaceAll('<','&lt;');const html=armyRecordedDice(event,{esc});assert.equal((html.match(/<svg/g)??[]).length,2);assert.match(html,/Recorded dice: 2, 6/);assert.match(html,/Recorded total: 8/);assert.equal(JSON.stringify(event),before);assert.match(armyRecordedDice({rolls:[{values:[0,7]}]},{esc}),/Recorded die faces unavailable/);});
 
 test('all three Army specialties complete native training, rank rewards, commission and benefits',async()=>{
  const {assignmentSetup,run,force,settleAssignment}=await import('./assignment-fixtures.mjs');
@@ -64,4 +64,34 @@ test('Army first service training explicitly offers Drive or Vacc Suit and recor
   assert.equal(entry.state.character.skills[name],undefined);const result=run(entry,'choose-effect',{index});assert.equal(result.state.character.skills[name],0);assert.equal(result.state.character.skills[other],undefined);assert.equal(result.session.events.length,entry.session.events.length+1);assert.equal(result.state.rng,entry.state.rng);assert.equal(JSON.stringify(entry.session),raw);
   const replay=api({operation:'import',raw:JSON.stringify(result.session)});assert.equal(replay.ok,true);assert.equal(replay.state.character.skills[name],0);assert.equal(replay.state.character.skills[other],undefined);
  }
+});
+
+test('each gold face contains its stored number of pips, independently of the total',()=>{
+ for(let face=1;face<=6;face++){
+  const event={rolls:[{label:'Recorded roll',values:[face],total:99}]},before=JSON.stringify(event);
+  const html=armyRecordedDice(event,{esc:String});
+  assert.equal((html.match(/<circle\b/g)??[]).length,face);
+  assert.match(html,/Recorded total: 99/);assert.equal(JSON.stringify(event),before);
+ }
+ const html=armyRecordedDice({rolls:[{values:[2,6],total:8}]},{esc:String});
+ const svg=[...html.matchAll(/<svg\b[\s\S]*?<\/svg>/g)].map(x=>x[0]);
+ assert.deepEqual(svg.map(x=>(x.match(/<circle\b/g)??[]).length),[2,6]);
+});
+test('raw faces remain visible with separate kept values, conversions and signed adjustments',()=>{
+ for(const roll of [{values:[2,6,6],kept:[6,6],total:12},{label:'Damage (2D3-1)',values:[3,6],kept:[2,3],modifier:-1,total:4}]){
+  const event={rolls:[roll]},before=JSON.stringify(event),html=armyRecordedDice(event,{esc:String});
+  assert.equal((html.match(/<svg\b/g)??[]).length,roll.values.length);
+  assert.match(html,/Kept dice:|Converted D3 values:/);
+  if(roll.modifier)assert.match(html,/Roll adjustment: -1/);
+  assert.equal(JSON.stringify(event),before);
+ }
+ for(const values of [undefined,[],[0],[7],[2,NaN]]){
+  const html=armyRecordedDice({rolls:[{values,total:8}]},{esc:String});
+  assert.match(html,/Recorded die faces unavailable/);assert.equal((html.match(/<svg\b/g)??[]).length,0);assert.match(html,/Recorded total: 8/);
+ }
+});
+
+test('checked boon equation identifies the kept subtotal instead of summing discarded raw faces',()=>{
+ const event={type:'survival-check',summary:'Survival: {"natural":11,"total":12,"target":8,"success":true}.',rolls:[{label:'Survival',values:[1,5,6],kept:[6,5],total:11}]};
+ const html=armyRecordedDice(event,{esc:String});assert.match(html,/Natural 11 \+ 1 = 12/);assert.match(html,/Kept dice: 6, 5/);assert.match(html,/Recorded dice: 1, 5, 6/);
 });

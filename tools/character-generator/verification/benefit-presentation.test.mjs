@@ -11,8 +11,8 @@ test('gold benefit dice show natural, actual modifier, total and a distinct appl
  const html=armyRecordedDice(event,{esc:String,benefitContext:benefitRollEvidence(event,state)});assert.match(html,/Natural 2 · DM \+1 · Result 3/);assert.equal((html.match(/education-result-die/g)??[]).length,1);
  const capped={...record,appliedResult:2};assert.match(armyRecordedDice(event,{esc:String,benefitContext:capped}),/Table uses 2/);
 });
-test('completed deferred choices reuse accepted one-die evidence without inventing or repeating a roll',()=>{
- const choice={...event,type:'choose-skill',rolls:[]};const shown=benefitRecordedDiceEvent(choice,state);assert.deepEqual(shown.rolls,[{label:'Material benefit',values:[2],total:2}]);assert.equal(choice.rolls.length,0);assert.equal(benefitRollEvidence({...choice,changes:[]},state),null);assert.equal(benefitRecordedDiceEvent(event,state),event);
+test('completed deferred choices retain known totals without reconstructing unavailable raw faces',()=>{
+ const choice={...event,type:'choose-skill',rolls:[]};const shown=benefitRecordedDiceEvent(choice,state);assert.deepEqual(shown.rolls,[{label:'Material benefit',total:2}]);assert.match(armyRecordedDice(shown,{esc:String}),/Recorded die faces unavailable/);assert.equal(choice.rolls.length,0);assert.equal(benefitRollEvidence({...choice,changes:[]},state),null);assert.equal(benefitRecordedDiceEvent(event,state),event);
 });
 test('cash payout leads ahead of a separate Wealth increase',()=>{assert.deepEqual(benefitAwardHeadline({changes:[{path:'stats.WLT',before:5,after:6},{path:'cash',before:0,after:10000}]}),{title:'Received Cr10,000.',path:'cash'});});
 test('cash availability uses the actual source/account limit rather than hard coding three',()=>{
@@ -20,3 +20,11 @@ test('cash availability uses the actual source/account limit rather than hard co
  assert.equal(cashRollDisplay({cashRolls:8,cashRollsUsed:2,cashRollAccount:'core',cashLimit:3}).disabled,false);
 });
 test('unrendered legacy contexts retain the established complete benefit result',()=>{const r=conciseResult(event,{...state,character:{...state.character,species:'aezorgh'}},catalog());assert.notEqual(r.information?.label,'About your mustering-out result');assert.match(r.text,/Education/);});
+
+test('deferred benefit totals without detailed rolls explicitly report unavailable faces',()=>{
+ for(const rolls of [undefined,[],[{natural:9,modifier:1,result:10}]]){
+  const typed={...record,rolls},choice={...event,type:'choose-skill',rolls:[],changes:[{path:'benefitRollHistory.0',before:null,after:typed}]};
+  const before=JSON.stringify(choice),shown=benefitRecordedDiceEvent(choice,state),html=armyRecordedDice(shown,{esc:String});
+  assert.match(html,/Recorded die faces unavailable/);assert.equal((html.match(/<svg\b/g)??[]).length,0);assert.equal(JSON.stringify(choice),before);
+ }
+});
