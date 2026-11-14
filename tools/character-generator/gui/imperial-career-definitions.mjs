@@ -1,6 +1,10 @@
 // Source-backed presentation profiles. Eligibility and effects stay in the engine.
 const coreBook='Core Rulebook Update 2022',companionBook='Traveller Companion Update 2024';
 const coreUrl='https://www.mongoosepublishing.com/products/traveller-core-rulebook-update-2022';
+// Presentation support, never career eligibility. The engine still supplies
+// offered choices, restrictions and accepted records. Unknown/held contexts
+// and native species' own career profiles keep their existing boundaries.
+export const supportsImperialCareerPresentation=character=>character?.species==='human'||['aslan','vargr'].includes(character?.species)&&['native','imperial'].includes(character.culture);
 const descriptions={
  'core.agent':{law:'Investigate offences and enforce the law.',intelligence:'Gather intelligence and conduct covert operations.',corporate:'Protect an employer’s interests and information.'},
  'core.army':{support:'Keep the unit supplied, repaired and functioning.',infantry:'Serve on foot at the sharp end of a campaign.',cavalry:'Operate the vehicles that carry the fight.'},

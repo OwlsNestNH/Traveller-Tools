@@ -127,8 +127,8 @@
 @media screen and (max-width:850px){
  #army-career-dialog .army-specialty-requirements,#army-rule-information .army-specialty-requirements{grid-template-columns:minmax(0,1fr);gap:12px;font-size:16px}
  #army-career-dialog .army-specialty-requirements>div,#army-rule-information .army-specialty-requirements>div{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
- #army-career-dialog .army-specialty-requirements dt,#army-rule-information .army-specialty-requirements dt{margin:0;flex:1}
- #army-career-dialog .army-specialty-requirements dd,#army-rule-information .army-specialty-requirements dd{flex:none}
+ #army-career-dialog .army-specialty-requirements dt,#army-rule-information .army-specialty-requirements dt{margin:0;flex:0 0 108px}
+ #army-career-dialog .army-specialty-requirements dd,#army-rule-information .army-specialty-requirements dd{flex:1;min-width:0;text-align:right}
 }
 
 @media screen{#army-career-dialog .army-previous-result{margin:0 0 12px;border:1px solid #79a7bb;border-radius:8px;padding:10px 14px;background:#061b29}#army-career-dialog .army-previous-result summary{min-height:24px;color:#e6c978;font-weight:700;cursor:pointer}#army-career-dialog .army-previous-result[open] .result-panel{padding-top:12px}}
