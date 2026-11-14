@@ -1,3 +1,4 @@
+import {copyWithAwardProvenance,markAwardEffects,inheritAwardOrigin,awardOrigin,beginAwardAction,recordSkillAward,appliedSkillAwards} from './award-provenance.mjs';
 import {AEZORGH_CULTURES} from '../shared/aezorgh-culture.mjs';
 import {vargrDraftLabel,vargrDraftMappings} from './vargr-draft.mjs';
 import {ironManOptionAvailable} from '../shared/iron-man.mjs';
@@ -57,7 +58,7 @@ export const RULES_REVISION='character-preview-2026-11-14.35';
 // .19 chooses specialties on receipt; .18 retains deferred awards and corrections; .16/.17 retain historical mechanics.
 export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-13.34','character-preview-2026-11-13.33','character-preview-2026-11-13.32','character-preview-2026-11-09.31','character-preview-2026-11-09.30','character-preview-2026-11-09.29','character-preview-2026-11-09.27','character-preview-2026-11-09.25','character-preview-2026-11-09.24','character-preview-2026-11-09.23','character-preview-2026-11-09.22','character-preview-2026-11-09.21','character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
-const copy = value => structuredClone(value);
+const copy = copyWithAwardProvenance;
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
 function need(value,message) { if (!value) throw new Error(message); }
 function integer(value,min,max,name) { need(Number.isInteger(value)&&value>=min&&value<=max, name+' must be an integer from '+min+' to '+max+'.'); return value; }
@@ -124,9 +125,9 @@ function maxStat(state,key) { return findSpecies(state.character.species).maxima
 function setStat(state,key,value) { integer(value,0,40,'Characteristic'); state.character.stats[key]=value;if(aezorghCharismaActive(state)&&key==='SOC')state.character.stats.CHA=Math.floor(value/2); }
 // Unspecified awards remain individually allocatable, preserving minimum-level awards.
 function pendingSpecializations(state,base){return (state.character.deferredSkillAwards??[]).filter(a=>a.status==='pending'&&(!base||(Array.isArray(base)?base.includes(a.name):a.name===base)));}
-function deferSkillAward(state,e){const awards=state.character.deferredSkillAwards??=[];const award={...copy(e),id:'specialization-'+(awards.length+1),name:e.name,count:1,value:e.value??1,mode:e.mode??'increase',status:'pending',age:state.character.age,term:state.character.terms};awards.push(award);return award;}
+function deferSkillAward(state,e){const awards=state.character.deferredSkillAwards??=[];const award={...copy(e),id:'specialization-'+(awards.length+1),name:e.name,count:1,value:e.value??1,mode:e.mode??'increase',status:'pending',age:state.character.age,term:state.character.terms};inheritAwardOrigin(e,award);awards.push(award);return award;}
 function deferrableChoice(state,e){return !!state.deferredSpecializations&&!state.immediateSpecializations&&!e.allocationId&&e.kind!=='skill-reduction-choice'&&!e.distinctSpecialties&&!e.permittedNames&&['any','assignment','eligible-career',undefined].includes(e.scope);}
-function allocationEffects(state,base){return pendingSpecializations(state,base).map(a=>({...copy(a),kind:'skill-choice',scope:'any',allowed:[a.name],allocationId:a.id,deferSpeciality:false,label:'Allocate '+a.name+' award: '+(a.mode==='set'?'gain at least level ':'increase by ')+a.value}));}
+function allocationEffects(state,base){return pendingSpecializations(state,base).map(a=>inheritAwardOrigin(a,{...copy(a),kind:'skill-choice',scope:'any',allowed:[a.name],allocationId:a.id,deferSpeciality:false,label:'Allocate '+a.name+' award: '+(a.mode==='set'?'gain at least level ':'increase by ')+a.value}));}
 function requireAllocationsBefore(state,e,base){const effects=allocationEffects(state,base);if(!effects.length)return false;if(e.kind==='skill'&&e.name.includes(' ('))for(const effect of effects)effect.followingFixedAward=copy(e);state.effectsQueue.unshift(...effects,e);return true;}
 function specializationOptions(state){return {available:!!state.deferredSpecializations&&pendingSpecializations(state).length>0&&!state.pendingChoice&&!state.pending&&!state.effectsQueue?.length&&['career','precareer','training','survival','advancement','term-end','benefits','retirement','finish'].includes(state.stage),count:pendingSpecializations(state).length};}
 function normalizedSkill(state,name,options={}){return normalizeSkillName(name,{...options,canonicalOpen:!!state.deferredSpecializations});}
@@ -147,7 +148,7 @@ function independenceAcquired(state,name,rolls){
  need(state.character.species==='aslan'&&state.character.gender==='male','Independence is available only to male Aslan.');
  return dice(state,2,rolls,'Independence acquisition')>stat(state,'SOC');
 }
-function gainSkill(state,name,level,mode='increase',allowTalentAcquisition=false) {
+function gainSkill(state,name,level,mode='increase',allowTalentAcquisition=false,awardEffect=null) {
  need(typeof name==='string'&&name.length<=80,'Invalid skill.');
  const parsed=normalizedSkill(state,name,{requireSpeciality:mode!=='set'||level>0});name=parsed.name;const base=parsed.base;need(SKILLS.includes(base),'Choose a supported skill or specialisation.');need(!PSIONIC_TALENTS.includes(base)||!state.character.psionicLoss,'Ageing permanently removed psionic ability; historical talents cannot be increased or reacquired.');
  if(PSIONIC_TALENTS.includes(base)&&!Object.hasOwn(state.character.skills,name))need(allowTalentAcquisition&&(state.character.stats.PSI??0)>0,'Psionic talents require testing and explicit acquisition before improvement.');
@@ -157,6 +158,7 @@ function gainSkill(state,name,level,mode='increase',allowTalentAcquisition=false
  const total=Object.values(state.character.skills).reduce((a,b)=>a+b,0)-(current??0)+Math.max(next,0);
  need(total<=3*((state.character.stats.INT??0)+(state.character.stats.EDU??0))||Math.max(next,0)<=Math.max(current??0,0),'Total skill limit exceeded.');
  state.character.skills[name]=Math.min(4,next);
+ recordSkillAward(state,awardEffect,name,current,state.character.skills[name]);
 }
 function skillAwardExceedsLimit(state,name,level,mode='increase') {
  const parsed=normalizedSkill(state,name,{requireSpeciality:mode!=='set'||level>0});
@@ -1196,7 +1198,7 @@ function educationRights(state,careerId,assignment,entering=false) {
 function finishCareerEntry(state,rolls) {
  const {record}=currentCareer(state),effects=record.entryEffects??[],next=record.entryNext??'survival';
  delete record.entryEffects;delete record.entryNext;
- queueEffects(state,[...effects,...(record.educationRankAward?[]:rankEffects(state))],next,rolls);
+ queueEffects(state,[...effects,...(record.educationRankAward?[]:rankEffects(state,'entry'))],next,rolls);
 }
 function learnedEducationSkills(state) {
  const before=educationRecord(state).skillsBefore;
@@ -1363,12 +1365,14 @@ function rerollMaterialBenefit(state,e,rolls){
 function finishCareerExit(state){const {record}=currentCareer(state);state.stage=record.benefitRolls?'benefits':postBenefitsStage(state);if(!record.benefitRolls)state.active=null;}
 
 function nativePack(state) { return state.active===null?null:RULE_PACK[state.character.careers[state.active].id]??null; }
-function rankEffects(state) {
- const {record}=currentCareer(state),pack=nativePack(state);if(!pack)return [];
- if(state.correctedCareerEvents&&record.id==='aslan.space-officer'){const mapping=aslanSpaceOfficerRankMapping(record.assignment);if(mapping){record.aslanRankMapping=mapping;const offer=state.character.aslanOfficerOffers?.find(o=>o.id===record.aslanOfficerOfferId);if(offer)offer.rankMapping=copy(mapping);return aslanOfficerRankEffects(mapping.tableId,record.rank);}}
- if(record.id==='aslan.space-officer'&&record.assignment!=='commander'&&record.aslanOfficerOfferId){if(record.aslanRankMapping)return aslanOfficerRankEffects(record.aslanRankMapping.tableId,record.rank);return [{kind:'aslan-officer-rank-choice',source:{id:'aliens',page:39}}];}
+function rankEffects(state,reason='rank') {
+ const {record,career}=currentCareer(state),pack=nativePack(state);if(!pack)return [];
+ const track=record.officer?'officer':pack.ranks.assignments?record.assignment:pack.ranks.enlisted?'enlisted':'default';
+ const tag=(effects,title='')=>markAwardEffects(copy(effects),{kind:'rank',careerId:career.id,careerIndex:state.active,assignment:record.assignment,rank:record.rank,track,title,reason,...(record.aslanRankMapping?{mapping:{tableId:record.aslanRankMapping.tableId,kind:record.aslanRankMapping.interpretation??'referee-selected'}}:{}),source:copy(pack.source??{id:career.source,pages:[career.page,career.page+1]})});
+ if(state.correctedCareerEvents&&record.id==='aslan.space-officer'){const mapping=aslanSpaceOfficerRankMapping(record.assignment);if(mapping){record.aslanRankMapping=mapping;const offer=state.character.aslanOfficerOffers?.find(o=>o.id===record.aslanOfficerOfferId);if(offer)offer.rankMapping=copy(mapping);return tag(aslanOfficerRankEffects(mapping.tableId,record.rank));}}
+ if(record.id==='aslan.space-officer'&&record.assignment!=='commander'&&record.aslanOfficerOfferId){if(record.aslanRankMapping)return tag(aslanOfficerRankEffects(record.aslanRankMapping.tableId,record.rank));return tag([{kind:'aslan-officer-rank-choice',source:{id:'aliens',page:39}}]);}
  const rows=record.officer?(pack.ranks.officer??pack.ranks.default):pack.ranks.assignments?.[record.assignment]??pack.ranks.enlisted??pack.ranks.default;
- return copy(rows?.find(r=>r.rank===record.rank)?.effects??[]);
+ const row=rows?.find(r=>r.rank===record.rank);return tag(copy(row?.effects??[]),row?.title??'');
 }
 function asBasic(effects) {
  return effects.map(effect=>effect.kind==='choice'?{...effect,options:effect.options.map(o=>({...o,effects:asBasic(o.effects)}))}:effect.kind==='skill'?{...effect,name:effect.name.startsWith('Profession (')?effect.name:effect.name.split(' (')[0],mode:'set',value:0}:effect.kind==='skill-choice'?{...effect,mode:'set',value:0}:effect);
@@ -1597,15 +1601,16 @@ function drainEffects(state,rolls,approvedRoll=null) {
     state.effectsQueue.unshift({kind:'skill',name,mode:e.mode,value:e.value});break;
    }
    case 'service-training':{
+    const educationIndex=e.educationIndex??state.education,education=state.character.educations?.[educationIndex];if(education&&EDUCATION_PACK[education.id]?.careerRules?.serviceAward?.career===e.career)markAwardEffects([e],{kind:e.selection==='all'?'academy-entry':'academy-service',educationId:education.id,educationIndex,careerId:e.career,source:copy(e.source??EDUCATION_PACK[education.id]?.source??null)});
     const rows=RULE_PACK[e.career]?.training.service;
     if(!rows){nativeFallback(state,e,'Resolve the academy service training from its career table.');return;}
-    if(e.selection==='all')state.effectsQueue.unshift(...rows.flatMap(asBasic));
-    else {state.pendingChoice={...e,picked:e.picked??[],options:serviceSkills(e.career)};state.stage='education-service';return;}break;
+    if(e.selection==='all'){const basic=rows.flatMap(asBasic),origin=awardOrigin(e);if(origin)markAwardEffects(basic,origin);state.effectsQueue.unshift(...basic);}
+    else {state.pendingChoice=inheritAwardOrigin(e,{...e,picked:e.picked??[],options:serviceSkills(e.career)});state.stage='education-service';return;}break;
    }
    case 'education-status':educationRecord(state).graduationAllowed=e.graduationAllowed;break;
    case 'zhodani-status-review':if(reviewZhodaniStatus(state,'unusual-event',rolls,'native-resume'))return;break;
    case 'zhodani-ageing-psi':need(state.character.stats.PSI>0&&!state.character.psionicLoss,'Choose an available characteristic for mental ageing.');sourceStep(state,'zhodani-ageing-psi','aliens',277,'Confirm the referee choice of PSI for this mental ageing loss.','native-resume');return;
-   case 'psionic-talent':{if(state.character.psionicLoss){nativeFallback(state,e,'Ageing permanently removed psionic ability. Resolve this mandatory talent result explicitly without restoring it.');return;}if(e.name&&PSIONIC_TALENTS.includes(e.name)&&skillLevel(state,e.name)>=0){if(skillAwardExceedsLimit(state,e.name,e.value??1,e.mode)){nativeFallback(state,e,'This mandatory talent award would exceed the total skill limit. Adjudicate the award from the source.');return;}gainSkill(state,e.name,e.value??1,e.mode);break;}requestTalentAward(state,e,rolls);return;}
+   case 'psionic-talent':{if(state.character.psionicLoss){nativeFallback(state,e,'Ageing permanently removed psionic ability. Resolve this mandatory talent result explicitly without restoring it.');return;}if(e.name&&PSIONIC_TALENTS.includes(e.name)&&skillLevel(state,e.name)>=0){if(skillAwardExceedsLimit(state,e.name,e.value??1,e.mode)){nativeFallback(state,e,'This mandatory talent award would exceed the total skill limit. Adjudicate the award from the source.');return;}gainSkill(state,e.name,e.value??1,e.mode,false,e);break;}requestTalentAward(state,e,rolls);return;}
    case 'education-hobby-independence':{
     need(educationEventContext(state)?.row===9,'No education hobby acquisition is pending.');
     if(independenceAcquired(state,e.name,rolls))gainSkill(state,e.name,e.value,e.mode);break;
@@ -1623,14 +1628,14 @@ function drainEffects(state,rolls,approvedRoll=null) {
    case 'skill-choice':
     if(['assignment','eligible-career'].includes(e.scope)&&state.active!==null){
      const {career,record}=currentCareer(state),choice=vargrTrainingChoice({careerId:career.id,assignment:record.assignment,pack:nativePack(state),eligibleTables:trainingOptions(state).map(t=>t.id),effect:e});
-     if(choice?.tableSkills.length){if(deferrableChoice(state,choice))choice.deferSpeciality=true;state.pendingChoice=choice;state.stage='skill-choice';return;}
+     if(choice?.tableSkills.length){if(deferrableChoice(state,choice))choice.deferSpeciality=true;state.pendingChoice=choice;inheritAwardOrigin(e,state.pendingChoice);state.stage='skill-choice';return;}
     }
     if(state.character.psionicLoss&&(['psionic-talents','new-psionic-talent'].includes(e.scope)||e.allowed?.length&&e.allowed.every(n=>PSIONIC_TALENTS.includes(n)))){nativeFallback(state,e,'Ageing permanently removed psionic ability. Resolve this constrained award explicitly without restoring historical talents.');return;}
     if(e.scope==='new-psionic-talent'&&(!(state.character.stats.PSI>0)||!availableNewTalents(state).length)){nativeFallback(state,e,'No eligible new talent is available. Resolve the source award explicitly without restoring lost ability or inventing a replacement.');return;}
     if(e.scope==='psionic-talents'&&!coreTalentChoice(state,e)&&!acquiredTalents(state).length){nativeFallback(state,e,'This result improves an already acquired psionic talent, but none is possessed. Resolve the source award explicitly; it does not grant free acquisition.');return;}
     if(!['any','existing','science-specialties','psionic-talents','untrained-electronics-or-science','science-medic-electronics','non-psionic','new-psionic-talent'].includes(e.scope)||(e.distinctSpecialties&&e.scope!=='science-specialties')||e.untrained&&!coreTalentChoice(state,e)){nativeFallback(state,e,'Resolve the constrained skill choice from the source.');return;}
     if(deferrableChoice(state,e))e.deferSpeciality=true;
-    state.pendingChoice=e.scope==='science-specialties'?{...e,selected:e.selected??[],source:copy(e.source??e.reeducationOrigin?.source??{id:currentCareer(state).career.source,page:currentCareer(state).career.page+1}),label:'Choose a Science specialisation'}:e;state.stage='skill-choice';return;
+    state.pendingChoice=e.scope==='science-specialties'?{...e,selected:e.selected??[],source:copy(e.source??e.reeducationOrigin?.source??{id:currentCareer(state).career.source,page:currentCareer(state).career.page+1}),label:'Choose a Science specialisation'}:e;inheritAwardOrigin(e,state.pendingChoice);state.stage='skill-choice';return;
    case 'skill-reduction-choice':{const eligible=Object.keys(state.character.skills).filter(n=>state.character.skills[n]>0&&(!e.names||e.names.includes(n))&&skillNameAllowed(state,n,e));if(!eligible.length){
     // User ruling (2026-11-09), Companion 2024 p. 39: the reduction is the cost of staying.
     if(state.believerFalseTeachingsRuling&&e.believerFalseTeachings){
@@ -1640,16 +1645,16 @@ function drainEffects(state,rolls,approvedRoll=null) {
      const protection=state.effectsQueue.find(effect=>effect.kind==='keep-career');if(protection)protection.forcedExit=true;
      state.character.historyNotes??=[];state.character.historyNotes.push('Believer false teachings (Companion 2024 p. 39; user ruling): neither Profession (religion) nor Science (belief) can be reduced, so you are ejected from the career.');break;
     }
-    nativeFallback(state,e,'No eligible trained skill can satisfy this reduction. Resolve the printed mishap explicitly before continuing.');return;}state.pendingChoice=e;state.stage='skill-choice';return;}
+    nativeFallback(state,e,'No eligible trained skill can satisfy this reduction. Resolve the printed mishap explicitly before continuing.');return;}state.pendingChoice=e;inheritAwardOrigin(e,state.pendingChoice);state.stage='skill-choice';return;}
    case 'skill':{
     const base=e.name.split(' (')[0];
-    if(state.deferredSpecializations&&base==='Independence'&&(e.value??1)>0){state.effectsQueue.unshift({...e,kind:'independence'});break;}
+    if(state.deferredSpecializations&&base==='Independence'&&(e.value??1)>0){state.effectsQueue.unshift(inheritAwardOrigin(e,{...e,kind:'independence'}));break;}
     if(state.character.psionicLoss&&PSIONIC_TALENTS.includes(base)){nativeFallback(state,e,'Ageing permanently removed psionic ability. Resolve this mandatory talent award explicitly without restoring it.');return;}
     if(PSIONIC_TALENTS.includes(base)&&skillLevel(state,e.name)<0){requestTalentAward(state,e,rolls);return;}
     if(state.deferredSpecializations&&!state.immediateSpecializations&&(e.value??1)>0&&SPECIALIZED.includes(base)&&e.name===base&&!e.immediateSpeciality&&state.effectsQueue?.[0]?.skillScope!=='preceding-award'){deferSkillAward(state,e);break;}
-    if((state.immediateSpecializations?(e.value??1):e.value)>0&&SPECIALIZED.includes(base)&&e.name===base){state.pendingChoice={...copy(e),kind:'skill-choice',scope:'any',allowed:[base],mode:e.mode,value:e.value,...(e.awardId?{awardId:e.awardId}:{}),label:'Choose a '+base+' specialisation'};state.stage='skill-choice';return;}
+    if((state.immediateSpecializations?(e.value??1):e.value)>0&&SPECIALIZED.includes(base)&&e.name===base){state.pendingChoice=inheritAwardOrigin(e,{...copy(e),kind:'skill-choice',scope:'any',allowed:[base],mode:e.mode,value:e.value,...(e.awardId?{awardId:e.awardId}:{}),label:'Choose a '+base+' specialisation'});inheritAwardOrigin(e,state.pendingChoice);state.stage='skill-choice';return;}
 
-    if(skillAwardExceedsLimit(state,e.name,e.value??1,e.mode)){nativeFallback(state,e,'This mandatory skill award would exceed the total skill limit. Resolve its disposal from Core p. 18 without exceeding the cap.');return;}gainSkill(state,e.name,e.value??1,e.mode);bindAwardCheck(state,e.name);break;
+    if(skillAwardExceedsLimit(state,e.name,e.value??1,e.mode)){nativeFallback(state,e,'This mandatory skill award would exceed the total skill limit. Resolve its disposal from Core p. 18 without exceeding the cap.');return;}gainSkill(state,e.name,e.value??1,e.mode,false,e);bindAwardCheck(state,e.name);break;
    }
    case 'stat':{
     if(state.character.species==='aezorgh'&&e.name==='CHA'){nativeFallback(state,e,'Aezorgh CHA is derived from SOC. Resolve this cross-book effect explicitly.');return;}
@@ -1675,7 +1680,7 @@ function drainEffects(state,rolls,approvedRoll=null) {
    case 'weapon-skill-choice':{
     const names=[...new Set((state.character.assets??[]).filter(a=>a.active&&a.weaponSkill&&e.allowedBases.includes(a.weaponSkill.split(' (')[0])&&(!e.eligibleAwardIds||a.awardIds.some(id=>e.eligibleAwardIds.includes(id)))).map(a=>a.weaponSkill))];
     if(!names.length){benefitSource(state,benefitAward(state,e.awardId),'benefit-source','No received weapon has a recorded matching skill. Establish the weapon and skill before resolving this improvement.');return;}
-    state.pendingChoice={kind:'skill-choice',scope:'any',allowed:e.allowedBases,permittedNames:names,mode:e.mode,value:e.value,awardId:e.awardId,...(e.deferredEquipmentTaskId?{deferredEquipmentTaskId:e.deferredEquipmentTaskId,source:copy(e.source)}:{}),label:'Improve a skill matching a weapon already received: '+names.join(', ')};state.stage='skill-choice';return;
+    state.pendingChoice={kind:'skill-choice',scope:'any',allowed:e.allowedBases,permittedNames:names,mode:e.mode,value:e.value,awardId:e.awardId,...(e.deferredEquipmentTaskId?{deferredEquipmentTaskId:e.deferredEquipmentTaskId,source:copy(e.source)}:{}),label:'Improve a skill matching a weapon already received: '+names.join(', ')};inheritAwardOrigin(e,state.pendingChoice);state.stage='skill-choice';return;
    }
    case 'ship-use':case 'ship-mortgage':if(!openBenefitShip(state,e,rolls))return;break;
    case 'reroll-benefit':if(!rerollMaterialBenefit(state,e,rolls))return;break;
@@ -1748,7 +1753,7 @@ function drainEffects(state,rolls,approvedRoll=null) {
     else if(e.action==='auto-qualify'){state.automaticCareers??=[];state.automaticCareers.push(e.career);}
     else {nativeFallback(state,e);return;}break;
    }
-   case 'promotion':{const {record}=currentCareer(state);if(state.correctedCareerEvents&&e.mode==='immediate'&&record.id==='companion.believer'){const previous=record.rank;record.rank=Math.min(6,record.rank+1);record.highestRank=Math.max(record.highestRank??0,record.rank);if(record.rank>previous)state.effectsQueue.unshift(...rankEffects(state));break;}record.automaticPromotion=true;if(e.allowCommission)record.automaticCommission=true;break;}
+   case 'promotion':{const {record}=currentCareer(state);if(state.correctedCareerEvents&&e.mode==='immediate'&&record.id==='companion.believer'){const previous=record.rank;record.rank=Math.min(6,record.rank+1);record.highestRank=Math.max(record.highestRank??0,record.rank);if(record.rank>previous)state.effectsQueue.unshift(...rankEffects(state,'event-promotion'));break;}record.automaticPromotion=true;if(e.allowCommission)record.automaticCommission=true;break;}
    case 'benefit-credit':{const {career}=currentCareer(state);state.character.benefitCredits??=[];state.character.benefitCredits.push({id:'benefit-credit-'+(state.character.benefitCredits.length+1),source:copy(e.source),originCareerId:career.id,originCareerIndex:state.active,value:e.value,scope:e.scope,status:'available',consumption:null});break;}
    case 'zhodani-advisory':beginAdvisory(state);return;
    case 'advisory-ready':{const record=advisoryRecord(state);assertAdvisoryContext(state,record);need(record.id===e.id,'The advisory entitlement changed.');record.status='awaiting-cash';state.stage='advisory-cash';return;}
@@ -1856,9 +1861,9 @@ function drainEffects(state,rolls,approvedRoll=null) {
    case 'aslan-officer-rank-choice':{const {record}=currentCareer(state);state.pendingAslanOfficerRank={careerIndex:state.active,offerId:record.aslanOfficerOfferId,source:{id:'aliens',page:39}};state.stage='aslan-officer-rank';return;}
    case 'conditional-future':state.character.futureConditions??=[];state.character.futureConditions.push(copy(e));break;
    case 'assignment-effect':{state.effectsQueue.unshift(...copy(e.assignments[currentCareer(state).record.assignment]??[]));break;}
-   case 'independence':{if(state.character.gender!=='male'||state.deferredSpecializations&&state.character.species!=='aslan'){nativeFallback(state,e,state.deferredSpecializations?'No rerollable source table accompanies this fixed/event Independence award. Resolve its replacement explicitly; Independence remains male-only.':'Resolve the gender-specific Independence result.');return;}const result=dice(state,2,rolls,'Independence acquisition');if(result>stat(state,'SOC')){if(skillAwardExceedsLimit(state,'Independence',e.value??1,e.mode)){nativeFallback(state,e,'This mandatory Independence award would exceed the total skill limit. Resolve it explicitly without exceeding Core p. 18.');return;}gainSkill(state,'Independence',e.value??1,e.mode);}break;}
+   case 'independence':{if(state.character.gender!=='male'||state.deferredSpecializations&&state.character.species!=='aslan'){nativeFallback(state,e,state.deferredSpecializations?'No rerollable source table accompanies this fixed/event Independence award. Resolve its replacement explicitly; Independence remains male-only.':'Resolve the gender-specific Independence result.');return;}const result=dice(state,2,rolls,'Independence acquisition');if(result>stat(state,'SOC')){if(skillAwardExceedsLimit(state,'Independence',e.value??1,e.mode)){nativeFallback(state,e,'This mandatory Independence award would exceed the total skill limit. Resolve it explicitly without exceeding Core p. 18.');return;}gainSkill(state,'Independence',e.value??1,e.mode,false,e);}break;}
    case 'conditional':{
-    if(state.deferredSpecializations&&state.character.species==='aslan'&&culturalSkillAward(e)){state.character.historyNotes??=[];state.character.historyNotes.push(e.then.map(effect=>effect.name).join(', ')+' is culturally '+e.condition.gender+'-associated, but may be learned by other genders (Aliens 2026 p. 19).');state.effectsQueue.unshift(...copy(e.then).map(effect=>({...effect,culturalPreference:{gender:e.condition.gender,restricted:false,source:copy(ASLAN_CULTURAL_SKILL_SOURCE)}})));break;}
+    if(state.deferredSpecializations&&state.character.species==='aslan'&&culturalSkillAward(e)){state.character.historyNotes??=[];state.character.historyNotes.push(e.then.map(effect=>effect.name).join(', ')+' is culturally '+e.condition.gender+'-associated, but may be learned by other genders (Aliens 2026 p. 19).');state.effectsQueue.unshift(...copy(e.then).map(effect=>inheritAwardOrigin(effect,{...effect,culturalPreference:{gender:e.condition.gender,restricted:false,source:copy(ASLAN_CULTURAL_SKILL_SOURCE)}})));break;}
     const condition=e.condition;let passes=true;
     if(condition.gender)passes&&=state.character.gender===condition.gender;
     if(condition.stat)passes&&=(state.character.stats[condition.stat]??0)>=(condition.min??-Infinity)&&(state.character.stats[condition.stat]??0)<=(condition.max??Infinity);
@@ -2190,7 +2195,7 @@ function apply(state,command,rolls) {
  case 'resolve-aslan-officer-rank':{
   need(state.stage==='aslan-officer-rank'&&state.pendingAslanOfficerRank,'No officer rank-table mapping is pending.');need(state.config.gm,'Enable GM mode before mapping conflicting rank-table headings.');need(Object.keys(payload).every(k=>['tableId','reason'].includes(k)),'Record only the printed table and referee reason.');
   const reason=text(payload.reason??'',500);need(reason,'Record the source basis for this rank-table mapping.');const {record}=currentCareer(state),pending=state.pendingAslanOfficerRank;need(state.active===pending.careerIndex&&record.aslanOfficerOfferId===pending.offerId,'The officer rank context changed.');
-  const effects=aslanOfficerRankEffects(payload.tableId,record.rank);record.aslanRankMapping={tableId:payload.tableId,reason,source:{id:'aliens',page:39}};const offer=state.character.aslanOfficerOffers.find(o=>o.id===pending.offerId);offer.rankMapping=copy(record.aslanRankMapping);state.pendingAslanOfficerRank=null;
+  const effects=markAwardEffects(copy(aslanOfficerRankEffects(payload.tableId,record.rank)),{kind:'rank',careerId:record.id,careerIndex:state.active,assignment:record.assignment,rank:record.rank,track:'referee-selected',title:'',reason:'source-assisted-mapping',source:{id:'aliens',page:39}});record.aslanRankMapping={tableId:payload.tableId,reason,source:{id:'aliens',page:39}};const offer=state.character.aslanOfficerOffers.find(o=>o.id===pending.offerId);offer.rankMapping=copy(record.aslanRankMapping);state.pendingAslanOfficerRank=null;
   if(!state.coverage.includes('aslan-officer-rank'))state.coverage.push('aslan-officer-rank');state.effectsQueue.unshift(...effects);drainEffects(state,rolls);return 'Referee mapped '+record.assignment+' to '+payload.tableId+'. '+reason;
  }
 
@@ -2538,7 +2543,7 @@ function apply(state,command,rolls) {
    const history=psionicHistory(state),active=state.psionicTraining;
    const outcome=talentAcquisition({talent,psi:stat(state,'PSI'),previousChecks:history.checksAttempted,firstTalentChosen:history.firstTalentChosen,species:state.character.species,roll:option.automatic?undefined:dice(state,2,rolls,'Acquire '+talent)});
    history.attempts.push({...outcome,context:active.context,source:copy(active.source)});history.checksAttempted+=outcome.checksAdded;history.firstTalentChosen=true;
-   if(outcome.success)gainSkill(state,talent,0,'set',true);
+   if(outcome.success)gainSkill(state,talent,0,'set',true,active.award);
    if(active.mode==='retry'){
     state.psionicTraining=null;
     if(!outcome.success&&['zhodani-award','human-vargr-psion-ruling'].includes(active.context))rerollPsionicAward(state,active,rolls);else drainEffects(state,rolls);
@@ -2670,7 +2675,7 @@ function apply(state,command,rolls) {
   need(state.stage==='education-service'&&state.pendingChoice,'No academy service award is due.');
   const e=state.pendingChoice,name=text(payload.name,80);need(e.options.includes(name)&&!e.picked.includes(name),'Choose a different service skill.');
   e.picked.push(name);state.pendingChoice=null;
-  const rest=e.picked.length<e.count?[e]:[];state.effectsQueue.unshift({kind:'skill',name,mode:'set',value:1},...rest);
+  const rest=e.picked.length<e.count?[e]:[];state.effectsQueue.unshift(inheritAwardOrigin(e,{kind:'skill',name,mode:'set',value:1}),...rest);
   drainEffects(state,rolls);return 'Academy service award selected: '+name+'.';
  }
  case 'education-check':{
@@ -2814,17 +2819,17 @@ function apply(state,command,rolls) {
  }
  case 'choose-skill': {
   need(state.stage==='skill-choice'&&state.pendingChoice,'There is no skill choice.');const e=state.pendingChoice,name=normalizedSkill(state,text(payload.name,80),{requireSpeciality:!e.deferSpeciality&&(e.mode!=='set'||(e.value??1)>0)}).name;
-  if(e.scope==='non-psionic'&&nonPsionicEligibility(name)==='source-required'){state.pendingChoice=null;nativeFallback(state,{...e,requestedName:name},'The selected Science subject is not classified for this non-psionic award. Confirm its non-psionic eligibility from the source before recording an award, or retry with a verified specialty.');return 'Unclassified Science specialty requires an explicit source eligibility decision; no skill awarded.';}
+  if(e.scope==='non-psionic'&&nonPsionicEligibility(name)==='source-required'){state.pendingChoice=null;nativeFallback(state,inheritAwardOrigin(e,{...e,requestedName:name}),'The selected Science subject is not classified for this non-psionic award. Confirm its non-psionic eligibility from the source before recording an award, or retry with a verified specialty.');return 'Unclassified Science specialty requires an explicit source eligibility decision; no skill awarded.';}
   need(skillNameAllowed(state,name,e),'Skill is not available for this award.');if(e.distinctSpecialties)distinctScienceSelection(name,e.selected??[]);
-  if(coreTalentChoice(state,e)&&skillLevel(state,name)<0){state.pendingChoice=null;requestTalentAward(state,{...e,kind:'psionic-talent',name},rolls);return 'Selected '+name+(state.psionAcquisitionRuling?' for a talent acquisition attempt.':' for a service-table acquisition attempt.');}
+  if(coreTalentChoice(state,e)&&skillLevel(state,name)<0){state.pendingChoice=null;requestTalentAward(state,inheritAwardOrigin(e,{...e,kind:'psionic-talent',name}),rolls);return 'Selected '+name+(state.psionAcquisitionRuling?' for a talent acquisition attempt.':' for a service-table acquisition attempt.');}
   if(e.scope==='new-psionic-talent'){gainSkill(state,name,0,'set',true);const history=psionicHistory(state);history.firstTalentChosen=true;history.rulings.push({context:'vargr-psion-event-8',source:{id:'aliens',page:201},talent:name,level:0,acquisitionCheck:false});state.pendingChoice=null;drainEffects(state,rolls);return 'Acquired '+name+' at level 0 after the event check. Aliens 2026 p. 201; no additional acquisition check.';}
-  if(e.deferSpeciality&&SPECIALIZED.includes(name)&&(e.mode!=='set'||(e.value??1)>0)){deferSkillAward(state,{...e,name});state.pendingChoice=null;if((e.count??1)>1)state.effectsQueue.unshift({...e,count:e.count-1});drainEffects(state,rolls);return 'Recorded '+name+' award for specialization allocation.';}
+  if(e.deferSpeciality&&SPECIALIZED.includes(name)&&(e.mode!=='set'||(e.value??1)>0)){deferSkillAward(state,inheritAwardOrigin(e,{...e,name}));state.pendingChoice=null;if((e.count??1)>1)state.effectsQueue.unshift(inheritAwardOrigin(e,{...e,count:e.count-1}));drainEffects(state,rolls);return 'Recorded '+name+' award for specialization allocation.';}
   if((e.allocationId||e.deferSpeciality&&(e.mode!=='set'||(e.value??1)>0)&&SPECIALIZED.includes(name.split(' (')[0]))&&name.includes(' ('))need(allocationImproves(state,name,e),'This specialty would lose the award. Choose a different specialty.');
   const award=constrainedAward(state,name,e);
   if(state.deferredSpecializations&&!e.allocationId&&e.kind!=='skill-reduction-choice'&&name.includes(' (')){const allocations=allocationEffects(state,name.split(' (')[0]);if(allocations.length){for(const allocation of allocations)allocation.followingFixedAward={name,mode:award.mode,value:award.value??1};state.specializationContinuation={stage:state.stage,command:copy(command),pendingChoice:copy(state.pendingChoice),effectsQueue:copy(state.effectsQueue),effectNext:state.effectNext};queueEffects(state,allocations,'specialization-command',rolls);return 'Allocate earlier '+name.split(' (')[0]+' awards before this selected specialty.';}}
   if((e.mode!=='set'||(e.value??1)>0)&&SPECIALIZED.includes(name.split(' (')[0]))need(name.includes(' ('),'Choose a specialisation, for example Science (physics).');
   if(e.kind!=='skill-reduction-choice'&&skillAwardExceedsLimit(state,name,award.value??1,award.mode)){state.pendingChoice=null;nativeFallback(state,e,'The selected award would exceed the total skill limit. Choose another valid skill or record a source decision under Core p. 18.');return 'Over-cap skill choice requires an alternate selection or source resolution.';}
-  if(e.kind==='skill-reduction-choice'){need(Object.hasOwn(state.character.skills,name)&&state.character.skills[name]>0,'Choose a trained skill to reduce.');if(e.names)need(e.names.includes(name),'Choose one of the indicated skills.');state.character.skills[name]=Math.max(0,state.character.skills[name]-e.value);}else {if(independenceAcquired(state,name,rolls))gainSkill(state,name,award.value??1,award.mode);bindAwardCheck(state,name);}if(e.allocationId){const saved=state.character.deferredSkillAwards.find(a=>a.id===e.allocationId);need(saved?.status==='pending','This award was already allocated.');saved.status='allocated';saved.speciality=name;}if(e.awardId)benefitAward(state,e.awardId).decisions.push({type:'skill',name,mode:e.mode,value:e.value??1});state.pendingChoice=null;if((e.count??1)>1)state.effectsQueue.unshift({...e,count:e.count-1,...(e.distinctSpecialties?{selected:[...(e.selected??[]),name]}:{})});drainEffects(state,rolls);return 'Selected '+name+' for a skill award.'+(e.trainingContext?' Aliens 2026 p. '+e.source.page+'; '+e.trainingContext.careerId+' / '+e.trainingContext.assignment+'; eligible tables: '+e.trainingContext.tables.join(', ')+'.':'');
+  if(e.kind==='skill-reduction-choice'){need(Object.hasOwn(state.character.skills,name)&&state.character.skills[name]>0,'Choose a trained skill to reduce.');if(e.names)need(e.names.includes(name),'Choose one of the indicated skills.');state.character.skills[name]=Math.max(0,state.character.skills[name]-e.value);}else {if(independenceAcquired(state,name,rolls))gainSkill(state,name,award.value??1,award.mode,false,e);bindAwardCheck(state,name);}if(e.allocationId){const saved=state.character.deferredSkillAwards.find(a=>a.id===e.allocationId);need(saved?.status==='pending','This award was already allocated.');saved.status='allocated';saved.speciality=name;}if(e.awardId)benefitAward(state,e.awardId).decisions.push({type:'skill',name,mode:e.mode,value:e.value??1});state.pendingChoice=null;if((e.count??1)>1)state.effectsQueue.unshift(inheritAwardOrigin(e,{...e,count:e.count-1,...(e.distinctSpecialties?{selected:[...(e.selected??[]),name]}:{})}));drainEffects(state,rolls);return 'Selected '+name+' for a skill award.'+(e.trainingContext?' Aliens 2026 p. '+e.source.page+'; '+e.trainingContext.careerId+' / '+e.trainingContext.assignment+'; eligible tables: '+e.trainingContext.tables.join(', ')+'.':'');
  }
  case 'training': {
   need(state.stage==='training','No training roll is pending.');need(trainingOptions(state).some(x=>x.id===payload.table),'Training table is not available.');const pack=nativePack(state),{record,career}=currentCareer(state);const rows=payload.table==='assignment'?pack.training.assignments[record.assignment]:pack.training[payload.table];
@@ -2875,7 +2880,7 @@ function apply(state,command,rolls) {
   if(check.natural===12&&career.id!=='core.prisoner'){record.forcedStay=true;record.forcedExit=false;}
   if(check.success){
    const previousRank=record.rank;const cap=career.id==='zhodani.government'&&stat(state,'SOC')<11?3:6;record.rank=Math.min(cap,record.rank+1);record.highestRank=Math.max(record.highestRank??0,record.rank);
-   if(nativePack(state)){state.trainingNext='end-term';queueEffects(state,record.rank>previousRank?rankEffects(state):[],'training',rolls);}else sourceStep(state,'advancement-training',career.source,career.page,'Resolve rank bonuses and the additional training roll.','term-end');
+   if(nativePack(state)){state.trainingNext='end-term';queueEffects(state,record.rank>previousRank?rankEffects(state,'advancement'):[],'training',rolls);}else sourceStep(state,'advancement-training',career.source,career.page,'Resolve rank bonuses and the additional training roll.','term-end');
   }else closeTerm(state);
   return 'Advancement: '+JSON.stringify(check)+'. Rank '+record.rank+'.';
  }
@@ -2941,7 +2946,7 @@ function apply(state,command,rolls) {
   if(availability.sourceRequired){missingCheck(state,{stat:'SOC',target:career.commission},'Commission',command);return 'Commission check requires source resolution for the absent characteristic.';}record.commissionTried=true;
   const bonus=modifierTotal(state,'advancement',false)-record.terms+(record.educationModifiers?.commission??0);
   const check=record.automaticCommission||career.group==='zhodani'?{automatic:true,success:true,total:99}:rulesCheck(state,{stat:'SOC',target:career.commission},rolls,'Commission',bonus);
-  if(check.success){modifierTotal(state,'advancement');record.highestRank=Math.max(record.highestRank??record.rank,record.rank,1);record.rank=1;record.officer=true;if(record.automaticCommission)record.automaticPromotion=false;record.automaticCommission=false;queueEffects(state,rankEffects(state),'end-term',rolls);}
+  if(check.success){modifierTotal(state,'advancement');record.highestRank=Math.max(record.highestRank??record.rank,record.rank,1);record.rank=1;record.officer=true;if(record.automaticCommission)record.automaticPromotion=false;record.automaticCommission=false;queueEffects(state,rankEffects(state,'commission'),'end-term',rolls);}
   return 'Commission: '+JSON.stringify(check)+(check.success?'. Became rank 1 officer; no advancement roll this term.':'. Advancement remains available.');
  }
  case 'leave-career': {
@@ -3330,11 +3335,11 @@ export function project(session) {
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
 
- let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(['character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.aezorghRoundUp=true;if(['character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.optionalImperialCharisma=true;if(['character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.optionalPsiRequiresTesting=true;if(['character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.aezorghBaseSkillChoice=true;if(['character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.optionalAezorghCharisma=true;if(['character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.aslanFamilyPresentation=true;if(['character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.educationResultPresentation=true;if(['character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.educationEventCheckpoints=true;if(['character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision)){state.careerEntryBasicOnly=true;state.nativeEventRollCheckpoints=true;state.protectedSourceAwards=true;}if(['character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision)){state.companionEventRollCheckpoints=true;state.companionBasicEntryOnly=true;}if(['character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.aslanRollCheckpoints=true;if(session.rulesRevision===RULES_REVISION)state.vargrFallbackRoutes=true;const snapshots=[copy(state)],log=[],sheetTiming={};
+ let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(['character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.aezorghRoundUp=true;if(['character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.optionalImperialCharisma=true;if(['character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.optionalPsiRequiresTesting=true;if(['character-preview-2026-11-09.25','character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.aezorghBaseSkillChoice=true;if(['character-preview-2026-11-09.27','character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.optionalAezorghCharisma=true;if(['character-preview-2026-11-09.29','character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.aslanFamilyPresentation=true;if(['character-preview-2026-11-09.30','character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.educationResultPresentation=true;if(['character-preview-2026-11-09.31','character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.educationEventCheckpoints=true;if(['character-preview-2026-11-13.32','character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision)){state.careerEntryBasicOnly=true;state.nativeEventRollCheckpoints=true;state.protectedSourceAwards=true;}if(['character-preview-2026-11-13.33','character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision)){state.companionEventRollCheckpoints=true;state.companionBasicEntryOnly=true;}if(['character-preview-2026-11-13.34',RULES_REVISION].includes(session.rulesRevision))state.aslanRollCheckpoints=true;if(session.rulesRevision===RULES_REVISION)state.vargrFallbackRoutes=true;const snapshots=[copy(state)],log=[],sheetTiming={},skillAwards={};
  for(let i=0;i<session.events.length;i++){
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');
-  const rolls=[];let summary;
+  const rolls=[];let summary;beginAwardAction(state);
   if(event.command?.type==='gm-replay'){
    need(state.config.gm,'Enable GM mode before replacing a roll.');
    const payload=event.command.payload??{},target=integer(payload.revision,1,i,'Original action'),rollIndex=integer(payload.rollIndex,0,50,'Roll index');
@@ -3342,13 +3347,13 @@ export function project(session) {
    const originalRoll=log[target-1].rolls[rollIndex];need(originalRoll,'The selected action has no such roll.');
    const reason=text(payload.reason??'',300);need(reason,'A reason is required for replacing a roll.');
    const rng=state.rng,gm=state.config.gm;state=copy(snapshots[target-1]);state.rng=rng;state.config.gm=gm;state._override={index:rollIndex,values:payload.values,preserved:copy(log[target-1].rolls.slice(0,rollIndex)),target:copy(originalRoll)};
-   const outcome=apply(state,original.command,rolls);need(rolls[rollIndex],'Original roll is not present in the replayed action.');delete state._override;
+   beginAwardAction(state);const outcome=apply(state,original.command,rolls);need(rolls[rollIndex],'Original roll is not present in the replayed action.');delete state._override;
    summary='GM replaced action '+target+' roll '+(rollIndex+1)+' ['+originalRoll.values.join(', ')+'] → ['+payload.values.join(', ')+']. Reason: '+reason+'. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. '+outcome;
   }else if(event.command?.type==='restore'){
    need(state.config.gm,'Enable GM mode before restoring a previous character state.');
    const target=integer(event.command.payload?.revision,0,i-1,'Restore point');
    const rng=state.rng,gm=state.config.gm;state=copy(snapshots[target]);state.rng=rng;state.config.gm=gm;
-   summary='Restored character state to action '+target+'. Prior rolls and actions remain in this log; randomness was not rewound.';
+   beginAwardAction(state);summary='Restored character state to action '+target+'. Prior rolls and actions remain in this log; randomness was not rewound.';
   }else summary=apply(state,event.command,rolls);
   if(educationEventContext(state)&&state.stage==='deceased'&&state.character.deceased)finishEducationEventCheckpoint(state,rolls,educationEventContext(state),'deceased');
   const prior=event.command.type==='gm-replay'?snapshots[event.command.payload.revision-1]:snapshots[i];if(event.command.type!=='restore'&&!state.psionicTraining&&state.character.species==='zhodani'&&state.active!==null&&(state.character.stats.PSI??0)>(prior.character.stats.PSI??0)&&(state.character.stats.SOC??0)<10)reviewZhodaniStatus(state,'command:'+event.command.type,rolls,state.stage);
@@ -3357,7 +3362,7 @@ export function project(session) {
   expireCareerTransfers(state);
   if(event.rolls!==undefined)need(JSON.stringify(event.rolls)===JSON.stringify(rolls),'Roll audit mismatch at action '+(i+1)+'.');
   if(event.summary!==undefined)need(event.summary===summary,'Action summary mismatch at action '+(i+1)+'.');
-  log.push({number:i+1,id:event.id,type:event.command.type,summary,rolls,changes:characterChanges(snapshots[i].character,state.character)});sheetTiming[i+1]=characterSheetTiming(prior,state);snapshots.push(copy(state));
+  const appliedAwards=appliedSkillAwards(state);if(appliedAwards.length)skillAwards[i+1]=appliedAwards;log.push({number:i+1,id:event.id,type:event.command.type,summary,rolls,changes:characterChanges(snapshots[i].character,state.character)});sheetTiming[i+1]=characterSheetTiming(prior,state);snapshots.push(copy(state));
  }
  for(const career of state.character.careers)if(career.pensionExitStatusBasis){const socialClass=state.character.stats.SOC>=11?'noble':state.character.stats.SOC===10?'intendant':'prole';career.pensionStatusReviewRequired=socialClass!==career.pensionExitStatusBasis.socialClass;}
  if(state.optionalPsiRequiresTesting||state.psiActivationRequiresTesting)state.psionicTestingOptions=psionicTestingOptions(state);
@@ -3433,24 +3438,24 @@ export function project(session) {
  const educationEventView=educationEventEvidence(educationEventCheckpointView(state),{state,log,snapshots,events:session.events,skillModifier:skillCheckDM});
  const activeEducation=state.character.educations?.[state.education];
  const educationStory=activeEducation&&!activeEducation.completed?educationEventText(activeEducation.event):null;
- return withSheetTiming({state,log,revision:session.events.length,...(educationStory?{educationEventContext:educationStory}:{}),...(educationEventView?{educationEventView}:{}),...(state.stage==='precareer'?{educationAdmissionPreviews}:{}),...(educationResultView?{educationResultView}:{}),...(educationGraduationPreview?{educationGraduationPreview}:{})},sheetTiming);
+ return withSheetTiming({state,log,revision:session.events.length,...(educationStory?{educationEventContext:educationStory}:{}),...(educationEventView?{educationEventView}:{}),...(state.stage==='precareer'?{educationAdmissionPreviews}:{}),...(educationResultView?{educationResultView}:{}),...(educationGraduationPreview?{educationGraduationPreview}:{})},sheetTiming,{pending:copy(awardOrigin(state.pendingChoice??state.pending?.effect??state.psionicTraining?.award)),deferred:(state.character.deferredSkillAwards??[]).filter(a=>a.status==='pending').map(a=>({id:a.id,origin:copy(awardOrigin(a))})),byAction:skillAwards});
 }
 // Presentation metadata is deliberately outside the enumerable historical projection.
-function withSheetTiming(result,timing){
- Object.defineProperty(result,'characterSheetTiming',{value:timing,enumerable:false});return result;
+function withSheetTiming(result,timing,awards){
+ Object.defineProperty(result,'characterSheetTiming',{value:timing,enumerable:false});Object.defineProperty(result,'skillAwardPresentation',{value:awards,enumerable:false});return result;
 }
-function apiProjection(result){return {...result,characterSheetTiming:result.characterSheetTiming};}
+function apiProjection(result){return {...result,characterSheetTiming:result.characterSheetTiming,skillAwardPresentation:result.skillAwardPresentation};}
 export function execute(session,command,{id,expectedRevision}={}) {
  const before=project(session);
  const actionId=id??'action-'+(before.revision+1);need(typeof actionId==='string'&&actionId.length<=120,'Invalid action ID.');
  const existing=session.events.find(e=>e.id===actionId);
- if(existing){need(JSON.stringify(existing.command)===JSON.stringify(command),'Action ID was already used for a different command.');return withSheetTiming({session:copy(session),...before},before.characterSheetTiming);}
+ if(existing){need(JSON.stringify(existing.command)===JSON.stringify(command),'Action ID was already used for a different command.');return withSheetTiming({session:copy(session),...before},before.characterSheetTiming,before.skillAwardPresentation);}
  if(expectedRevision!==undefined)need(expectedRevision===before.revision,'This character changed. Reload before applying the command.');
  need(session.events.length<LIMIT,'Action-log limit reached. Export this character before continuing.');
  const next=copy(session);next.events.push({id:actionId,command:copy(command)});
  const result=project(next);const last=result.log.at(-1);next.events.at(-1).rolls=last.rolls;next.events.at(-1).summary=last.summary;
  need(saveSize(next)<=MAX_SAVE_BYTES,'Save size limit reached. The action was not accepted. Export your current character before continuing.');
- return withSheetTiming({session:next,...result},result.characterSheetTiming);
+ return withSheetTiming({session:next,...result},result.characterSheetTiming,result.skillAwardPresentation);
 }
 export function importSession(raw) {
  need(typeof raw==='string'&&new TextEncoder().encode(raw).byteLength<=MAX_SAVE_BYTES,'Save is too large.');const session=JSON.parse(raw);project(session);return session;

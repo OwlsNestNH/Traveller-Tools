@@ -21,8 +21,8 @@ export function syncAwardBase(state,catalog,root,esc){
  root.querySelector('#award-skill').placeholder=base?(specialised?base+' (speciality)':base):'Choose a skill above';
  if(deferred)root.querySelector('#award-speciality').value=base;
 }
-export function deferredAwardsView(state,{esc,button}){
+export function deferredAwardsView(state,{esc,button,awardSource=()=>null}){
  const pending=(state.character.deferredSkillAwards??[]).filter(a=>a.status==='pending');
  if(!pending.length)return '';
- return '<section aria-label="Pending specialisations"><h3>Specialisations to allocate</h3><p>Each award is preserved separately until you choose its specialisation.</p><ul>'+pending.map(a=>'<li>'+esc(a.name)+' '+esc(a.mode==='set'?'level '+a.value:'+'+a.value)+'</li>').join('')+'</ul>'+(state.specializationOptions?.available?button('Allocate specializations now','allocate-specializations','quiet'):'<p class="help">Continue this step to reach an allocation checkpoint.</p>')+'</section>';
+ return '<section aria-label="Pending specialisations"><h3>Specialisations to allocate</h3><p>Each award is preserved separately until you choose its specialisation.</p><ul>'+pending.map(a=>'<li>'+esc(a.name)+' '+esc(a.mode==='set'?'level '+a.value:'+'+a.value)+(awardSource(a)?'<span class="deferred-award-source">'+esc(awardSource(a))+'</span>':'')+'</li>').join('')+'</ul>'+(state.specializationOptions?.available?button('Allocate specializations now','allocate-specializations','quiet'):'<p class="help">Continue this step to reach an allocation checkpoint.</p>')+'</section>';
 }
