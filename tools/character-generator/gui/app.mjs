@@ -441,7 +441,7 @@ function stageView(state,insideEquipmentDialog=false){
  case 'equipment-finalization':return equipmentFinalizationView(state,{esc,button,sourceLabel});
  case 'identity':return setupView();
  case 'advisory-career':case 'advisory-cash':case 'advisory-cash-source':return advisoryView(state,{esc,button,sourceLabel,careerName:id=>catalog.careers.find(c=>c.id===id)?.name??id});
- case 'borrowed-event-roll':{const p=state.pendingBorrowedRoll;return '<section id="pending-event-roll"><h3>'+esc(p.label)+'</h3><p>'+esc(sourceLabel(p.source.id,p.source.page))+'</p><p>Roll '+esc(p.dice)+(p.target?' against '+esc(p.target)+'+':'')+'. This step has not been rolled yet.</p>'+button('Roll '+p.label,'roll-borrowed-event')+'</section>';}
+ case 'borrowed-event-roll':{const p=state.pendingBorrowedRoll;return '<section id="pending-event-roll"><h3>'+esc(p.label)+'</h3><p class="source">'+esc(sourceLabel(p.source.id,p.source.page))+'</p><p>Roll '+esc(p.dice)+(p.target?' against '+esc(p.target)+'+':'')+'. This step has not been rolled yet.</p>'+button('Roll '+p.label,'roll-borrowed-event')+'</section>';}
  case 'cross-career-cover':return crossCareerCoverView(state,{esc,button,sourceLabel,careerName:id=>catalog.careers.find(c=>c.id===id)?.name??id});
  case 'cross-career-training':return crossCareerTrainingView(state,{esc,button,sourceLabel,careerName:id=>catalog.careers.find(c=>c.id===id)?.name??id});
  case 'relationship-event':return relationshipEventView(state,{esc,button,sourceLabel});

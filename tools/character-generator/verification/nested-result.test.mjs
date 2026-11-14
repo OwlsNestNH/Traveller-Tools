@@ -6,7 +6,7 @@ import {nestedResultFixture} from './nested-result-fixtures.mjs';
 const catalog=api({operation:'catalog'});
 for(const id of ['core.drifter','core.army','core.marine','aslan.envoy'])test(id+' nested result retains the latest story, actual effects and complete informational',()=>{
  const r=nestedResultFixture(id).result,event=r.log.at(-1),raw=exportSession(r.session),view=conciseResult(event,r.state,catalog,{recordedDiceVisible:true});
- assert.equal(view.title,event.eventResults.at(-1).description);assert.equal(view.information.keepGuidance,true);
+ assert.equal(view.title,event.eventResults.at(-1).description);assert.equal(view.information.keepGuidance,true);if(id==='aslan.envoy')assert.equal(view.information.nextRollLabel,'Aslan Clan Event');
  assert.doesNotMatch(view.text,/Table outcome:|Source:|roll borrowed event result/);
  for(const line of [view.full.title,...view.full.details])assert.ok(view.information.paragraphs.includes(line),'Full accepted explanation remains available');
  assert.match(armyRecordedDice(event,{esc:String}),/Recorded total:/);
@@ -19,7 +19,7 @@ test('nested presentation retains actual awards, restrictions and future entry r
 });
 test('unknown or missing nested narrative keeps the complete fallback instead of presenting the parent as the new outcome',()=>{
  const r=nestedResultFixture().result;
- for(const modify of [e=>e.eventResults.at(-1).description='',e=>e.eventResults.at(-1).table='unknown.unverified',e=>e.eventResults.at(-1).table='core.pre-career-events']){
+ for(const modify of [e=>e.eventResults.at(-1).description='',e=>e.eventResults.at(-1).table='unknown.unverified',e=>e.eventResults.at(-1).table='core.pre-career-events',e=>e.eventResults.at(-1).roll.total++,e=>e.rolls[0].label='Medic check',e=>e.eventResults.push(structuredClone(e.eventResults.at(-1)))]){
   const e=structuredClone(r.log.at(-1));modify(e);const view=conciseResult(e,r.state,catalog,{recordedDiceVisible:true});assert.notEqual(view.information?.keepGuidance,true);assert.ok(view.full.details.length>0);
  }
 });
