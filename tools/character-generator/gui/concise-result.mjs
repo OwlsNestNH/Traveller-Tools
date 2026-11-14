@@ -1,4 +1,5 @@
 import {careerTemplateModel} from './career-template.mjs';
+import {benefitRollEvidence,benefitAwardHeadline} from './benefit-presentation.mjs';
 import {crowSpeakingPanel} from './crow-speaking-panel.mjs';
 import {showOpeningInformation} from './opening-help.mjs';
 import {eventResultDetails} from './event-result-view.mjs';
@@ -152,6 +153,16 @@ export function conciseResult(event,state,catalog){
   }),
   // Financial restrictions and ongoing benefits are not merely audit detail.
   ...characterEffectDetails({changes:changes.filter(linkedBenefit)},catalog).filter(detail=>!detail.startsWith('Benefit: '))];
+ }
+ if(event.type==='leave-career'&&state?.stage==='benefits'&&catalog?.careers&&careerTemplateModel(state,catalog)){
+  const career=state.character.careers[state.active],name=catalog.careers.find(c=>c.id===career.id)?.name??'Career',heading=name+' mustering out.',main=career.pension>0?['Annual pension: '+amount(career.pension)+'.']:[];
+  return {title:heading,details:main,status:'info',text:[heading,...main].join(' '),full,compact:true,information:{title:'Your career exit and benefits',label:'About your career exit and benefits',retainCrow:true,paragraphs:unique([full.title,...full.details]),contextual:true}};
+ }
+ if(benefitRollEvidence(event,state)&&catalog?.careers&&careerTemplateModel(state,catalog)){
+  const award=benefitAwardHeadline(event),facts=otherEffects(event,catalog,c=>c.path!==award?.path&&!/^benefitCredits\.\d+\.(status|consumption)|^lifeBenefitBonuses\.\d+\.(status|consumption)/.test(c.path)&&!/^careers\.\d+\.(benefitRolls|released|exit|cashRolls)$|^benefitRollHistory\.|^cashRollAccounts\./.test(c.path));
+  const pending=['book-step','effect-choice','skill-choice'].includes(state?.stage),heading=award?.title??title??(pending?'Choose or confirm your benefit.':'Benefit recorded.');
+  const main=award?facts:title?details:facts;
+  return {title:heading,details:unique(main),status:full.status,text:[heading,...main].join(' '),full,compact:true,information:{title:'Your mustering-out result',label:'About your mustering-out result',retainCrow:true,paragraphs:unique([full.title,...full.details]),contextual:true}};
  }
  if(!title)return {...full,full,compact:false};
  const basicSkills=details.filter(detail=>/^Skill .*: untrained → 0\.$/.test(detail));

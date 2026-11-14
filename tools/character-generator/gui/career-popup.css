@@ -284,3 +284,6 @@
 #army-career-dialog .injury-care-result:not(:has(>.army-recorded-dice~.army-recorded-dice))>.army-recorded-dice{width:calc(100% - 8px)}
 
 #army-career-dialog .injury-care-result .career-crow-speech:empty{display:none}
+#workspace .benefit-roll-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#workspace .benefit-roll-actions>button{width:100%;min-height:64px;margin:0}
+#workspace .benefit-roll-actions>button:disabled{background:#293c49;color:#c9d3d9;border-color:#6c818e;box-shadow:none;opacity:1;cursor:not-allowed}
