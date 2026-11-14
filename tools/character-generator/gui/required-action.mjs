@@ -1,3 +1,4 @@
+import {VARGR_CAREER_DEFINITIONS} from './vargr-career-definitions.mjs';
 import {ASLAN_CAREER_DEFINITIONS} from './aslan-career-definitions.mjs';
 import {recoveryButton} from './recovery-actions.mjs';
 import {crowAssistanceView} from './crow-assistance.mjs';
@@ -14,14 +15,16 @@ export const REQUIRED_HEADLINES=Object.freeze({
 });
 export const ARMY_SKILL_HEADLINES=Object.freeze([...REQUIRED_HEADLINES.skills.slice(0,5),'THE ARMY CAN’T TRAIN A BLANK.']);
 export const ASLAN_SKILL_HEADLINES=Object.freeze([...REQUIRED_HEADLINES.skills.slice(0,5),'THE CLAN CAN’T TRAIN A BLANK.']);
+export const VARGR_SKILL_HEADLINES=Object.freeze([...REQUIRED_HEADLINES.skills.slice(0,5),'THE PACK CAN’T TRAIN A BLANK.']);
 export function requiredHeadline(type,key='',context=''){
- const bank=type==='skills'&&Object.hasOwn(ASLAN_CAREER_DEFINITIONS,context)?ASLAN_SKILL_HEADLINES:type==='skills'&&context==='core.army'?ARMY_SKILL_HEADLINES:REQUIRED_HEADLINES[type]??REQUIRED_HEADLINES.generic;
+ const bank=type==='skills'&&Object.hasOwn(VARGR_CAREER_DEFINITIONS,context)?VARGR_SKILL_HEADLINES:type==='skills'&&Object.hasOwn(ASLAN_CAREER_DEFINITIONS,context)?ASLAN_SKILL_HEADLINES:type==='skills'&&context==='core.army'?ARMY_SKILL_HEADLINES:REQUIRED_HEADLINES[type]??REQUIRED_HEADLINES.generic;
  let hash=0;for(const char of String(key))hash=(hash*31+char.codePointAt(0))>>>0;
  return bank[hash%bank.length];
 }
 const field=(selector,type,detail)=>({selector,type,detail});
 // Each selector is an existing required input, not an inference from its label.
 const ACTION_FIELDS={
+ 'resolve-vargr-draft':[['#vargr-draft-mapping','referee','Choose the referee-approved destination for the recorded draft result.'],['#vargr-draft-reason','details','Record the source and referee mapping reason.'],['#vargr-draft-confirmed','referee','Confirm the referee interpretation before entering the career.']],
  'resolve-prisoner-lawyer':[['#lawyer-outcome','event','Choose Hire or Decline for the lawyer opportunity.'],['#lawyer-level','details','Enter the lawyer Advocate level.'],['#lawyer-zero','referee','Confirm the referee permits a level-0 lawyer at the printed Cr0 cost.'],['#lawyer-reason','referee','Record the level-0 lawyer ruling.']],
  'spend-equipment-credit':[['#credit-category','event','Choose the item category.'],['#credit-name','details','Enter the item name.'],['#credit-cost','details','Enter the listed unit cost.'],['#credit-quantity','details','Enter the item quantity.'],['#credit-note','referee','Record the item source and restriction check.'],['#credit-confirm','referee','Confirm the item, listed price and category.']],
  'choose-skill':[['#award-skill','skills','Choose the awarded skill and its required specialisation, or use the offered deferral.']],
@@ -90,7 +93,7 @@ export function showRequiredAction(root,{control,type='generic',detail,key='',ac
  let warning=scope.querySelector(':scope > .required-action-warning');
  if(!warning){warning=root.createElement('div');warning.id='required-action-warning-'+(++serial);warning.className='required-action-warning';warning.dataset.crowEssential='true';warning.setAttribute('role','alert');warning.setAttribute('aria-atomic','true');scope.prepend(warning);}
  const introduction=scope.querySelector(':scope > #crow-introduction,.career-pilot-guidance');if(introduction)introduction.hidden=true;
- const assistance=crowAssistanceView(root,{type:ASLAN_CAREER_DEFINITIONS[root.body?.dataset.careerTemplate]?.crow??type,informationDialog:introduction?.id==='crow-introduction'?'crow-introduction-dialog':null});assistance.help.id=warning.id+'-crow-help';if(introduction?.id!=='crow-introduction')assistance.button.setAttribute('aria-controls',assistance.help.id);
+ const assistance=crowAssistanceView(root,{type:VARGR_CAREER_DEFINITIONS[root.body?.dataset.careerTemplate]?(root.body.dataset.careerCrowType??VARGR_CAREER_DEFINITIONS[root.body.dataset.careerTemplate].crow):ASLAN_CAREER_DEFINITIONS[root.body?.dataset.careerTemplate]?.crow??type,informationDialog:introduction?.id==='crow-introduction'?'crow-introduction-dialog':null});assistance.help.id=warning.id+'-crow-help';if(introduction?.id!=='crow-introduction')assistance.button.setAttribute('aria-controls',assistance.help.id);
  const title=root.createElement('strong'),instruction=root.createElement('p');title.textContent=requiredHeadline(type,key,root.body?.dataset.careerTemplate);instruction.textContent=detail;
  const speech=root.createElement('div');speech.className='crow-speech';speech.append(title,instruction);
  const recovery=root.createElement('div');recovery.className='crow-recovery-actions';const dismiss=()=>{warning.hidden=true;if(introduction)introduction.hidden=false;if(control.isConnected){control.focus();control.scrollIntoView?.({block:'nearest'});}};recovery.append(recoveryButton(root,{id:'continue',label:'Continue',ariaLabel:'Continue to the missing field',run:dismiss}));for(const action of actions)recovery.append(recoveryButton(root,action));warning.replaceChildren(assistance.row,speech,assistance.help,recovery);warning.hidden=false;
@@ -109,6 +112,7 @@ export function mountRequiredActions({document:root,getState,isBusy,backgroundSe
  const fail=(control,type,detail)=>{const state=getState();showRequiredAction(root,{control,type,detail,key:requiredActionKey(state,control),actions:getRecoveryActions({control,state})});return true;};
  function validate(action,trigger){
   const state=getState();
+  if(action==='choose-vargr-fallback'&&!root.querySelector('#career-assignment')?.value)return fail(root.querySelector('[data-army-specialty]:not(:disabled)')??root.querySelector('#career-assignment'),'career','Choose a specialty for this automatic fallback.');
   if(action==='background'){
    const form=root.querySelector('#background-form'),selected=[...form.querySelectorAll('[name=skills]:checked')].map(n=>n.value),s=backgroundSelection(state,selected);
    if(!s.valid)return fail(form.querySelector(s.remaining<0?'[name=skills]:checked':'[name=skills]:not(:checked)')??form.querySelector('[name=skills]')??form,'skills','Choose exactly '+s.required+' distinct background skills. '+s.skills.length+' selected; '+(s.remaining<0?'remove '+(-s.remaining):'choose '+s.remaining+' more')+'.');
@@ -127,7 +131,7 @@ export function mountRequiredActions({document:root,getState,isBusy,backgroundSe
   }
   // The optional free-text name mirrors the native specialty selector. Point
   // Aslan warnings at that actual missing choice while retaining manual entry.
-  if(action==='choose-skill'&&state.character?.species==='aslan'&&!root.querySelector('#award-skill')?.value.trim()){const specialty=root.querySelector('#award-speciality');if(active(specialty)&&missingField(specialty))return fail(specialty,'skills','Choose the awarded skill and its required specialisation, or use the offered deferral.');}
+  if(action==='choose-skill'&&['aslan','vargr'].includes(state.character?.species)&&!root.querySelector('#award-skill')?.value.trim()){const specialty=root.querySelector('#award-speciality');if(active(specialty)&&missingField(specialty))return fail(specialty,'skills','Choose the awarded skill and its required specialisation, or use the offered deferral.');}
   for(const rule of actionRequirements(action,state,{...trigger.dataset,species:root.querySelector('#setup-species')?.value})){
    const control=root.querySelector(rule.selector);if(!active(control))continue;
    // The existence of optional fields is not a requirement for these branches.

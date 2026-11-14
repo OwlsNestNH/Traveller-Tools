@@ -1,3 +1,4 @@
+import {vargrDraftView,vargrFallbackChoiceView} from './vargr-draft-view.mjs';
 import {mountCompletionPopup,sourceAssistedCoverageView} from './completion-popup.mjs';
 import {crowSpeakingPanel,mountCrowStageGuidance,mountCrowCompletionGuidance} from './crow-speaking-panel.mjs';
 import {careerTemplateModel,careerCrowType,mountCareerTemplate,careerResultTagline,careerResultCrowType,syncCareerSpecialty} from './career-template.mjs';
@@ -410,6 +411,7 @@ function medicalSheet(state){
  return '<div class="sheet-section"><h3>Medical bills</h3><p>Unsettled personal balance: <strong>Cr'+(state.medicalOutstanding??0).toLocaleString()+'</strong></p><ul class="compact-list">'+bills.map(b=>'<li>Cr'+b.totalCost.toLocaleString()+' treatment; employer Cr'+b.coveredCost.toLocaleString()+'; personal Cr'+b.personalCost.toLocaleString()+'. '+(b.settled?'Paid Cr'+b.paid.toLocaleString()+', debt Cr'+b.debt.toLocaleString()+'.':'Settles when creation finishes.')+'</li>').join('')+'</ul></div>';
 }
 function bookView(state){
+ if(state.pending?.kind==='vargr-draft')return vargrDraftView(state,{esc,button});
  const aslanEvent=aslanEventOutcomesView(state,{button,esc});if(aslanEvent&&aslanManualReviewKey!==JSON.stringify([projection.revision,state.pending]))return aslanEvent+button('Review exceptional source outcome','aslan-source-review','quiet');
  if(state.pending.kind==='prisoner-lawyer')return prisonerLawyerView(state,{esc,button});
  if(state.pending.kind==='core-life-decision')return coreLifeEventView(state,{esc,button,sourceLabel});
@@ -461,6 +463,7 @@ function stageView(state,insideEquipmentDialog=false){
  case 'education-service':return '<p>Choose '+(state.pendingChoice.count-state.pendingChoice.picked.length)+' more distinct service skill'+(state.pendingChoice.count-state.pendingChoice.picked.length===1?'':'s')+' to gain at level 1.</p><div class="choice-list">'+state.pendingChoice.options.filter(n=>!state.pendingChoice.picked.includes(n)).map(n=>button(esc(n),'education-service','choice','data-name="'+esc(n)+'"')).join('')+'</div>';
  case 'education-check':if(educationNestedChoiceModel(state))return standaloneEventStory+educationNestedChoiceView(educationNestedChoiceModel(state),state,{esc});return '<p>Choose a skill learned or improved during this education term. Success increases the skill and records the tutor as a Rival.</p><label>Skill<select id="education-check-skill">'+options(state.educationCheckSkills,state.educationCheckSkills[0])+'</select></label>'+button('Roll the study challenge','education-check');
  case 'preterm-commission':return '<p>Your education allows a commission attempt before this career term. The award and any dice are recorded separately from ordinary advancement.</p><div class="actions">'+button('Attempt education commission','education-commission')+button('Continue without it','skip-education-commission','quiet')+'</div>';
+ case 'vargr-fallback-choice':return vargrFallbackChoiceView(state,catalog,{esc,button});
  case 'failed-entry':return fallbackView(state,{esc,button});
  case 'book-step':return state.pending?.kind==='aslan-origin-source'?aslanOriginSourceView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-historical-entry'?aslanHistoricalDecisionView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-outlaw-restoration'?aslanOutlawRestorationView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-restoration'?aslanRestorationView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-officer-status'?aslanOfficerStatusView(state,{esc,button,sourceLabel}):bookView(state);
  case 'benefit-wager':return benefitWagerView(state,{esc,button,sourceLabel});
@@ -669,6 +672,10 @@ document.addEventListener('click',async event=>{
  if(action==='companion-skill')return send(action,{selected:[...document.querySelectorAll('[data-companion-skill]')].map(e=>e.value)});
  if(action==='retire-career')return send('leave-career',{retire:true});
   if(action==='draft')return send('fallback',{draft:true});
+ if(action==='vargr-drifter')return send('fallback',{careerId:'core.drifter'});
+ if(action==='choose-vargr-fallback')return send(action,{fallbackId:projection.state.pendingVargrFallback?.id,assignment:$('#career-assignment')?.value});
+ if(action==='cancel-vargr-fallback')return send(action,{fallbackId:projection.state.pendingVargrFallback?.id});
+ if(action==='resolve-vargr-draft')return send(action,{mappingId:$('#vargr-draft-mapping')?.value,reason:$('#vargr-draft-reason')?.value,refereeConfirmed:$('#vargr-draft-confirmed')?.checked});
  if(action==='material-benefit'||action==='cash-benefit')return send('benefit',{cash:action==='cash-benefit',lifeBonusIds:[...document.querySelectorAll('[name=life-benefit-bonus]:checked')].map(input=>input.value),creditIds:[...document.querySelectorAll('[name=benefit-credit]:checked')].map(input=>input.value)});
  if(action==='save-notes')return send('notes',{text:$('#character-notes').value});
  if(action==='connection'){if(projection.state.stage!=='finish')return notify('Connections are available at finalization.',true);return send(action,{person:$('#connection-person').value,skill:$('#connection-skill').value,note:$('#connection-note').value});}

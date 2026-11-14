@@ -1,0 +1,1126 @@
+{
+  "format": "traveller-character-session",
+  "version": 1,
+  "rulesRevision": "character-preview-2026-11-13.34",
+  "seed": "career-info-vargr-native",
+  "events": [
+    {
+      "id": "action-1",
+      "command": {
+        "type": "setup",
+        "payload": {
+          "species": "vargr",
+          "gender": "female",
+          "culture": "native",
+          "name": "Synthetic Vargr fallback"
+        }
+      },
+      "rolls": [],
+      "summary": "Started Synthetic Vargr fallback (Vargr). Vargr strain: standard."
+    },
+    {
+      "id": "action-2",
+      "command": {
+        "type": "gm-mode",
+        "payload": {
+          "enabled": true
+        }
+      },
+      "rolls": [],
+      "summary": "GM mode false → true."
+    },
+    {
+      "id": "action-3",
+      "command": {
+        "type": "roll-statistics",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "STR",
+          "values": [
+            4,
+            5
+          ],
+          "kept": [
+            4,
+            5
+          ],
+          "total": 9
+        },
+        {
+          "label": "DEX",
+          "values": [
+            1,
+            1
+          ],
+          "kept": [
+            1,
+            1
+          ],
+          "total": 2
+        },
+        {
+          "label": "END",
+          "values": [
+            5,
+            3
+          ],
+          "kept": [
+            5,
+            3
+          ],
+          "total": 8
+        },
+        {
+          "label": "INT",
+          "values": [
+            4,
+            4
+          ],
+          "kept": [
+            4,
+            4
+          ],
+          "total": 8
+        },
+        {
+          "label": "EDU",
+          "values": [
+            3,
+            5
+          ],
+          "kept": [
+            3,
+            5
+          ],
+          "total": 8
+        },
+        {
+          "label": "CHA",
+          "values": [
+            3,
+            1
+          ],
+          "kept": [
+            3,
+            1
+          ],
+          "total": 4
+        }
+      ],
+      "summary": "Rolled statistics. Base total 39. Species modifiers excluded; extra characteristics excluded."
+    },
+    {
+      "id": "action-4",
+      "command": {
+        "type": "accept-statistics",
+        "payload": {}
+      },
+      "rolls": [],
+      "summary": "Accepted statistics and generated selected extra characteristics."
+    },
+    {
+      "id": "action-5",
+      "command": {
+        "type": "background",
+        "payload": {
+          "skills": [
+            "Admin",
+            "Animals",
+            "Art"
+          ]
+        }
+      },
+      "rolls": [],
+      "summary": "Background skills: Admin, Animals, Art."
+    },
+    {
+      "id": "action-6",
+      "command": {
+        "type": "skip-precareer",
+        "payload": {}
+      },
+      "rolls": [],
+      "summary": "Skipped pre-career education."
+    },
+    {
+      "id": "action-7",
+      "command": {
+        "type": "career",
+        "payload": {
+          "id": "vargr.intermediary",
+          "assignment": "arbitrator"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Qualification",
+          "values": [
+            3,
+            4
+          ],
+          "kept": [
+            3,
+            4
+          ],
+          "total": 7
+        }
+      ],
+      "summary": "Failed Intermediary qualification: {\"natural\":7,\"stat\":\"CHA\",\"dm\":-1,\"modifier\":0,\"total\":6,\"target\":10,\"success\":false}."
+    },
+    {
+      "id": "action-8",
+      "command": {
+        "type": "fallback",
+        "payload": {}
+      },
+      "rolls": [],
+      "summary": "Fallback entered Loner."
+    },
+    {
+      "id": "action-9",
+      "command": {
+        "type": "survival-check",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "Survival",
+          "values": [
+            6,
+            3
+          ],
+          "kept": [
+            6,
+            3
+          ],
+          "total": 9
+        }
+      ],
+      "summary": "Survival: {\"natural\":9,\"stat\":\"DEX\",\"dm\":-1,\"modifier\":0,\"total\":8,\"target\":7,\"success\":true}."
+    },
+    {
+      "id": "action-10",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 9,
+          "rollIndex": 0,
+          "values": [
+            6,
+            6
+          ],
+          "reason": "Synthetic legacy replay coverage"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Survival",
+          "values": [
+            6,
+            6
+          ],
+          "kept": [
+            6,
+            6
+          ],
+          "total": 12
+        }
+      ],
+      "summary": "GM replaced action 9 roll 1 [6, 3] → [6, 6]. Reason: Synthetic legacy replay coverage. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Survival: {\"natural\":12,\"stat\":\"DEX\",\"dm\":-1,\"modifier\":0,\"total\":11,\"target\":7,\"success\":true}."
+    },
+    {
+      "id": "action-11",
+      "command": {
+        "type": "career-event",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "Event table",
+          "values": [
+            6,
+            2
+          ],
+          "kept": [
+            6,
+            2
+          ],
+          "total": 8
+        }
+      ],
+      "summary": "Career event result 8. +1 Benefit rolls."
+    },
+    {
+      "id": "action-12",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 11,
+          "rollIndex": 0,
+          "values": [
+            6,
+            6
+          ],
+          "reason": "Synthetic legacy replay coverage"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Event table",
+          "values": [
+            6,
+            6
+          ],
+          "kept": [
+            6,
+            6
+          ],
+          "total": 12
+        }
+      ],
+      "summary": "GM replaced action 11 roll 1 [6, 2] → [6, 6]. Reason: Synthetic legacy replay coverage. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Career event result 12. Resolve promotion. CHA +1."
+    },
+    {
+      "id": "action-13",
+      "command": {
+        "type": "advancement",
+        "payload": {}
+      },
+      "rolls": [],
+      "summary": "Advancement: {\"natural\":0,\"total\":99,\"target\":7,\"success\":true,\"automatic\":true}. Rank 1."
+    },
+    {
+      "id": "action-14",
+      "command": {
+        "type": "training",
+        "payload": {
+          "table": "personal"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Training: personal",
+          "values": [
+            2
+          ],
+          "kept": [
+            2
+          ],
+          "total": 2
+        }
+      ],
+      "summary": "Training personal result 2."
+    },
+    {
+      "id": "action-15",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 14,
+          "rollIndex": 0,
+          "values": [
+            1
+          ],
+          "reason": "Synthetic legacy replay coverage"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Training: personal",
+          "values": [
+            1
+          ],
+          "kept": [
+            1
+          ],
+          "total": 1
+        }
+      ],
+      "summary": "GM replaced action 14 roll 1 [2] → [1]. Reason: Synthetic legacy replay coverage. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Training personal result 1."
+    },
+    {
+      "id": "action-16",
+      "command": {
+        "type": "leave-career",
+        "payload": {}
+      },
+      "rolls": [],
+      "summary": "Left Loner with 2 benefit rolls."
+    },
+    {
+      "id": "action-17",
+      "command": {
+        "type": "benefit",
+        "payload": {
+          "cash": true
+        }
+      },
+      "rolls": [
+        {
+          "label": "Cash benefit",
+          "values": [
+            1
+          ],
+          "kept": [
+            1
+          ],
+          "total": 1
+        }
+      ],
+      "summary": "Rolled cash benefit 1 (DM 0)."
+    },
+    {
+      "id": "action-18",
+      "command": {
+        "type": "benefit",
+        "payload": {
+          "cash": true
+        }
+      },
+      "rolls": [
+        {
+          "label": "Cash benefit",
+          "values": [
+            2
+          ],
+          "kept": [
+            2
+          ],
+          "total": 2
+        }
+      ],
+      "summary": "Rolled cash benefit 2 (DM 0)."
+    },
+    {
+      "id": "action-19",
+      "command": {
+        "type": "career",
+        "payload": {
+          "id": "vargr.agent",
+          "assignment": "enforcer"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Qualification",
+          "values": [
+            5,
+            6
+          ],
+          "kept": [
+            5,
+            6
+          ],
+          "total": 11
+        }
+      ],
+      "summary": "Entered Agent / Enforcer: {\"natural\":11,\"stat\":\"INT\",\"dm\":0,\"modifier\":0,\"total\":11,\"target\":6,\"success\":true}."
+    },
+    {
+      "id": "action-20",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 19,
+          "rollIndex": 0,
+          "values": [
+            6,
+            6
+          ],
+          "reason": "Synthetic legacy replay coverage"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Qualification",
+          "values": [
+            6,
+            6
+          ],
+          "kept": [
+            6,
+            6
+          ],
+          "total": 12
+        }
+      ],
+      "summary": "GM replaced action 19 roll 1 [5, 6] → [6, 6]. Reason: Synthetic legacy replay coverage. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Entered Agent / Enforcer: {\"natural\":12,\"stat\":\"INT\",\"dm\":0,\"modifier\":0,\"total\":12,\"target\":6,\"success\":true}."
+    },
+    {
+      "id": "action-21",
+      "command": {
+        "type": "choose-effect",
+        "payload": {
+          "index": 0
+        }
+      },
+      "rolls": [],
+      "summary": "Chose Drive at least level 0.."
+    },
+    {
+      "id": "action-22",
+      "command": {
+        "type": "training",
+        "payload": {
+          "table": "personal"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Training: personal",
+          "values": [
+            4
+          ],
+          "kept": [
+            4
+          ],
+          "total": 4
+        }
+      ],
+      "summary": "Training personal result 4."
+    },
+    {
+      "id": "action-23",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 22,
+          "rollIndex": 0,
+          "values": [
+            1
+          ],
+          "reason": "Synthetic legacy replay coverage"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Training: personal",
+          "values": [
+            1
+          ],
+          "kept": [
+            1
+          ],
+          "total": 1
+        }
+      ],
+      "summary": "GM replaced action 22 roll 1 [4] → [1]. Reason: Synthetic legacy replay coverage. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Training personal result 1."
+    },
+    {
+      "id": "action-24",
+      "command": {
+        "type": "choose-skill",
+        "payload": {
+          "name": "Athletics (dexterity)"
+        }
+      },
+      "rolls": [],
+      "summary": "Selected Athletics (dexterity) for a skill award."
+    },
+    {
+      "id": "action-25",
+      "command": {
+        "type": "survival-check",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "Survival",
+          "values": [
+            5,
+            2
+          ],
+          "kept": [
+            5,
+            2
+          ],
+          "total": 7
+        }
+      ],
+      "summary": "Survival: {\"natural\":7,\"stat\":\"END\",\"dm\":0,\"modifier\":0,\"total\":7,\"target\":6,\"success\":true}."
+    },
+    {
+      "id": "action-26",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 25,
+          "rollIndex": 0,
+          "values": [
+            6,
+            6
+          ],
+          "reason": "Synthetic legacy replay coverage"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Survival",
+          "values": [
+            6,
+            6
+          ],
+          "kept": [
+            6,
+            6
+          ],
+          "total": 12
+        }
+      ],
+      "summary": "GM replaced action 25 roll 1 [5, 2] → [6, 6]. Reason: Synthetic legacy replay coverage. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Survival: {\"natural\":12,\"stat\":\"END\",\"dm\":0,\"modifier\":0,\"total\":12,\"target\":6,\"success\":true}."
+    },
+    {
+      "id": "action-27",
+      "command": {
+        "type": "career-event",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "Event table",
+          "values": [
+            3,
+            4
+          ],
+          "kept": [
+            3,
+            4
+          ],
+          "total": 7
+        },
+        {
+          "label": "vargr.life-events (2D)",
+          "values": [
+            3,
+            3
+          ],
+          "kept": [
+            3,
+            3
+          ],
+          "total": 6,
+          "modifier": 0
+        },
+        {
+          "label": "vargr.pack-events (1D)",
+          "values": [
+            5
+          ],
+          "kept": [
+            5
+          ],
+          "total": 5,
+          "modifier": 0
+        }
+      ],
+      "summary": "Career event result 7. Resolve the life events table."
+    },
+    {
+      "id": "action-28",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 27,
+          "rollIndex": 0,
+          "values": [
+            6,
+            6
+          ],
+          "reason": "Synthetic legacy replay coverage"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Event table",
+          "values": [
+            6,
+            6
+          ],
+          "kept": [
+            6,
+            6
+          ],
+          "total": 12
+        }
+      ],
+      "summary": "GM replaced action 27 roll 1 [3, 4] → [6, 6]. Reason: Synthetic legacy replay coverage. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Career event result 12. Resolve promotion. CHA +1."
+    },
+    {
+      "id": "action-29",
+      "command": {
+        "type": "advancement",
+        "payload": {}
+      },
+      "rolls": [],
+      "summary": "Advancement: {\"natural\":0,\"total\":99,\"target\":6,\"success\":true,\"automatic\":true}. Rank 1."
+    },
+    {
+      "id": "action-30",
+      "command": {
+        "type": "choose-skill",
+        "payload": {
+          "name": "Melee (blade)"
+        }
+      },
+      "rolls": [],
+      "summary": "Selected Melee (blade) for a skill award."
+    },
+    {
+      "id": "action-31",
+      "command": {
+        "type": "training",
+        "payload": {
+          "table": "personal"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Training: personal",
+          "values": [
+            1
+          ],
+          "kept": [
+            1
+          ],
+          "total": 1
+        }
+      ],
+      "summary": "Training personal result 1."
+    },
+    {
+      "id": "action-32",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 31,
+          "rollIndex": 0,
+          "values": [
+            1
+          ],
+          "reason": "Synthetic legacy replay coverage"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Training: personal",
+          "values": [
+            1
+          ],
+          "kept": [
+            1
+          ],
+          "total": 1
+        }
+      ],
+      "summary": "GM replaced action 31 roll 1 [1] → [1]. Reason: Synthetic legacy replay coverage. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Training personal result 1."
+    },
+    {
+      "id": "action-33",
+      "command": {
+        "type": "choose-skill",
+        "payload": {
+          "name": "Athletics (dexterity)"
+        }
+      },
+      "rolls": [],
+      "summary": "Selected Athletics (dexterity) for a skill award."
+    },
+    {
+      "id": "action-34",
+      "command": {
+        "type": "continue-career",
+        "payload": {}
+      },
+      "rolls": [],
+      "summary": "Continued Agent."
+    },
+    {
+      "id": "action-35",
+      "command": {
+        "type": "training",
+        "payload": {
+          "table": "personal"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Training: personal",
+          "values": [
+            6
+          ],
+          "kept": [
+            6
+          ],
+          "total": 6
+        }
+      ],
+      "summary": "Training personal result 6."
+    },
+    {
+      "id": "action-36",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 35,
+          "rollIndex": 0,
+          "values": [
+            1
+          ],
+          "reason": "Synthetic legacy replay coverage"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Training: personal",
+          "values": [
+            1
+          ],
+          "kept": [
+            1
+          ],
+          "total": 1
+        }
+      ],
+      "summary": "GM replaced action 35 roll 1 [6] → [1]. Reason: Synthetic legacy replay coverage. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Training personal result 1."
+    },
+    {
+      "id": "action-37",
+      "command": {
+        "type": "choose-skill",
+        "payload": {
+          "name": "Athletics (dexterity)"
+        }
+      },
+      "rolls": [],
+      "summary": "Selected Athletics (dexterity) for a skill award."
+    },
+    {
+      "id": "action-38",
+      "command": {
+        "type": "survival-check",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "Survival",
+          "values": [
+            4,
+            5
+          ],
+          "kept": [
+            4,
+            5
+          ],
+          "total": 9
+        }
+      ],
+      "summary": "Survival: {\"natural\":9,\"stat\":\"END\",\"dm\":0,\"modifier\":0,\"total\":9,\"target\":6,\"success\":true}."
+    },
+    {
+      "id": "action-39",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 38,
+          "rollIndex": 0,
+          "values": [
+            6,
+            6
+          ],
+          "reason": "Synthetic legacy replay coverage"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Survival",
+          "values": [
+            6,
+            6
+          ],
+          "kept": [
+            6,
+            6
+          ],
+          "total": 12
+        }
+      ],
+      "summary": "GM replaced action 38 roll 1 [4, 5] → [6, 6]. Reason: Synthetic legacy replay coverage. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Survival: {\"natural\":12,\"stat\":\"END\",\"dm\":0,\"modifier\":0,\"total\":12,\"target\":6,\"success\":true}."
+    },
+    {
+      "id": "action-40",
+      "command": {
+        "type": "career-event",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "Event table",
+          "values": [
+            4,
+            3
+          ],
+          "kept": [
+            4,
+            3
+          ],
+          "total": 7
+        },
+        {
+          "label": "vargr.life-events (2D)",
+          "values": [
+            2,
+            1
+          ],
+          "kept": [
+            2,
+            1
+          ],
+          "total": 3,
+          "modifier": 0
+        }
+      ],
+      "summary": "Career event result 7. Resolve the life events table."
+    },
+    {
+      "id": "action-41",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 40,
+          "rollIndex": 0,
+          "values": [
+            6,
+            6
+          ],
+          "reason": "Synthetic legacy replay coverage"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Event table",
+          "values": [
+            6,
+            6
+          ],
+          "kept": [
+            6,
+            6
+          ],
+          "total": 12
+        }
+      ],
+      "summary": "GM replaced action 40 roll 1 [4, 3] → [6, 6]. Reason: Synthetic legacy replay coverage. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Career event result 12. Resolve promotion. CHA +1."
+    },
+    {
+      "id": "action-42",
+      "command": {
+        "type": "advancement",
+        "payload": {}
+      },
+      "rolls": [],
+      "summary": "Advancement: {\"natural\":0,\"total\":99,\"target\":6,\"success\":true,\"automatic\":true}. Rank 2."
+    },
+    {
+      "id": "action-43",
+      "command": {
+        "type": "choose-skill",
+        "payload": {
+          "name": "Gun Combat (slug)"
+        }
+      },
+      "rolls": [],
+      "summary": "Selected Gun Combat (slug) for a skill award."
+    },
+    {
+      "id": "action-44",
+      "command": {
+        "type": "training",
+        "payload": {
+          "table": "personal"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Training: personal",
+          "values": [
+            6
+          ],
+          "kept": [
+            6
+          ],
+          "total": 6
+        }
+      ],
+      "summary": "Training personal result 6."
+    },
+    {
+      "id": "action-45",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 44,
+          "rollIndex": 0,
+          "values": [
+            1
+          ],
+          "reason": "Synthetic legacy replay coverage"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Training: personal",
+          "values": [
+            1
+          ],
+          "kept": [
+            1
+          ],
+          "total": 1
+        }
+      ],
+      "summary": "GM replaced action 44 roll 1 [6] → [1]. Reason: Synthetic legacy replay coverage. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Training personal result 1."
+    },
+    {
+      "id": "action-46",
+      "command": {
+        "type": "choose-skill",
+        "payload": {
+          "name": "Athletics (dexterity)"
+        }
+      },
+      "rolls": [],
+      "summary": "Selected Athletics (dexterity) for a skill award."
+    },
+    {
+      "id": "action-47",
+      "command": {
+        "type": "leave-career",
+        "payload": {}
+      },
+      "rolls": [],
+      "summary": "Left Agent with 3 benefit rolls."
+    },
+    {
+      "id": "action-48",
+      "command": {
+        "type": "benefit",
+        "payload": {
+          "cash": true
+        }
+      },
+      "rolls": [
+        {
+          "label": "Cash benefit",
+          "values": [
+            4
+          ],
+          "kept": [
+            4
+          ],
+          "total": 4
+        }
+      ],
+      "summary": "Rolled cash benefit 4 (DM 0)."
+    },
+    {
+      "id": "action-49",
+      "command": {
+        "type": "benefit",
+        "payload": {
+          "cash": false
+        }
+      },
+      "rolls": [
+        {
+          "label": "Material benefit",
+          "values": [
+            4
+          ],
+          "kept": [
+            4
+          ],
+          "total": 4
+        }
+      ],
+      "summary": "Rolled material benefit 4 (DM 0)."
+    },
+    {
+      "id": "action-50",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 49,
+          "rollIndex": 0,
+          "values": [
+            6
+          ],
+          "reason": "Synthetic legacy replay coverage"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Material benefit",
+          "values": [
+            6
+          ],
+          "kept": [
+            6
+          ],
+          "total": 6
+        }
+      ],
+      "summary": "GM replaced action 49 roll 1 [4] → [6]. Reason: Synthetic legacy replay coverage. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Rolled material benefit 6 (DM 0)."
+    },
+    {
+      "id": "action-51",
+      "command": {
+        "type": "benefit",
+        "payload": {
+          "cash": false
+        }
+      },
+      "rolls": [
+        {
+          "label": "Material benefit",
+          "values": [
+            3
+          ],
+          "kept": [
+            3
+          ],
+          "total": 3
+        }
+      ],
+      "summary": "Rolled material benefit 3 (DM 0)."
+    },
+    {
+      "id": "action-52",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 51,
+          "rollIndex": 0,
+          "values": [
+            6
+          ],
+          "reason": "Synthetic legacy replay coverage"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Material benefit",
+          "values": [
+            6
+          ],
+          "kept": [
+            6
+          ],
+          "total": 6
+        }
+      ],
+      "summary": "GM replaced action 51 roll 1 [3] → [6]. Reason: Synthetic legacy replay coverage. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Rolled material benefit 6 (DM 0)."
+    }
+  ]
+}

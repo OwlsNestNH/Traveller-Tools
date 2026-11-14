@@ -1,0 +1,16 @@
+{
+  "base": "2a622210b254dd21f98733ea0a32e4b9b1d9304d",
+  "actions": 52,
+  "projectionSha256": "20d501a9a41149a8cde6b88ae09b7ee3909c4a9a4ed0e16e4ae40929fde147bc",
+  "continuation": {
+    "command": {
+      "type": "career",
+      "payload": {
+        "id": "vargr.military",
+        "assignment": "army"
+      }
+    },
+    "id": "legacy-continuation",
+    "sha256": "7e9481a74bb2f9676af09d601d76021e218e5e093cac7da57f554fdcb11b304b"
+  }
+}
