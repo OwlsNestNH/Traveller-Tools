@@ -326,3 +326,10 @@
  body[data-required-draft="true"] #army-career-dialog .career-crow-bubble{padding:12px;}
  body[data-required-draft="true"] #army-career-dialog .career-crow-speech{font-size:17px;line-height:1.45;}
 }
+@media screen {
+ /* An earlier choice remains readable, but the current earned award leads. */
+ body[data-stage="skill-choice"] #army-career-dialog #workspace:has(>.skill-award-origin)>#last-action-result{padding:12px 14px;margin:12px 0;font-size:16px;text-align:left;}
+ body[data-stage="skill-choice"] #army-career-dialog #workspace:has(>.skill-award-origin)>#last-action-result h3{font-size:18px;line-height:1.4;color:#d1e1eb;margin:4px 0 8px;}
+ body[data-stage="skill-choice"] #army-career-dialog #workspace:has(>.skill-award-origin)>#last-action-result p{font-size:16px;line-height:1.45;margin:6px 0;}
+ body[data-stage="skill-choice"] #army-career-dialog #workspace:has(>.skill-award-origin)>#last-action-result .result-status{font-size:12px;}
+}
