@@ -1,0 +1,679 @@
+{
+  "format": "traveller-character-session",
+  "version": 1,
+  "rulesRevision": "character-preview-2026-11-14.35",
+  "seed": "audit-1",
+  "events": [
+    {
+      "id": "action-1",
+      "command": {
+        "type": "setup",
+        "payload": {
+          "species": "human",
+          "gender": "female"
+        }
+      },
+      "rolls": [],
+      "summary": "Started an unnamed Traveller (Human)."
+    },
+    {
+      "id": "action-2",
+      "command": {
+        "type": "gm-mode",
+        "payload": {
+          "enabled": true
+        }
+      },
+      "rolls": [],
+      "summary": "GM mode false \u2192 true."
+    },
+    {
+      "id": "action-3",
+      "command": {
+        "type": "roll-statistics",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "STR",
+          "values": [
+            1,
+            3
+          ],
+          "kept": [
+            1,
+            3
+          ],
+          "total": 4
+        },
+        {
+          "label": "DEX",
+          "values": [
+            5,
+            3
+          ],
+          "kept": [
+            5,
+            3
+          ],
+          "total": 8
+        },
+        {
+          "label": "END",
+          "values": [
+            2,
+            3
+          ],
+          "kept": [
+            2,
+            3
+          ],
+          "total": 5
+        },
+        {
+          "label": "INT",
+          "values": [
+            3,
+            1
+          ],
+          "kept": [
+            3,
+            1
+          ],
+          "total": 4
+        },
+        {
+          "label": "EDU",
+          "values": [
+            5,
+            3
+          ],
+          "kept": [
+            5,
+            3
+          ],
+          "total": 8
+        },
+        {
+          "label": "SOC",
+          "values": [
+            4,
+            2
+          ],
+          "kept": [
+            4,
+            2
+          ],
+          "total": 6
+        }
+      ],
+      "summary": "Rolled statistics. Base total 35. Species modifiers excluded; extra characteristics excluded."
+    },
+    {
+      "id": "action-4",
+      "command": {
+        "type": "gm-override",
+        "payload": {
+          "field": "pool",
+          "index": 0,
+          "value": 12,
+          "reason": "Stable source procedure regression"
+        }
+      },
+      "rolls": [],
+      "summary": "GM override pool[0]: 4 \u2192 12. Reason: Stable source procedure regression"
+    },
+    {
+      "id": "action-5",
+      "command": {
+        "type": "gm-override",
+        "payload": {
+          "field": "pool",
+          "index": 1,
+          "value": 12,
+          "reason": "Stable source procedure regression"
+        }
+      },
+      "rolls": [],
+      "summary": "GM override pool[1]: 8 \u2192 12. Reason: Stable source procedure regression"
+    },
+    {
+      "id": "action-6",
+      "command": {
+        "type": "gm-override",
+        "payload": {
+          "field": "pool",
+          "index": 2,
+          "value": 12,
+          "reason": "Stable source procedure regression"
+        }
+      },
+      "rolls": [],
+      "summary": "GM override pool[2]: 5 \u2192 12. Reason: Stable source procedure regression"
+    },
+    {
+      "id": "action-7",
+      "command": {
+        "type": "gm-override",
+        "payload": {
+          "field": "pool",
+          "index": 3,
+          "value": 12,
+          "reason": "Stable source procedure regression"
+        }
+      },
+      "rolls": [],
+      "summary": "GM override pool[3]: 4 \u2192 12. Reason: Stable source procedure regression"
+    },
+    {
+      "id": "action-8",
+      "command": {
+        "type": "gm-override",
+        "payload": {
+          "field": "pool",
+          "index": 4,
+          "value": 12,
+          "reason": "Stable source procedure regression"
+        }
+      },
+      "rolls": [],
+      "summary": "GM override pool[4]: 8 \u2192 12. Reason: Stable source procedure regression"
+    },
+    {
+      "id": "action-9",
+      "command": {
+        "type": "gm-override",
+        "payload": {
+          "field": "pool",
+          "index": 5,
+          "value": 12,
+          "reason": "Stable source procedure regression"
+        }
+      },
+      "rolls": [],
+      "summary": "GM override pool[5]: 6 \u2192 12. Reason: Stable source procedure regression"
+    },
+    {
+      "id": "action-10",
+      "command": {
+        "type": "accept-statistics",
+        "payload": {}
+      },
+      "rolls": [],
+      "summary": "Accepted statistics and generated selected extra characteristics."
+    },
+    {
+      "id": "action-11",
+      "command": {
+        "type": "background",
+        "payload": {
+          "skills": [
+            "Admin",
+            "Animals",
+            "Art",
+            "Athletics",
+            "Carouse"
+          ]
+        }
+      },
+      "rolls": [],
+      "summary": "Background skills: Admin, Animals, Art, Athletics, Carouse."
+    },
+    {
+      "id": "action-12",
+      "command": {
+        "type": "skip-precareer",
+        "payload": {}
+      },
+      "rolls": [],
+      "summary": "Skipped pre-career education."
+    },
+    {
+      "id": "action-13",
+      "command": {
+        "type": "career",
+        "payload": {
+          "id": "core.citizen",
+          "assignment": "worker"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Qualification",
+          "values": [
+            5,
+            1
+          ],
+          "kept": [
+            5,
+            1
+          ],
+          "total": 6
+        }
+      ],
+      "summary": "Entered Citizen / Worker: {\"natural\":6,\"stat\":\"EDU\",\"dm\":2,\"modifier\":0,\"total\":8,\"target\":5,\"success\":true}."
+    },
+    {
+      "id": "action-14",
+      "command": {
+        "type": "survival",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "Survival",
+          "values": [
+            1,
+            6
+          ],
+          "kept": [
+            1,
+            6
+          ],
+          "total": 7
+        },
+        {
+          "label": "Event table",
+          "values": [
+            1,
+            6
+          ],
+          "kept": [
+            1,
+            6
+          ],
+          "total": 7
+        },
+        {
+          "label": "core.life-events (2D)",
+          "values": [
+            6,
+            5
+          ],
+          "kept": [
+            6,
+            5
+          ],
+          "total": 11,
+          "modifier": 0
+        }
+      ],
+      "summary": "Survival: {\"natural\":7,\"stat\":\"END\",\"dm\":2,\"modifier\":0,\"total\":9,\"target\":4,\"success\":true}."
+    },
+    {
+      "id": "action-15",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 14,
+          "rollIndex": 2,
+          "values": [
+            6,
+            5
+          ],
+          "reason": "Exercise a specific life event row"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Survival",
+          "values": [
+            1,
+            6
+          ],
+          "kept": [
+            1,
+            6
+          ],
+          "total": 7
+        },
+        {
+          "label": "Event table",
+          "values": [
+            1,
+            6
+          ],
+          "kept": [
+            1,
+            6
+          ],
+          "total": 7
+        },
+        {
+          "label": "core.life-events (2D)",
+          "values": [
+            6,
+            5
+          ],
+          "kept": [
+            6,
+            5
+          ],
+          "total": 11,
+          "modifier": 0
+        }
+      ],
+      "summary": "GM replaced action 14 roll 3 [6, 5] \u2192 [6, 5]. Reason: Exercise a specific life event row. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Survival: {\"natural\":7,\"stat\":\"END\",\"dm\":2,\"modifier\":0,\"total\":9,\"target\":4,\"success\":true}."
+    },
+    {
+      "id": "action-16",
+      "command": {
+        "type": "resolve-life-event",
+        "payload": {
+          "confirmed": true,
+          "reason": "Sentenced by source crime event.",
+          "outcome": "prisoner"
+        }
+      },
+      "rolls": [],
+      "summary": "Life event decision recorded. Sentenced by source crime event."
+    },
+    {
+      "id": "action-17",
+      "command": {
+        "type": "advancement",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "Advancement",
+          "values": [
+            1,
+            5
+          ],
+          "kept": [
+            1,
+            5
+          ],
+          "total": 6
+        }
+      ],
+      "summary": "Advancement: {\"natural\":6,\"stat\":\"EDU\",\"dm\":2,\"modifier\":0,\"total\":8,\"target\":8,\"success\":true}. Rank 1."
+    },
+    {
+      "id": "action-18",
+      "command": {
+        "type": "training",
+        "payload": {
+          "table": "personal"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Training: personal",
+          "values": [
+            1
+          ],
+          "kept": [
+            1
+          ],
+          "total": 1
+        }
+      ],
+      "summary": "Training personal result 1."
+    },
+    {
+      "id": "action-19",
+      "command": {
+        "type": "leave-career",
+        "payload": {}
+      },
+      "rolls": [],
+      "summary": "Left Citizen with 2 benefit rolls."
+    },
+    {
+      "id": "action-20",
+      "command": {
+        "type": "benefit",
+        "payload": {
+          "cash": true
+        }
+      },
+      "rolls": [
+        {
+          "label": "Cash benefit",
+          "values": [
+            6
+          ],
+          "kept": [
+            6
+          ],
+          "total": 6
+        }
+      ],
+      "summary": "Rolled cash benefit 6 (DM 0)."
+    },
+    {
+      "id": "action-21",
+      "command": {
+        "type": "benefit",
+        "payload": {
+          "cash": true
+        }
+      },
+      "rolls": [
+        {
+          "label": "Cash benefit",
+          "values": [
+            4
+          ],
+          "kept": [
+            4
+          ],
+          "total": 4
+        }
+      ],
+      "summary": "Rolled cash benefit 4 (DM 0)."
+    },
+    {
+      "id": "action-22",
+      "command": {
+        "type": "career",
+        "payload": {
+          "id": "core.prisoner",
+          "assignment": "inmate"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Parole threshold (1D+2)",
+          "values": [
+            2
+          ],
+          "kept": [
+            2
+          ],
+          "total": 4,
+          "modifier": 2
+        }
+      ],
+      "summary": "Entered Prisoner / Inmate automatically."
+    },
+    {
+      "id": "action-23",
+      "command": {
+        "type": "choose-effect",
+        "payload": {
+          "index": 0
+        }
+      },
+      "rolls": [],
+      "summary": "Chose Athletics at least level 0.."
+    },
+    {
+      "id": "action-24",
+      "command": {
+        "type": "survival-check",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "Survival",
+          "values": [
+            2,
+            4
+          ],
+          "kept": [
+            2,
+            4
+          ],
+          "total": 6
+        }
+      ],
+      "summary": "Survival: {\"natural\":6,\"stat\":\"END\",\"dm\":2,\"modifier\":0,\"total\":8,\"target\":7,\"success\":true}."
+    },
+    {
+      "id": "action-25",
+      "command": {
+        "type": "career-event",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "Event table",
+          "values": [
+            4,
+            3
+          ],
+          "kept": [
+            4,
+            3
+          ],
+          "total": 7
+        }
+      ],
+      "summary": "Career event result 7. Resolve random."
+    },
+    {
+      "id": "action-26",
+      "command": {
+        "type": "roll-borrowed-event",
+        "payload": {
+          "pendingId": "career-1-0-event-7-roll-1"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Event random result (1D)",
+          "values": [
+            3
+          ],
+          "kept": [
+            3
+          ],
+          "total": 3,
+          "modifier": 0
+        }
+      ],
+      "summary": "Event consequence result 3. Gain 1 Rival."
+    },
+    {
+      "id": "action-27",
+      "command": {
+        "type": "advancement",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "Advancement",
+          "values": [
+            4,
+            6
+          ],
+          "kept": [
+            4,
+            6
+          ],
+          "total": 10
+        }
+      ],
+      "summary": "Advancement: {\"natural\":10,\"stat\":\"STR\",\"dm\":2,\"modifier\":0,\"total\":12,\"target\":7,\"success\":true}. Rank 1."
+    },
+    {
+      "id": "action-28",
+      "command": {
+        "type": "training",
+        "payload": {
+          "table": "personal"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Training: personal",
+          "values": [
+            4
+          ],
+          "kept": [
+            4
+          ],
+          "total": 4
+        }
+      ],
+      "summary": "Training personal result 4."
+    },
+    {
+      "id": "action-29",
+      "command": {
+        "type": "leave-career",
+        "payload": {}
+      },
+      "rolls": [],
+      "summary": "Left Prisoner with 2 benefit rolls."
+    },
+    {
+      "id": "action-30",
+      "command": {
+        "type": "benefit",
+        "payload": {
+          "cash": true
+        }
+      },
+      "rolls": [
+        {
+          "label": "Cash benefit",
+          "values": [
+            6
+          ],
+          "kept": [
+            6
+          ],
+          "total": 6
+        }
+      ],
+      "summary": "Rolled cash benefit 6 (DM 0)."
+    },
+    {
+      "id": "action-31",
+      "command": {
+        "type": "benefit",
+        "payload": {
+          "cash": false
+        }
+      },
+      "rolls": [
+        {
+          "label": "Material benefit",
+          "values": [
+            6
+          ],
+          "kept": [
+            6
+          ],
+          "total": 6
+        }
+      ],
+      "summary": "Rolled material benefit 6 (DM 0)."
+    },
+    {
+      "id": "action-32",
+      "command": {
+        "type": "choose-effect",
+        "payload": {
+          "index": 0
+        }
+      },
+      "rolls": [],
+      "summary": "Chose STR+1."
+    }
+  ]
+}

@@ -291,3 +291,7 @@
 #army-career-dialog .injury-care-result>p:not(.result-status){font-size:20px;font-weight:600}
 
 @media(max-width:600px){#army-career-dialog #workspace>.actions.benefit-roll-actions>button:not(.quiet){font-size:20px;padding:12px 8px}}
+
+/* Aggregate fallback: numeric total, never a fabricated individual die face. */
+.recorded-total-die{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:72px;min-height:72px;padding:7px;box-sizing:border-box;border:3px solid #ffd34b;border-radius:12px;color:#ffd34b;background:#061b29;line-height:1;font-weight:800;vertical-align:middle}
+.recorded-total-die-value{font-size:30px;white-space:nowrap}.recorded-total-die-label{font-size:12px;letter-spacing:.06em}

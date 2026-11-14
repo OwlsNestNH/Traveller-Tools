@@ -30,7 +30,7 @@ test('unknown or exceptional steps never invent a mustering-out instruction',()=
 
 test('a verified failed event check uses failure copy rather than the neutral event bank',()=>{assert.equal(armyOutcome({id:'checked-event',type:'career-event'},{status:'failure'}),'army.failure');assert.equal(armyOutcome({id:'checked-event',type:'career-event'},{status:'pending'}),'army.event');assert.equal(armyOutcome({id:'checked-event',type:'career-event'},{status:'success'}),'army.success');});
 
-test('gold dice use recorded faces without RNG or fabricated placeholders',()=>{const event={rolls:[{label:'Survival',values:[2,6],total:8}]},before=JSON.stringify(event),esc=s=>String(s).replaceAll('<','&lt;');const html=armyRecordedDice(event,{esc});assert.equal((html.match(/<svg/g)??[]).length,2);assert.match(html,/Recorded dice: 2, 6/);assert.match(html,/Recorded total: 8/);assert.equal(JSON.stringify(event),before);assert.match(armyRecordedDice({rolls:[{values:[0,7]}]},{esc}),/Recorded die faces unavailable/);});
+test('gold dice use recorded faces without RNG or fabricated placeholders',()=>{const event={rolls:[{label:'Survival',values:[2,6],total:8}]},before=JSON.stringify(event),esc=s=>String(s).replaceAll('<','&lt;');const html=armyRecordedDice(event,{esc});assert.equal((html.match(/<svg/g)??[]).length,2);assert.match(html,/Recorded dice: 2, 6/);assert.match(html,/Recorded total: 8/);assert.equal(JSON.stringify(event),before);assert.match(armyRecordedDice({rolls:[{values:[0,7]}]},{esc}),/Recorded total unavailable/);});
 
 test('all three Army specialties complete native training, rank rewards, commission and benefits',async()=>{
  const {assignmentSetup,run,force,settleAssignment}=await import('./assignment-fixtures.mjs');
@@ -87,7 +87,7 @@ test('raw faces remain visible with separate kept values, conversions and signed
  }
  for(const values of [undefined,[],[0],[7],[2,NaN]]){
   const html=armyRecordedDice({rolls:[{values,total:8}]},{esc:String});
-  assert.match(html,/Recorded die faces unavailable/);assert.equal((html.match(/<svg\b/g)??[]).length,0);assert.match(html,/Recorded total: 8/);
+  assert.match(html,/recorded-total-die/);assert.match(html,/>8<\/span>/);assert.match(html,/>Total<\/span>/);assert.equal((html.match(/<svg\b/g)??[]).length,0);assert.match(html,/Recorded total: 8/);
  }
 });
 
@@ -98,5 +98,5 @@ test('checked boon equation identifies the kept subtotal instead of summing disc
 
 test('a checked result with unavailable faces still identifies its recorded natural subtotal',()=>{
  const event={type:'survival-check',summary:'Survival: {"natural":11,"total":12,"target":8,"success":true}.',rolls:[{label:'Survival',total:11}]};
- const html=armyRecordedDice(event,{esc:String});assert.match(html,/Recorded die faces unavailable/);assert.match(html,/Natural 11 \+ 1 = 12/);assert.match(html,/Total 12 · Target 8\+ · Success/);assert.equal((html.match(/<svg\b/g)??[]).length,0);
+ const html=armyRecordedDice(event,{esc:String});assert.match(html,/recorded-total-die/);assert.match(html,/>11<\/span>/);assert.match(html,/\+ 1 = 12/);assert.match(html,/Final total 12 · Target 8\+ · Success/);assert.equal((html.match(/<svg\b/g)??[]).length,0);
 });
