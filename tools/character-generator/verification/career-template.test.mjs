@@ -95,3 +95,8 @@ test('checked boon equation identifies the kept subtotal instead of summing disc
  const event={type:'survival-check',summary:'Survival: {"natural":11,"total":12,"target":8,"success":true}.',rolls:[{label:'Survival',values:[1,5,6],kept:[6,5],total:11}]};
  const html=armyRecordedDice(event,{esc:String});assert.match(html,/Natural 11 \+ 1 = 12/);assert.match(html,/Kept dice: 6, 5/);assert.match(html,/Recorded dice: 1, 5, 6/);
 });
+
+test('a checked result with unavailable faces still identifies its recorded natural subtotal',()=>{
+ const event={type:'survival-check',summary:'Survival: {"natural":11,"total":12,"target":8,"success":true}.',rolls:[{label:'Survival',total:11}]};
+ const html=armyRecordedDice(event,{esc:String});assert.match(html,/Recorded die faces unavailable/);assert.match(html,/Natural 11 \+ 1 = 12/);assert.match(html,/Total 12 · Target 8\+ · Success/);assert.equal((html.match(/<svg\b/g)??[]).length,0);
+});

@@ -1,3 +1,4 @@
+import {readRecordSections} from './read-record-sections-browser.mjs';
 import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -25,7 +26,7 @@ try{
     const person=page.locator('#relationship-event-person');if(await person.count())await person.selectOption(before.state.character.relationships[1].id);
     const role=page.locator('#relationship-event-role');if(await role.count())await role.selectOption('Rival');
     await page.locator('#relationship-event-confirm').check();await button.dblclick();await ready(page);
-    const after=await saved(page);assert.equal(after.revision,before.revision+1);assert.equal(after.state.character.relationshipEvents.length,1);assert.match(await page.locator('#sheet').innerText(),/Relationship consequences/);
+    const after=await saved(page);assert.equal(after.revision,before.revision+1);assert.equal(after.state.character.relationshipEvents.length,1);assert.match(await readRecordSections(page),/Relationship consequences/);
     if(await person.count())throw Error('Completed relationship choice remains visible');
     await page.reload();await page.waitForFunction(()=>Number(document.querySelector('#workspace')?.dataset.revision??0)>5);assert.deepEqual((await saved(page)).state,after.state);
    }else{assert.equal(before.state.pending.kind,'native-effect');assert.match(await page.locator('#workspace').innerText(),/no replacement relationship/i);}

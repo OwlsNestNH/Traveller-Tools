@@ -1,3 +1,4 @@
+import {readRecordSections} from './read-record-sections-browser.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {createServer} from '../server.mjs';
@@ -14,8 +15,8 @@ try{
   await page.locator('#benefit-item-id').selectOption('core.autopistol');assert.equal(await page.locator('#benefit-item-name').inputValue(),'Autopistol');assert.equal(await page.locator('#benefit-item-cost').inputValue(),'200');
   await page.locator('#book-confirm').check();await page.locator('#benefit-item-id').selectOption('');assert.equal(await page.locator('#book-confirm').isChecked(),false);assert.equal(await page.locator('#benefit-item-name').getAttribute('readonly'),null);
   await page.locator('#benefit-item-id').selectOption('core.rifle');await page.locator('#book-note').fill('Selected source-backed Rifle.');await page.locator('#book-confirm').check();await page.getByRole('button',{name:'Record outcome and continue'}).click();
-  await page.getByRole('heading',{name:'Assets & benefits',exact:true}).waitFor();const sheet=await page.locator('#sheet').innerText();assert.match(sheet,/Rifle/);assert.match(sheet,/126/);assert.match(sheet,/Gun Combat \(slug\)/);
-  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);await page.reload();await page.getByRole('heading',{name:'Assets & benefits',exact:true}).waitFor();assert.match(await page.locator('#sheet').innerText(),/Rifle/);
+  await page.getByRole('heading',{name:'Assets & benefits',exact:true}).waitFor();const sheet=await readRecordSections(page);assert.match(sheet,/Rifle/);assert.match(sheet,/126/);assert.match(sheet,/Gun Combat \(slug\)/);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);await page.reload();await page.getByRole('heading',{name:'Assets & benefits',exact:true}).waitFor();assert.match(await readRecordSections(page),/Rifle/);
   await context.close();console.log('PASS equipment picker '+width+' '+(transport||'static'));
  }
  assert.deepEqual(errors,[]);

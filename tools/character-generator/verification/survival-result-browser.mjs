@@ -1,3 +1,4 @@
+import {readRecordSections} from './read-record-sections-browser.mjs';
 import {recordedResultDetails} from './recorded-result-details-browser.mjs';
 import {downloadedActionLog} from './download-log-browser.mjs';
 import {assertResultColor} from './result-color-browser-assertions.mjs';
@@ -43,7 +44,7 @@ try{
 
     await page.locator('[data-action=career-event]').evaluate(button=>{button.click();button.click();});await page.waitForFunction(()=>!document.querySelector('#new').disabled);
     const eventText=await page.locator('#last-action-result').innerText(),details=await recordedResultDetails(page);assert.match(details,/Table outcome:/);assert.match(details,/Roll \[.*\] = \d+/);
-    if(term===3)assert.match(await page.locator('#sheet').innerText(),/Contact/);
+    if(term===3)assert.match(await readRecordSections(page),/Contact/);
     else assert.match(eventText,/EDU check/);
     const raw=await page.evaluate(key=>localStorage.getItem(key),key),saved=importSession(raw);
     assert.equal(saved.events.length,before.revision+2);assert.equal(exportSession(saved),raw);
@@ -56,7 +57,7 @@ try{
     const targeted=survivalResult(after.log.at(-1),after.state),visible=await page.locator('#last-action-result').innerText();
     await assertResultColor(page,targeted.status);
     for(const detail of targeted.details)assert.ok(visible.includes(detail),detail);
-    const sheet=await page.locator('#sheet').innerText();assert.match(sheet,/Ally/);
+    const sheet=await readRecordSections(page);assert.match(sheet,/Ally/);
     if(term===3)assert.match(sheet,/A new romantic relationship begins/);
     else assert.match(sheet,/advancement[^\n]*\+4|\+4[^\n]*advancement/i);
     assert.ok((await downloadedActionLog(page)).includes(after.log.at(-1).summary));
@@ -68,7 +69,7 @@ try{
    const r=cases[0].after,revision=r.session.events.findIndex(e=>e.command.type==='survival')+1;
    const failed=run(r,'gm-replay',{revision,rollIndex:0,values:[1,1],reason:'Verify failed survival color'}),raw=exportSession(failed.session);
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.reload();await page.locator('#last-action-result').waitFor();
-   await assertResultColor(page,'failure');assert.match(await page.locator('#last-action-result').innerText(),/Survival failed/);
+   await assertResultColor(page,'failure');const failureText=await page.locator('#last-action-result').innerText();if(failed.state.stage==='injury-loss')assert.ok(failureText.includes('Injury table result '+failed.state.currentInjury.tableResult+'.'));else assert.match(failureText,/Survival failed/);assert.match(await recordedResultDetails(page),/Survival failed/);
    assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
    if(http)assert.deepEqual(engineRequests,[]);
   }finally{await context.close();}
