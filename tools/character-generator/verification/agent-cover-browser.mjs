@@ -1,3 +1,4 @@
+import {readRecordSections} from './read-record-sections-browser.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -35,7 +36,7 @@ try{
     await page.getByRole('heading',{name:'Choose your extra training'}).waitFor();assert.equal(await page.locator('[data-action=cross-career-training]').count(),3);await page.reload();await ready(page);
     await page.locator('[data-action=cross-career-training][data-assignment=worker]').click();await ready(page);
     for(let i=0;i<8;i++){const p=await read(page);if(p.state.stage!=='skill-choice')break;const base=p.state.pendingChoice.allowed[0];await page.locator('#award-skill').fill(specialties[base]??base);await page.locator('[data-action=choose-skill]').click();await ready(page);}
-    const p=await read(page);assert.equal(p.state.stage,'advancement');assert.equal(p.state.character.crossCareerRoutes.at(-1).status,'completed');assert.equal(p.state.character.crossCareerRoutes.at(-1).training.assignment,'worker');assert.equal(p.state.character.terms,0);assert.equal(p.state.character.careers.length,1);assert.match(await page.locator('#sheet').innerText(),/Deception check/);
+    const p=await read(page);assert.equal(p.state.stage,'advancement');assert.equal(p.state.character.crossCareerRoutes.at(-1).status,'completed');assert.equal(p.state.character.crossCareerRoutes.at(-1).training.assignment,'worker');assert.equal(p.state.character.terms,0);assert.equal(p.state.character.careers.length,1);assert.match(await readRecordSections(page),/Deception check/);
    }else if(step==='wager'){
     await page.locator('[data-action=resolve-benefit-wager][data-decline=true]').waitFor();const pending=await read(page);assert.equal(pending.state.character.benefitWagers.at(-1).sourceCareerId,'core.rogue');assert.equal(pending.state.character.benefitWagers.at(-1).careerId,'core.agent');
     await page.locator('[data-action=resolve-benefit-wager][data-decline=true]').click();await ready(page);assert.equal((await read(page)).state.stage,'cross-career-training');

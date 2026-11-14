@@ -273,3 +273,25 @@
  #army-career-dialog #workspace .aezorgh-career-groups [aria-pressed="true"]{background:#f7c91f linear-gradient(#ffe265,#f7c91f);color:#071b29;border-color:#ffe78a}
  #army-career-dialog #workspace .aezorgh-career-groups>button.opening-info-trigger{flex:0 0 44px;width:44px;min-width:44px;max-width:44px;height:44px;min-height:44px;max-height:44px;margin:0;padding:0;align-self:center;border:1px solid #ffd34b;border-radius:50%;background:#061b29;color:#ffd34b;box-shadow:none}
 }
+
+@media screen{#army-career-rail .army-record-section>.sheet-section>h3:first-child{display:none}}
+/* Related accepted injury dice stay together above the treatment controls. */
+#army-career-dialog .injury-care-result>.army-recorded-dice{display:inline-flex;vertical-align:top;flex-direction:column;align-items:center;width:calc(50% - 8px);margin:4px;padding:10px;box-sizing:border-box}
+#army-career-dialog .injury-care-result>.army-recorded-dice p{margin:4px 0}
+
+@media(max-width:600px){#army-career-dialog .injury-care-result .career-result-guidance{grid-template-columns:72px minmax(0,1fr);gap:10px}#army-career-dialog .injury-care-result .crow-assistance-image{width:72px;height:96px;flex-basis:72px}#army-career-dialog .injury-care-result .career-crow-bubble{font-size:16px}}
+
+#army-career-dialog .injury-care-result:not(:has(>.army-recorded-dice~.army-recorded-dice))>.army-recorded-dice{width:calc(100% - 8px)}
+
+#army-career-dialog .injury-care-result .career-crow-speech:empty{display:none}
+#workspace .benefit-roll-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#workspace .benefit-roll-actions>button{width:100%;min-height:64px;margin:0}
+#workspace .benefit-roll-actions>button:disabled{background:#293c49;color:#c9d3d9;border-color:#6c818e;box-shadow:none;opacity:1;cursor:not-allowed}
+
+#army-career-dialog .injury-care-result>p:not(.result-status){font-size:20px;font-weight:600}
+
+@media(max-width:600px){#army-career-dialog #workspace>.actions.benefit-roll-actions>button:not(.quiet){font-size:20px;padding:12px 8px}}
+
+/* Aggregate fallback: numeric total, never a fabricated individual die face. */
+.recorded-total-die{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:72px;min-height:72px;padding:7px;box-sizing:border-box;border:3px solid #ffd34b;border-radius:12px;color:#ffd34b;background:#061b29;line-height:1;font-weight:800;vertical-align:middle}
+.recorded-total-die-value{font-size:30px;white-space:nowrap}.recorded-total-die-label{font-size:12px;letter-spacing:.06em}

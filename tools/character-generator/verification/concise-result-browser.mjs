@@ -43,9 +43,9 @@ try{
    await page.reload();await panel.waitFor();assert.equal(await panel.innerText(),survivalText);assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),survivalRaw);await page.locator('#workspace').screenshot({path:fileURLToPath(new URL('concise-survival-'+name+'.png',out))});
    for(const kind of ['treatment','equipment']){
     const r=fixtures[kind].after,raw=await load(r),text=await panel.innerText();
-    if(kind==='treatment'){assert.match(text,/Injury treatment complete/);assert.match(text,/Strength: 7 → 11/);assert.match(text,/Cr20,000 due/);assert.doesNotMatch(text,/Injury loss|Treatment restores|Career terms/);}
+    if(kind==='treatment'){assert.match(text,/Medical bill: Cr20,000/);assert.match(text,/Due at the end of character creation/);assert.doesNotMatch(text,/Strength: 7 → 11|Injury loss|Treatment restores|Career terms/);}
     else{assert.match(text,/Received Synthetic weapon/);assert.doesNotMatch(text,/Asset:|Benefit:|Benefit award recorded|Owned by Traveller/);}
-    await panel.locator('summary').click();assert.ok((await panel.innerText()).length>text.length);await panel.locator('summary').click();
+    if(kind==='treatment'){const trigger=page.getByRole('button',{name:'About your treatment and medical bill',exact:true});await trigger.click();const info=page.locator('#opening-help-dialog[open]');await info.waitFor();assert.match(await info.innerText(),/Strength: 7 → 11/);assert.match(await info.innerText(),/Injury loss/);await page.keyboard.press('Escape');assert.equal(await trigger.evaluate(n=>n===document.activeElement),true);}else{await panel.locator('summary').click();assert.ok((await panel.innerText()).length>text.length);await panel.locator('summary').click();}
     const log=await downloadedActionLog(page);assert.ok(log.includes(r.log.at(-1).summary));assert.equal(await page.locator('.log-section,#action-log').count(),0);assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
     await page.locator('#workspace').screenshot({path:fileURLToPath(new URL('concise-'+kind+'-'+name+'.png',out))});
    }

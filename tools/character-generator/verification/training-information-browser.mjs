@@ -23,7 +23,10 @@ try{
     const before=await page.evaluate(key=>localStorage.getItem(key),key),trigger=page.locator('.training-info-trigger').first(),popup=page.locator('.training-information:popover-open');
     const options=kind==='ordinary'?fixture.state.trainingOptions:kind==='source'?fixture.state.pendingChoice.options:fixture.state.currentCrossCareerTraining.options;
     await trigger.focus();await trigger.press('Enter');await popup.waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),before);
-    assert.deepEqual(await popup.locator('li').allTextContents(),options[0].information.entries);
+    assert.deepEqual(await popup.locator(':scope > ul').first().locator('li').allTextContents(),options[0].information.entries,'The actual table entries and order are unchanged');
+    const known=await popup.locator(':scope > ul').nth(1).locator('li').allTextContents();
+    for(const row of known){const match=row.match(/^(.*) (\d+)$/);assert.ok(match,'Known row identifies an exact recorded skill and level');assert.equal(fixture.state.character.skills[match[1]],Number(match[2]));assert.ok(options[0].information.skills.some(name=>name===match[1]||!name.includes(' (')&&match[1].startsWith(name+' (')),'Known reference belongs to an eligible listed skill');}
+    if(kind==='ordinary')for(const row of ['Drive 0','Melee 0'])assert.ok(known.includes(row),'Owned level-zero skill stays visible: '+row);
     assert.ok((await trigger.boundingBox()).width<=44);assert.equal(await popup.getAttribute('role'),'dialog');
     await page.keyboard.press('Escape');assert.equal(await popup.count(),0);assert.equal(await trigger.evaluate(el=>el===document.activeElement),true);
     await trigger.click();await popup.waitFor();await popup.locator('.training-info-close').click();assert.equal(await popup.count(),0);

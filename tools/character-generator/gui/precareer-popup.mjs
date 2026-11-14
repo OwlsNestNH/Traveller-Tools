@@ -1,3 +1,4 @@
+import {currentEducationEvent} from './current-education-event.mjs';
 import {mountRecordBars} from './record-bars.mjs';
 import {mountCrowSpeakingContent} from './crow-speaking-panel.mjs';
 import {academyTrainingModel} from './academy-training-model.mjs';
@@ -159,13 +160,22 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  workspace.querySelector('#precareer-options-back').addEventListener('click',()=>{showPanel('standard');title.focus({preventScroll:true});});
  dialog._refreshPreCareerPanel=()=>{if(dialog.dataset.panel==='admission'&&!showAdmission(dialog.dataset.admission,false)){delete dialog.dataset.admission;showPanel('standard');}else showPanel(dialog.dataset.panel);};
  }else{dialog.dataset.panel=eventModel?'event':'result';delete dialog.dataset.admission;dialog._openAdmission=null;dialog._refreshPreCareerPanel=null;}
- const result=workspace.querySelector('#last-action-result');info.querySelector('#precareer-information-result').replaceChildren(...(result?[result]:[]));
+ const result=workspace.querySelector('#last-action-result'),latest=currentEducationEvent(projection,session),currentEvent=latest?.eventResults?.find(r=>r.table==='core.pre-career-events'&&r.row===state.character.educations?.[state.education]?.event);
+ // The event just resolved is current information, not a hidden previous step.
+ // Keep its narrative, accepted changes and dice beside the graduation action.
+ if(result&&currentEvent){
+  result.dataset.currentEducationEvent='true';
+  const roll=currentEvent.roll;
+  if(roll?.values?.length){const dice=root.createElement('div');dice.className='education-current-event-dice';dice.setAttribute('role','img');dice.setAttribute('aria-label','Pre-career event: recorded dice '+roll.values.join(', ')+', total '+roll.total);dice.innerHTML=roll.values.map(aslanFamilyDie).join('')+'<p>Event total: '+esc(roll.total)+'</p>';result.append(dice);}
+ }
+ info.querySelector('#precareer-information-result').replaceChildren(...(result&&!currentEvent?[result]:[]));
  info.querySelector('#precareer-information-rules').innerHTML=preCareerSourceView(state,catalog,{esc,sourceLabel});
  info.querySelector('#precareer-information-previous').innerHTML=previousStepView(projection,session,catalog,{esc});
  workspace.insertAdjacentHTML('beforeend','<div class="precareer-information-rows"><button type="button" id="precareer-result-open"'+(result?'':' disabled')+'><span class="precareer-info-icon" aria-hidden="true">i</span><span><strong>Previous result</strong><small>Your most recent completed result appears here.</small></span></button><button type="button" id="precareer-rules-open"><span class="precareer-info-icon" aria-hidden="true">i</span><span><strong>Education rules and sources</strong><small>Rules and source references for the available options.</small></span></button></div>');
  workspace.querySelector('#precareer-result-open').addEventListener('click',event=>openInfo('result','Previous result',event.currentTarget));
  workspace.querySelector('#precareer-rules-open').addEventListener('click',event=>openInfo(resultModel?'details':'rules',resultModel?'Result details and sources':'Education rules and sources',event.currentTarget));
- if(resultModel){info.querySelector('#precareer-information-result').innerHTML='<h3>'+esc(resultModel.name)+' '+esc(resultModel.kind)+'</h3><p>'+resultModel.dice.map(esc).join(' + ')+' '+(resultModel.modifier<0?'− ':'+ ')+Math.abs(resultModel.modifier)+' = '+esc(resultModel.total)+' · Target '+esc(resultModel.target)+'+</p><ul>'+[...(resultModel.details??[]),...(resultModel.benefits??[]),...(resultModel.retained??[]),...(resultModel.missed??[])].map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul>';workspace.querySelector('#precareer-result-open').remove();workspace.querySelector('#precareer-rules-open strong').textContent='Result details and sources';workspace.querySelector('#precareer-rules-open small').remove();}
+ if(currentEvent)workspace.querySelector('#precareer-result-open').hidden=true;
+ if(resultModel){info.querySelector('#precareer-information-result').innerHTML='<h3>'+esc(resultModel.name)+' '+esc(resultModel.kind)+'</h3><p>'+resultModel.dice.map(esc).join(' + ')+' '+(resultModel.modifier<0?'− ':'+ ')+Math.abs(resultModel.modifier)+' = '+esc(resultModel.total)+' · Target '+esc(resultModel.target)+'+</p><ul>'+[...(resultModel.details??[]),...(resultModel.benefits??[]),...(resultModel.alreadyKnown??[]).map(name=>'Already known before admission: '+name),...(resultModel.retained??[]),...(resultModel.missed??[])].map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul>';workspace.querySelector('#precareer-result-open').remove();workspace.querySelector('#precareer-rules-open strong').textContent='Result details and sources';workspace.querySelector('#precareer-rules-open small').remove();}
  // Move existing record nodes, never clone editors or their IDs. Each top-level
  // bar is part of one exclusive group, with a fallback for older browsers.
  const rail=context.querySelector('#precareer-rail');
