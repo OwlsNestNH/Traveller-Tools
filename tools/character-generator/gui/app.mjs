@@ -350,7 +350,7 @@ function injuryLossView(state){
 }
 function injuryTreatmentView(state){
  const loss=state.injuryRestorable;
- return '<p>Choose how many points to restore, up to the injury loss. Treatment costs Cr5,000 per point before any employer contribution. Bills are settled from cash at the end of creation; any unpaid personal balance becomes debt.</p><p class="source">Core 2022, p. 49</p><div class="form-grid">'+Object.entries(loss).filter(([,n])=>n>0).map(([key,n])=>'<label>'+esc(key)+' points to restore<input data-injury-restore="'+key+'" type="number" min="0" max="'+n+'" step="1" value="0"><small>Up to '+n+' points</small></label>').join('')+'</div><label class="check"><input id="injury-in-service" type="checkbox" checked><span>The injury occurred while serving this employer. Check any source-specific exclusions.</span></label><p class="help">Leaving all values at zero declines treatment without rolling an employer contribution.</p>'+button('Record treatment choice','injury-treatment');
+ return '<p>Restore any lost points at Cr5,000 each, before employer contribution. Zero declines treatment.</p><p class="source">Core 2022, p. 49</p><div class="form-grid">'+Object.entries(loss).filter(([,n])=>n>0).map(([key,n])=>'<label>'+esc(key)+' points to restore<input data-injury-restore="'+key+'" type="number" min="0" max="'+n+'" step="1" value="0"><small>Up to '+n+' points</small></label>').join('')+'</div><label class="check"><input id="injury-in-service" type="checkbox" checked><span>This injury occurred while serving this employer.</span></label>'+button('Record treatment choice','injury-treatment');
 }
 function benefitDecisionView(state){
  const p=state.pending;
@@ -449,7 +449,7 @@ function stageView(state,insideEquipmentDialog=false){
  case 'equipment-finalization':return equipmentFinalizationView(state,{esc,button,sourceLabel});
  case 'identity':return setupView();
  case 'advisory-career':case 'advisory-cash':case 'advisory-cash-source':return advisoryView(state,{esc,button,sourceLabel,careerName:id=>catalog.careers.find(c=>c.id===id)?.name??id});
- case 'borrowed-event-roll':{const p=state.pendingBorrowedRoll;return '<section id="pending-event-roll"><h3>'+esc(p.label)+'</h3><p>'+esc(sourceLabel(p.source.id,p.source.page))+'</p><p>Roll '+esc(p.dice)+(p.target?' against '+esc(p.target)+'+':'')+'. This step has not been rolled yet.</p>'+button('Roll '+p.label,'roll-borrowed-event')+'</section>';}
+ case 'borrowed-event-roll':{const p=state.pendingBorrowedRoll;return '<section id="pending-event-roll"><h3>'+esc(p.label)+'</h3><p>'+esc(sourceLabel(p.source.id,p.source.page))+'</p><p>Roll '+esc(p.dice)+(p.target?' against '+esc(p.target)+'+':'')+'. This step has not been rolled yet.</p>'+(p.kind==='borrowed-injury-table'?'<p>The earlier roll is recorded. This separate roll determines the injury.</p>':'')+button('Roll '+p.label,'roll-borrowed-event')+'</section>';}
  case 'cross-career-cover':return crossCareerCoverView(state,{esc,button,sourceLabel,careerName:id=>catalog.careers.find(c=>c.id===id)?.name??id});
  case 'cross-career-training':return crossCareerTrainingView(state,{esc,button,sourceLabel,careerName:id=>catalog.careers.find(c=>c.id===id)?.name??id});
  case 'relationship-event':return relationshipEventView(state,{esc,button,sourceLabel});

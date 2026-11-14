@@ -1,3 +1,4 @@
+import {careerTemplateModel} from './career-template.mjs';
 import {crowSpeakingPanel} from './crow-speaking-panel.mjs';
 import {showOpeningInformation} from './opening-help.mjs';
 import {eventResultDetails} from './event-result-view.mjs';
@@ -35,6 +36,22 @@ export function conciseResult(event,state,catalog){
  if(educationEvent){
   const title=educationEvent.description,details=otherEffects(event,catalog,()=>true);
   return {title,details,status:full.status,text:[title,...details].join(' '),full,compact:true,information:{title:'About your education event',label:'About your education event',paragraphs:unique([full.title,...full.details]),contextual:true}};
+ }
+ const treatmentBills=(event.changes??[]).filter(change=>/^medicalBills\.\d+$/.test(change.path)&&!change.before&&finite(change.after?.personalCost)).map(change=>change.after);
+ if(['injury-treatment','resolve-book'].includes(event.type)&&treatmentBills.length&&catalog?.careers&&careerTemplateModel(state,catalog)){
+  const title='Injury treatment complete.',details=treatmentBills.map(bill=>bill.personalCost?'Your medical bill: '+amount(bill.personalCost)+', due at the end of character creation.':'No personal medical bill.');
+  const forcedExit=state.character?.careers?.[state.active]?.forcedExit;
+  if(state.stage==='term-end')details.push(forcedExit?'Leave this career and resolve any remaining benefits.':'Choose whether to continue this career or leave.');
+  const costs=treatmentBills.map(bill=>'Treatment '+amount(bill.totalCost)+'; employer contribution '+amount(bill.coveredCost)+'; personal balance '+amount(bill.personalCost)+'.');
+  return {title,details,status:'info',text:[title,...details].join(' '),full,compact:true,information:{title:'Your treatment and medical bill',label:'About your treatment and medical bill',retainCrow:true,panelClass:'injury-care-result',paragraphs:unique([...costs,full.title,...full.details]),contextual:true}};
+ }
+ const injury=state?.currentInjury;
+ if(injury&&['injury-loss','injury-treatment'].includes(state.stage)&&catalog?.careers&&careerTemplateModel(state,catalog)){
+  const choosing=state.stage==='injury-loss',title='Injury table result '+injury.tableResult+'.';
+  const losses=Object.entries(injury.losses??{}).filter(([,n])=>n>0).map(([name,n])=>name+' −'+n);
+  const details=choosing?['Choose which characteristics take the recorded loss.']:['Loss recorded: '+losses.join(', ')+'.'];
+  const care=['Medical care can restore up to the points lost in this injury, at Cr5,000 per restored point.','If this injury occurred in service, the applicable employer contribution is resolved separately using 2D plus the rank recorded at injury.','Personal medical costs are settled from available cash at the end of creation; any unpaid balance becomes debt.','Core Rulebook Update 2022 pp. 49, 51.'];
+  return {title,details,status:'failure',text:[title,...details].join(' '),full,compact:true,information:{title:'Your injury and medical care',label:'About your injury and medical care',retainCrow:true,panelClass:'injury-care-result',paragraphs:unique([...care,full.title,...full.details]),contextual:true}};
  }
  const cover=recordedCoverCheck(event);
  if(cover&&!['deceased','finish','retirement'].includes(state?.stage)){
@@ -144,7 +161,7 @@ export function conciseResult(event,state,catalog){
 export function latestResultView(result,{esc,tagline=null,crowType='generic'}){
  if(!result)return '';
  const paragraphs=details=>details.map(detail=>'<p>'+esc(detail)+'</p>').join('');
- if(result.information)return '<section id="last-action-result" class="result-panel result-'+result.status+' merchant-benefit-result" data-result-status="'+result.status+'" aria-label="Latest result">'+(result.information.contextual&&['success','failure'].includes(result.status)?'<p class="result-status">'+(result.status==='success'?'Success':'Failure')+'</p>':'')+'<div class="merchant-benefit-heading"><h3>'+esc(result.title)+'</h3><button type="button" class="opening-info-trigger" data-result-information aria-label="'+esc(result.information.label??'About your Benefit roll bonus')+'" aria-haspopup="dialog" aria-controls="opening-help-dialog"><span aria-hidden="true">i</span></button></div>'+paragraphs(result.details)+'</section>';
+ if(result.information)return '<section id="last-action-result" class="result-panel result-'+result.status+' merchant-benefit-result'+(result.information.panelClass?' '+esc(result.information.panelClass):'')+'" data-result-status="'+result.status+'" aria-label="Latest result">'+(result.information.contextual&&['success','failure'].includes(result.status)?'<p class="result-status">'+(result.status==='success'?'Success':'Failure')+'</p>':'')+'<div class="merchant-benefit-heading"><h3>'+esc(result.title)+'</h3><button type="button" class="opening-info-trigger" data-result-information aria-label="'+esc(result.information.label??'About your Benefit roll bonus')+'" aria-haspopup="dialog" aria-controls="opening-help-dialog"><span aria-hidden="true">i</span></button></div>'+paragraphs(result.details)+(result.information.retainCrow&&tagline?crowSpeakingPanel({message:tagline,type:crowType,tone:result.status==='success'?'success':result.status==='failure'?'failure':'information',className:'outcome-tagline'}):'')+'</section>';
  return '<section id="last-action-result" class="result-panel result-'+result.status+'" data-result-status="'+result.status+'" aria-label="Latest result"><p class="result-status">'+({success:'Success',failure:'Failure',pending:'Pending resolution',info:'Information'}[result.status]??'Information')+'</p><h3>'+esc(result.title)+'</h3>'+paragraphs(result.details)+(tagline&&result.status!=='error'?crowSpeakingPanel({message:tagline,type:crowType,tone:result.status==='success'?'success':result.status==='failure'?'failure':'information',className:'outcome-tagline'}):'')+(result.compact?'<details class="result-information"><summary>Result details</summary><h4>'+esc(result.full.title)+'</h4>'+paragraphs(result.full.details)+'</details>':'')+'</section>';
 }
 export function mountResultInformation(document,result,{crowType='generic',tagline=null}={}){
@@ -153,6 +170,6 @@ export function mountResultInformation(document,result,{crowType='generic',tagli
  trigger.addEventListener('click',()=>showOpeningInformation(document,info,trigger));
  // The existing career popup has already supplied the progression control and recorded dice.
  // Supporting Crow guidance now belongs with the event's informational, not a second main panel.
- document.querySelector('#workspace>.career-pilot-guidance')?.remove();
+ if(!result.information.retainCrow)document.querySelector('#workspace>.career-pilot-guidance')?.remove();
  for(const p of document.querySelectorAll('#workspace>p'))if(p.textContent==='Your term events are recorded. Resolve advancement for your assignment.')p.remove();
 }
