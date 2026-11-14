@@ -1,3 +1,4 @@
+import {careerEntryPresentation} from './career-entry-presentation.mjs';
 import {pendingSkillAwardSource,skillAwardResult,mountPendingAwardInformation,skillAwardSource} from './skill-award-provenance.mjs';
 import {knownSkillOptions} from './skill-knowledge.mjs';
 import {currentEducationEvent} from './current-education-event.mjs';
@@ -320,19 +321,12 @@ function careerTransferNotice(state,careerId){
  if(!rights.length)return '';
  return '<div class="notice"><strong>Next-term transfer available</strong>'+rights.map(right=>'<p>'+esc(right.assignmentId?catalog.careers.find(c=>c.id===careerId)?.assignments.find(a=>a.id===right.assignmentId)?.name??right.assignmentId:'Any eligible assignment')+(right.rank!==null&&right.rank!==undefined?' · rank '+esc(right.rank):'')+(right.needsRankTrackDecision?' · rank track needs a referee ruling':'')+'</p>').join('')+'</div>';
 }
-function careerQualificationLabel(state,career){
- if(career.aslanAccess?.automatic)return 'automatic via recorded outward source right';
- const ordinary=career.qualification?career.qualification.stat+' '+career.qualification.target+'+':'automatic';
- const rights=(state.careerTransferOptions??[]).filter(right=>right.careerId===career.id&&right.available);
- if(rights.some(right=>!right.assignmentId))return 'automatic via recorded transfer';
- if(rights.length)return 'automatic transfer for '+rights.map(right=>career.assignments.find(a=>a.id===right.assignmentId)?.name??right.assignmentId).join(', ')+'; otherwise '+ordinary;
- return ordinary;
-}
 function careerView(state){
  const groupKey=JSON.stringify([operationGeneration,session?.seed]);if(groupKey!==aezorghGroupKey){aezorghGroup='';aezorghGroupKey=groupKey;}
  const group=aezorghCareerGroup(state,aezorghGroup),list=aezorghCareerChoices(state,group);const c=state.careerChoices.find(c=>c.id===selectedCareer);
  if(c){
- return button('Back to career list','career-list','quiet')+'<h3>'+esc(c.name)+'</h3><p class="source">'+esc(sourceLabel(c.source,c.page))+'</p>'+careerTransferNotice(state,c.id)+(c.sourceConflict?'<p class="warning">'+esc(c.sourceConflict)+'</p>':'')+'<label>Assignment<select id="career-assignment">'+options(c.assignments,(c.assignments.find(a=>!a.disabled)??c.assignments[0]).id)+'</select></label>'+c.assignments.filter(a=>a.disabled).map(a=>'<p class="tiny">'+esc(a.name)+': '+esc(a.reason)+'</p>').join('')+'<p class="help career-entry-note" data-contextual="'+(careerQualificationLabel(state,c)!==(c.qualification?c.qualification.stat+' '+c.qualification.target+'+':'automatic'))+'">Qualification: '+esc(careerQualificationLabel(state,c))+'. Entry decisions and any rolls are logged.</p>'+button(state.forcedCareer===c.id?'Enter '+c.name+' for term '+(state.character.terms+1):'Attempt this career','career','',c.disabled?'disabled':'')+(c.reason?'<p>'+esc(c.reason)+'</p>':'');
+ const entryPresentation=careerEntryPresentation(state,c);
+ return button('Back to career list','career-list','quiet')+'<h3>'+esc(c.name)+'</h3><p class="source">'+esc(sourceLabel(c.source,c.page))+'</p>'+careerTransferNotice(state,c.id)+(c.sourceConflict?'<p class="warning">'+esc(c.sourceConflict)+'</p>':'')+'<label>Assignment<select id="career-assignment">'+options(c.assignments,(c.assignments.find(a=>!a.disabled)??c.assignments[0]).id)+'</select></label>'+c.assignments.filter(a=>a.disabled).map(a=>'<p class="tiny">'+esc(a.name)+': '+esc(a.reason)+'</p>').join('')+'<p class="help career-entry-note" data-contextual="'+entryPresentation.contextual+'" data-shown-in-requirements="'+entryPresentation.shownInRequirements+'">Qualification: '+esc(entryPresentation.qualificationLabel)+'. Entry decisions and any rolls are logged.</p>'+button(entryPresentation.actionLabel,'career','',c.disabled?'disabled':'')+(c.reason?'<p>'+esc(c.reason)+'</p>':'');
  }
  const groupControls=group?'<div class="actions aezorgh-career-groups" role="group" aria-label="Career display group">'+[['imperial','Imperial careers'],['vargr','Vargr careers']].map(([id,name])=>'<button type="button" class="quiet" data-action="aezorgh-career-group" data-group="'+id+'" aria-pressed="'+(group===id)+'">'+name+'</button>').join('')+openingInfoButton('upbringing')+'</div>':'';
  return groupControls+'<p>Choose a career for term '+(state.character.terms+1)+'. Options follow your species and upbringing.</p><div class="choice-list">'+list.map(c=>'<div class="career-choice-row">'+careerInfoButton(c,{esc})+button('<span><strong>'+esc(c.name)+'</strong><small>'+esc(sourceLabel(c.source,c.page))+(c.reason?' · '+esc(c.reason):'')+'</small></span>','select-career','choice','data-id="'+c.id+'" '+(c.disabled?'disabled':''))+'</div>').join('')+'</div><div class="actions">'+button('Finish character','finish','quiet',state.finishOptions?.available===false?'disabled':'')+(state.finishOptions?.reason?'<p class="help">'+esc(state.finishOptions.reason)+'</p>':'')+(state.canChooseEducation?button('Review education options','open-precareer','quiet'):'')+'</div>';

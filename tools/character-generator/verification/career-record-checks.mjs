@@ -5,7 +5,10 @@ export async function checkCareerRecordBars(page){
  const bars=page.locator('#sheet > details.army-record-section'),raw=await page.evaluate(()=>localStorage.getItem('traveller-character-generator.v1'));
  const count=await bars.count();assert.ok(count>=3,'Career rail includes Life path as well as Characteristics and Skills');
  const labels=await bars.locator(':scope > summary').allTextContents();assert.ok(labels.includes('Life path'));
- assert.equal(await page.locator('#sheet > .sheet-section').count(),0,'Record sections are not left expanded outside the accordions');
+ assert.equal(await page.locator('#sheet > .sheet-section:not(.print-only)').count(),0,'Screen record sections are not left expanded outside the accordions');
+ const printedNotes=page.locator('#sheet > .sheet-section.print-only');
+ assert.equal(await printedNotes.count(),1,'Printed notes remain separate from the screen accordion');
+ assert.equal(await printedNotes.isVisible(),false,'Print-only notes do not duplicate the screen record');
  for(let i=0;i<count;i++){
   const bar=bars.nth(i);await bar.locator(':scope > summary').focus();
   if(!await bar.evaluate(n=>n.open))await page.keyboard.press('Enter');
@@ -21,6 +24,7 @@ export async function checkCareerRecordBars(page){
  await page.waitForTimeout(30);
  assert.equal(await bars.evaluateAll(ns=>ns.every(n=>n.open)),true,'Screen exclusivity does not hide printed sections');
  await page.emulateMedia({media:'print'});
+ assert.equal(await printedNotes.isVisible(),true,'Printing retains the separate notes section');
  assert.equal(await bars.locator(':scope > .sheet-section > h3').evaluateAll(ns=>ns.every(n=>n.getClientRects().length>0&&getComputedStyle(n).display!=='none')),true,'Printed record section headings remain visible when summaries are hidden');
  await page.emulateMedia({media:'screen'});
  await page.evaluate(()=>window.dispatchEvent(new Event('afterprint')));
