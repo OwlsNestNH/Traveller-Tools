@@ -1,6 +1,7 @@
 import {pendingSkillAwardSource,skillAwardResult,mountPendingAwardInformation,skillAwardSource} from './skill-award-provenance.mjs';
 import {knownSkillOptions} from './skill-knowledge.mjs';
 import {currentEducationEvent} from './current-education-event.mjs';
+import {currentResultEvent} from './current-result-event.mjs';
 import {aezorghCulture,aezorghCareerGroup,aezorghCareerChoices,cultureIdentity} from '../shared/aezorgh-culture.mjs';
 import {mountSupportDice} from './support-roll.mjs';
 import {mountSupportInformation} from './support-information.mjs';
@@ -527,11 +528,11 @@ function sheetView(state){
 
 function render(){
  backgroundDraft=reconcileBackgroundDraft(backgroundDraft,backgroundDraftKey(session,projection.state),projection.state);
- const displayedEvent=currentEducationEvent(projection,session)??projection.log.at(-1);
+ const displayedEvent=currentEducationEvent(projection,session)??currentResultEvent(projection,session);
  const earnedResult=skillAwardResult(conciseResult(displayedEvent,projection.state,catalog),projection.skillAwardPresentation?.byAction?.[displayedEvent?.number],catalog,{event:displayedEvent});
  const commissionOffer=projection.state.stage==='advancement'&&projection.state.commissionAvailability?.available&&projection.state.commissionAvailability.automatic;
  const lastRollResult=commissionOffer&&earnedResult?.information?{...earnedResult,information:{...earnedResult.information,retainCrow:true}}:earnedResult;
- const lastResult=projection.state.stage==='background'||projection.state.stage==='career'&&selectedCareer?'':statisticsRollFeedbackView(projection.log.at(-1),projection.state,{esc})??latestResultView(lastRollResult,{esc,crowType:careerResultCrowType(projection.log.at(-1),lastRollResult,projection.state),tagline:trainingTagline??careerResultTagline(projection.log.at(-1),lastRollResult,projection.state)});
+ const lastResult=projection.state.stage==='background'||projection.state.stage==='career'&&selectedCareer?'':statisticsRollFeedbackView(displayedEvent,projection.state,{esc})??latestResultView(lastRollResult,{esc,crowType:careerResultCrowType(displayedEvent,lastRollResult,projection.state),tagline:trainingTagline??careerResultTagline(displayedEvent,lastRollResult,projection.state)});
  const nestedDraft=$('.education-nested-label select')?{kind:$('.education-nested-prompt').dataset.educationChoice,key:$('#workspace').dataset.educationStudyKey,value:$('.education-nested-label select').value}:null;
  const studyDraft=$('.education-result #education-subject')?{key:$('#workspace').dataset.educationStudyKey,subject:$('#education-subject').value,skill:$('#education-skill').value}:null;
  const lawyerPanel=$('#prisoner-lawyer'),lawyerDraft=lawyerPanel?{id:lawyerPanel.dataset.lawyerId,fields:[...lawyerPanel.querySelectorAll('input,select,textarea')].map(input=>({id:input.id,value:input.value,checked:input.checked}))}:null;
@@ -541,7 +542,7 @@ function render(){
  const shareDraft={open:$('#clan-share-panel')?.open,kind:$('#clan-share-kind')?.value,lot:$('#clan-share-lot')?.value};
  const supplementalShell=isSupportStage(projection.state.stage);document.body.dataset.supportShell=String(supplementalShell);
  const state=projection.state,educationModel=educationResultModel(projection,catalog),eventModel=educationEventModel(state,projection);document.body.dataset.educationPopup=String(!!(educationModel||eventModel));document.body.dataset.stage=state.stage;document.body.dataset.completionShell=String(['finish','retirement','deceased'].includes(state.stage));document.body.dataset.familyPopup=String(!!(aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state)));$('header h1').textContent=(['identity','statistics','background','precareer'].includes(state.stage)||supplementalShell||educationModel||eventModel||aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state))?'CHARACTER BUILDER':'A life among the stars';$('header .lead').textContent=(['identity','statistics','background','precareer'].includes(state.stage)||supplementalShell||educationModel||eventModel||aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state))?'TRAVELLER RPG':'Build your Traveller one decision at a time.';const detailKey=d=>d.id||d.querySelector(':scope > summary')?.textContent;const previousDetails=new Map([...document.querySelectorAll('#sheet details, #statistics-gm-controls details')].map(d=>[detailKey(d),d.open]));
- const careerModel=careerTemplateModel(state,catalog,selectedCareer),recordedCareerResult=!selectedCareer&&careerResultTagline(projection.log.at(-1),lastRollResult,state);document.body.dataset.careerTemplate=careerModel?.template.id??(recordedCareerResult?'recorded-career-result':'');document.body.dataset.careerShell=careerModel||recordedCareerResult?'imperial':'';
+ const careerModel=careerTemplateModel(state,catalog,selectedCareer),recordedCareerResult=!selectedCareer&&careerResultTagline(displayedEvent,lastRollResult,state);document.body.dataset.careerTemplate=careerModel?.template.id??(recordedCareerResult?'recorded-career-result':'');document.body.dataset.careerShell=careerModel||recordedCareerResult?'imperial':'';
  const gmDraft={task:$('#gm-task')?.value,field:$('#gm-field')?.value,roll:$('#gm-roll-choice')?.value,restore:$('#gm-restore-choice')?.value};
  $('#workspace').innerHTML='<p class="step-count">COMPLETED TERMS: '+state.character.terms+' · '+esc(state.stage.toUpperCase().replaceAll('-',' '))+'</p><h2 id="step-title" tabindex="-1">'+esc(educationSkillTitle(state)??trainingContext(state)?.title??(state.prisonerEscape?prisonerEscapeTitle:null)??(isBasicTrainingChoice(state)?'Choose a basic-training skill':stageNames[state.stage]??state.stage))+'</h2>'+pendingSkillAwardSource(projection.skillAwardPresentation,state,catalog,{esc})+lastResult+aslanAccessView(state,{esc,button})+clanShareView(state,{esc,button,sourceLabel})+landClaimView(state,{esc,button,sourceLabel})+aslanAccessConflictView(state,{esc,button,sourceLabel})+stageView(state)+(['career','retirement','benefits'].includes(state.stage)&&(state.character.deferredEquipment??[]).some(e=>e.status==='pending')?button('Review assets & benefits','review-equipment','quiet'):'')+deferredAwardsView(state,{esc,button,awardSource:a=>skillAwardSource(projection.skillAwardPresentation?.deferred?.find(d=>d.id===a.id)?.origin,catalog)});
  if(state.stage==='statistics'){const heading=$('#step-title'),wrap=document.createElement('div');wrap.className='statistics-heading';heading.before(wrap);wrap.append(heading);wrap.insertAdjacentHTML('beforeend',openingInfoButton('generation'));}
@@ -559,9 +560,9 @@ function render(){
  mountBackgroundLayout(document,state,backgroundDraft?.skills??[],catalog,{esc});
  if(!['finish','retirement','deceased'].includes(state.stage))mountCompletionPopup(document,state);
  if(state.stage==='precareer'||educationModel||eventModel)mountPreCareerPopup(document,{state,catalog,projection,session,esc,sourceLabel,generation:operationGeneration,resultModel:educationModel,eventModel});
- if(supplementalShell)mountSupportInformation(document,state,{event:projection.log.at(-1),sourceLabel});
+ if(supplementalShell)mountSupportInformation(document,state,{event:displayedEvent,sourceLabel});
  if(!careerModel&&!educationModel&&!eventModel)mountCrowStageGuidance(document,$('#workspace'),{type:['finish','retirement','deceased'].includes(state.stage)?careerCrowType({career:state.character.careers?.[state.active??state.character.careers.length-1]}):['training','effect-choice','skill-choice'].includes(state.stage)?'skills':state.stage==='book-step'?'referee':'generic'});
- if(!careerModel&&['finish','retirement','deceased'].includes(state.stage))mountCrowCompletionGuidance(document,$('#workspace'),{actionId:projection.log.at(-1)?.id});
+ if(!careerModel&&['finish','retirement','deceased'].includes(state.stage))mountCrowCompletionGuidance(document,$('#workspace'),{actionId:displayedEvent?.id});
  const sheetOpener=document.querySelector('[data-action="open-current-character-sheet"]');if(sheetOpener)$('#sheet').prepend(sheetOpener);
  const activePrecareerDialog=document.getElementById('precareer-dialog');if(activePrecareerDialog&&!activePrecareerDialog.querySelector('.popup-character-sheet-button')){const access=document.createElement('button');access.type='button';access.className='popup-character-sheet-button';access.dataset.action='open-current-character-sheet-popup';access.textContent='Character sheet';access.setAttribute('aria-haspopup','dialog');access.setAttribute('aria-controls','final-character-sheet');activePrecareerDialog.prepend(access);}
  const studyKey=JSON.stringify([operationGeneration,session.seed,state.education,state.pendingChoice?.selectionId]);$('#workspace').dataset.educationStudyKey=studyKey;
@@ -569,11 +570,11 @@ function render(){
  if(educationModel?.study&&studyDraft?.key===studyKey&&[...$('#education-subject').options].some(o=>o.value===studyDraft.subject)){$('#education-subject').value=studyDraft.subject;syncEducationSubject(state,catalog,document,esc);$('#education-skill').value=studyDraft.skill;syncEducationStudyContinue(state,catalog,document);}
  $('#workspace').dataset.revision=projection.revision;
  if(state.stage==='identity')mountCrowIntroduction(document);
- mountCareerTemplate(document,careerTemplateModel(state,catalog,selectedCareer),{esc,event:projection.log.at(-1),resultStatus:lastRollResult?.status,showDice:state.stage==='deceased'&&!!state.character.ironManDeath||!!careerResultTagline(projection.log.at(-1),lastRollResult,state)||state.stage==='retirement'&&projection.log.at(-1)?.type==='benefit',state,sessionKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id])});
- mountSupportDice(document,state,{event:projection.log.at(-1),esc,history:projection.log});
+ mountCareerTemplate(document,careerTemplateModel(state,catalog,selectedCareer),{esc,event:displayedEvent,resultStatus:lastRollResult?.status,showDice:state.stage==='deceased'&&!!state.character.ironManDeath||!!careerResultTagline(displayedEvent,lastRollResult,state)||state.stage==='retirement'&&displayedEvent?.type==='benefit',state,sessionKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id])});
+ mountSupportDice(document,state,{event:displayedEvent,esc,history:projection.log});
  if(['finish','retirement','deceased'].includes(state.stage))mountCompletionPopup(document,state);
  mountSupportRecord(document,state,{sessionKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id])});
- mountResultInformation(document,lastRollResult,{crowType:careerResultCrowType(projection.log.at(-1),lastRollResult,state),tagline:careerResultTagline(projection.log.at(-1),lastRollResult,state)});
+ mountResultInformation(document,lastRollResult,{crowType:careerResultCrowType(displayedEvent,lastRollResult,state),tagline:careerResultTagline(displayedEvent,lastRollResult,state)});
  mountPendingAwardInformation(document,projection.skillAwardPresentation,state,catalog,{crowType:careerCrowType(careerModel)});
  mountCrowTaglineAttribution(document,$('#workspace'));
  mountSpeciesSkillPopup(document);

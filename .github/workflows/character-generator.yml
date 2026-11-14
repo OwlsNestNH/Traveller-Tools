@@ -168,7 +168,7 @@ jobs:
         if: ${{ !cancelled() && steps.browser-install.outcome == 'success' }}
         run: |
           failures=0
-          for suite in source-checks-browser release-scope-browser vargr-training-browser constrained-awards-browser benefit-wagers-browser agent-cover-browser separate-borrowed-rolls-browser source-training-browser aslan-access-browser aslan-land-browser clan-asset-browser clan-share-browser browser review-browser expansion-browser benefit-browser aezorgh-browser aezorgh-selector-browser recovery-browser transfer-browser assignment-browser aslan-officer-browser aslan-restoration-browser aslan-outlaw-browser aslan-origin-browser skill-knowledge-browser education-event-visible-browser injury-presentation-browser benefit-presentation-browser recorded-total-browser rank-award-browser; do
+          for suite in source-checks-browser release-scope-browser vargr-training-browser constrained-awards-browser benefit-wagers-browser agent-cover-browser separate-borrowed-rolls-browser source-training-browser aslan-access-browser aslan-land-browser clan-asset-browser clan-share-browser browser review-browser expansion-browser benefit-browser aezorgh-browser aezorgh-selector-browser recovery-browser transfer-browser assignment-browser aslan-officer-browser aslan-restoration-browser aslan-outlaw-browser aslan-origin-browser skill-knowledge-browser education-event-visible-browser injury-presentation-browser benefit-presentation-browser recorded-total-browser rank-award-browser notes-result-browser; do
             echo "Running browser suite: $suite"
             node "tools/character-generator/verification/$suite.mjs" "$RUNNER_TEMP/character-playwright/node_modules/playwright" || failures=$((failures + 1))
           done
