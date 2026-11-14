@@ -56,23 +56,25 @@
  body[data-stage="statistics"] .statistics-swap {padding:18px;border:1px solid #3d697f;border-radius:10px;background:#061b29;}
  body[data-stage="statistics"] .statistics-swap label {font-size:16px;}
  body[data-stage="statistics"] .statistics-actions>.statistics-primary {min-height:64px;font-size:24px;}
- body[data-stage="background"] .background-counter {padding:18px 20px;border-color:#78acbe;background:linear-gradient(110deg,#173c4d,#0a2636);border-radius:12px;}
- body[data-stage="background"] .background-counter strong {font-size:26px;}
- body[data-stage="background"] .background-counter span {font-size:17px;}
- body[data-stage="background"] .background-options legend {font-size:14px;letter-spacing:.06em;color:#ffd34b;margin-bottom:16px;}
- body[data-stage="background"] .background-grid {gap:14px;}
- body[data-stage="background"] .background-tile {min-height:64px;padding:14px;border-radius:10px;border-color:#6697ab;background:linear-gradient(135deg,#0b2d40,#062131);box-shadow:inset 0 1px 0 #c5edff12;}
- body[data-stage="background"] .background-tile span {font-size:18px;font-weight:600;}
- body[data-stage="background"] .background-tile.is-selected {padding:14px;border-color:#ffdc67;background:linear-gradient(135deg,#254453,#173444);box-shadow:inset 0 0 0 1px #ffdc67;}
- body[data-stage="background"] #background-selected-summary {font-size:18px;line-height:1.6;}
- body[data-stage="background"] #background-form button[type="submit"] {min-height:64px;font-size:24px;color:#101b21;border-color:#ffe59a;background:linear-gradient(#ffe18b,#ffca36);box-shadow:inset 0 1px 0 #fff1b1,0 4px 12px #0005;}
- body[data-stage="background"] #background-form button[type="submit"]:disabled {background:#112c3b;border-color:#557380;color:#91aab8;box-shadow:none;}
+ body[data-stage="background"] #workspace > #background-form .background-counter {padding:18px 20px;border-color:#78acbe;background:linear-gradient(110deg,#173c4d,#0a2636);border-radius:12px;}
+ body[data-stage="background"] #workspace > #background-form .background-counter strong {font-size:26px;}
+ body[data-stage="background"] #workspace > #background-form .background-counter span {font-size:17px;}
+ body[data-stage="background"] #workspace > #background-form .background-options legend {font-size:14px;letter-spacing:.06em;color:#ffd34b;margin-bottom:16px;}
+ body[data-stage="background"] #workspace > #background-form .background-grid {gap:14px;}
+ body[data-stage="background"] #workspace > #background-form .background-tile {min-height:64px;padding:14px;border-radius:10px;border-color:#6697ab;background:linear-gradient(135deg,#0b2d40,#062131);box-shadow:inset 0 1px 0 #c5edff12;}
+ body[data-stage="background"] #workspace > #background-form .background-tile span {font-size:18px;font-weight:600;}
+ body[data-stage="background"] #workspace > #background-form .background-tile.is-selected {padding:14px;border-color:#ffdc67;background:linear-gradient(135deg,#254453,#173444);box-shadow:inset 0 0 0 1px #ffdc67;}
+ body[data-stage="background"] #workspace > #background-form #background-selected-summary {font-size:18px;line-height:1.6;}
+ body[data-stage="background"] #workspace > #background-form button[type="submit"] {min-height:64px;font-size:24px;color:#101b21;border-color:#ffe59a;background:linear-gradient(#ffe18b,#ffca36);box-shadow:inset 0 1px 0 #fff1b1,0 4px 12px #0005;}
+ body[data-stage="background"] #workspace > #background-form button[type="submit"]:disabled {background:#112c3b;border-color:#557380;color:#91aab8;box-shadow:none;}
 }
 @media screen and (max-width:760px) {
  body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace {padding:24px 18px;}
  body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace #step-title {font-size:30px;gap:12px;}
  body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace #step-title::before {width:30px;height:34px;}
- body[data-stage="statistics"] .statistics-heading #step-title {min-width:0;display:block;}
+ body[data-stage="statistics"] .statistics-heading {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 10px;}
+ body[data-stage="statistics"] .statistics-heading #step-title {min-width:0;display:block;grid-column:1 / -1;}
+ body[data-stage="statistics"] .statistics-heading>.opening-info-trigger {grid-column:2;margin:0 0 16px;}
  body[data-stage="statistics"] .statistics-heading #step-title::before {display:inline-block;vertical-align:middle;margin-right:10px;}
  body[data-stage="identity"] #setup-form>.form-grid {padding:18px 14px;gap:22px;}
  body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace>.crow-speaking-panel {grid-template-columns:72px minmax(0,1fr);gap:12px;}
@@ -81,9 +83,9 @@
  body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace>.crow-speaking-panel blockquote p {font-size:17px;}
  body[data-stage="statistics"] .statistics-summary {padding:16px;}
  body[data-stage="statistics"] .statistics-summary .total {white-space:normal;}
- body[data-stage="background"] .background-counter {padding:16px;}
- body[data-stage="background"] .background-counter strong {font-size:24px;}
- body[data-stage="background"] #background-form button[type="submit"],body[data-stage="statistics"] .statistics-actions>.statistics-primary {font-size:21px;}
+ body[data-stage="background"] #workspace > #background-form .background-counter {padding:16px;}
+ body[data-stage="background"] #workspace > #background-form .background-counter strong {font-size:24px;}
+ body[data-stage="background"] #workspace > #background-form button[type="submit"],body[data-stage="statistics"] .statistics-actions>.statistics-primary {font-size:21px;}
 }
 @media screen and (max-width:360px) {
  body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace #step-title {font-size:26px;}
@@ -99,11 +101,11 @@
  body[data-stage="background"] #workspace>.crow-speaking-panel {margin-bottom:12px;}
  body[data-stage="background"] #workspace>.crow-speaking-panel>img {width:80px;height:80px;}
  body[data-stage="background"] #workspace>.crow-speaking-panel blockquote {padding:14px 18px;}
- body[data-stage="background"] .background-counter {min-height:64px;padding:12px 18px;}
- body[data-stage="background"] .background-counter strong {font-size:24px;}
- body[data-stage="background"] .background-options legend {margin-bottom:12px;}
- body[data-stage="background"] .background-grid {gap:10px 12px;}
- body[data-stage="background"] .background-tile,body[data-stage="background"] .background-tile.is-selected {min-height:53px;padding:11px 12px;}
- body[data-stage="background"] .background-tile span {font-size:17px;}
- body[data-stage="background"] #background-selected-summary {margin:12px 0 14px;}
+ body[data-stage="background"] #workspace > #background-form .background-counter {min-height:64px;padding:12px 18px;}
+ body[data-stage="background"] #workspace > #background-form .background-counter strong {font-size:24px;}
+ body[data-stage="background"] #workspace > #background-form .background-options legend {margin-bottom:12px;}
+ body[data-stage="background"] #workspace > #background-form .background-grid {gap:10px 12px;}
+ body[data-stage="background"] #workspace > #background-form .background-tile,body[data-stage="background"] #workspace > #background-form .background-tile.is-selected {min-height:53px;padding:11px 12px;}
+ body[data-stage="background"] #workspace > #background-form .background-tile span {font-size:17px;}
+ body[data-stage="background"] #workspace > #background-form #background-selected-summary {margin:12px 0 14px;}
 }
