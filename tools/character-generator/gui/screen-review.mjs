@@ -56,6 +56,7 @@ export function mountScreenReview({document,getSession,isBusy,onNewCharacter,onF
   const session=getSession();back.disabled=isBusy()||!session||reviewRevisions(session).length===0;
   const workspace=document.querySelector('#workspace'),isFlow=d=>d?.matches('dialog[open]')&&(/^(?:aslan-|species-skill-dialog|equipment-dialog)/.test(d.id))&&!/information|doubles|error/.test(d.id),focused=document.activeElement?.closest('dialog[open]'),flow=(isFlow(focused)?focused:[...document.querySelectorAll('dialog[open]')].filter(isFlow).at(-1))??workspace;
   if(flow===workspace&&(!session||reviewRevisions(session).length===0)){entry.remove();return;}
+  if(flow===workspace&&workspace.closest('#precareer-dialog')){const rules=workspace.querySelector('#precareer-rules-open');if(rules){let row=rules.parentElement;if(!row.classList.contains('screen-review-information-footer')){row=document.createElement('div');row.className='screen-review-information-footer';rules.before(row);row.append(rules);}row.prepend(entry);return;}}
   if(flow===workspace){
    const cancel=workspace.querySelector('#cancel-character');
    if(cancel){let row=cancel.parentElement;const other=[...row.children].filter(n=>n!==cancel&&n!==entry);

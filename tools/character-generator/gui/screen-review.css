@@ -33,8 +33,4 @@
 
 @media screen{#workspace>.screen-review-footer{flex-wrap:nowrap}#workspace>.screen-review-footer>#cancel-character{width:auto;flex:0 0 auto}}
 
-@media screen and (min-width:1100px){body:is([data-stage="precareer"],[data-education-popup="true"]) #precareer-dialog #workspace:has(>.screen-review-footer,>.screen-review-entry){padding-top:16px;padding-bottom:12px}#precareer-dialog #workspace>.screen-review-footer{margin-top:0}}
-
-@media screen and (min-width:1100px){#precareer-dialog:has(.screen-review-footer,.screen-review-entry) .precareer-information-rows button{min-height:48px;padding-top:8px;padding-bottom:8px}#precareer-dialog:has(.screen-review-footer,.screen-review-entry) .precareer-information-rows{margin-bottom:0}}
-
-@media screen and (min-width:1100px){#precareer-dialog #workspace>.screen-review-entry{margin-top:0;padding-top:0;border-top:0}}
+@media screen{#precareer-dialog .screen-review-information-footer{display:flex;align-items:center;gap:12px;border-top:1px solid #9cdbed}#precareer-dialog .screen-review-information-footer>.screen-review-entry{flex:0 0 auto;margin:0;padding:0;border:0}#precareer-dialog .screen-review-information-footer>.screen-review-entry>button{width:auto;min-height:44px;min-width:88px;font-size:17px;padding:8px 14px;border:1px solid #9cdbed;border-radius:8px;background:#092435}#precareer-dialog .screen-review-information-footer>#precareer-rules-open{min-width:0;flex:1;border-top:0}}
