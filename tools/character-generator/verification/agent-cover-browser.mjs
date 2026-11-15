@@ -25,7 +25,13 @@ try{
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();await ready(page);
    if(step==='cover'){
     await page.getByRole('heading',{name:'Choose your cover career'}).waitFor();assert.equal(await page.locator('[data-action=cross-career-cover]').count(),vargr?9:2);assert.equal(await page.locator('[data-career^="zhodani."]').count(),0);
-    await page.reload();await ready(page);await page.locator('[data-action=cross-career-cover][data-career="'+(vargr?'vargr.citizen':'core.citizen')+'"]').click();await ready(page);
+    const coverActions=page.locator('[data-action=cross-career-cover]');for(const label of await coverActions.allTextContents())assert.match(label,/— Roll Deception 8\+$/);
+    const guidance=await page.locator('.career-pilot-guidance').innerText();assert.match(guidance,/Choose a cover and roll Deception 8\+/);assert.equal(await page.locator('.career-pilot-guidance .crow-assistance-image').count(),1);
+    assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),exportSession(fixture.session));
+    assert.equal(await page.locator('.cover-check-instruction').count(),0);
+    await page.screenshot({path:fileURLToPath(new URL('agent-cover-pending-'+(vargr?'vargr':'core')+'-'+width+(apiMode?'-http':'-static')+'.png',out)),fullPage:true});
+    await page.reload();await ready(page);await page.locator('[data-action=cross-career-cover][data-career="'+(vargr?'vargr.citizen':'core.citizen')+'"]').evaluate(b=>{b.click();b.click();});await ready(page);
+    assert.equal(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key)).events.length,fixture.session.events.length+1);
     let p=await read(page);assert.equal(p.state.character.crossCareerRoutes.at(-1).coverCareerId,vargr?'vargr.citizen':'core.citizen');
     assert.equal(p.state.stage,'borrowed-event-roll');assert.equal(p.log.at(-1).type,'cross-career-cover-check');assert.equal(p.log.at(-1).rolls.length,1);assert.equal(p.state.character.crossCareerRoutes.at(-1).tables.length,0);
     const checkpoint=await page.evaluate(key=>localStorage.getItem(key),key),pendingId=p.state.pendingBorrowedRoll.id;
