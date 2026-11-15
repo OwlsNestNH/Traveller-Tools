@@ -379,6 +379,7 @@ const CAREER_DATA = [
  {
   "id": "vargr.citizen",
   "page": 190,
+  "basic": "assignment",
   "personal": "Drive|EDU+1|Electronics|Gambler|INT+1|Melee",
   "service": "Admin|Drive|Flyer|Profession|Steward|Streetwise",
   "advanced": "Advocate|Art|Diplomat|Electronics|Language|Science",

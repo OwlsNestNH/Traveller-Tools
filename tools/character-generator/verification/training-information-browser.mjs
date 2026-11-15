@@ -13,21 +13,22 @@ const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
 const key='traveller-character-generator.v1',errors=[],checks=[],out=new URL('./artifacts/',import.meta.url);await mkdir(out,{recursive:true});
-const ordinary=trainingFixture({species:'vargr',career:'vargr.citizen',assignment:'corporate'}),navy=run(sourceTrainingFixture(),'choose-effect',{index:0}),borrowed=coverResult({vargr:true,careerId:'vargr.citizen'});
+const ordinary=trainingFixture({species:'vargr',career:'vargr.citizen',assignment:'corporate'}),legacy=trainingFixture({species:'vargr',career:'vargr.citizen',assignment:'corporate',rulesRevision:'character-preview-2026-11-14.35'}),navy=run(sourceTrainingFixture(),'choose-effect',{index:0}),borrowed=coverResult({vargr:true,careerId:'vargr.citizen'});
+assert.equal(ordinary.state.character.skills.Drive,undefined);assert.equal(ordinary.state.character.skills.Electronics,0);assert.equal(legacy.state.character.skills.Drive,0);
 try{
  for(const apiMode of [false,true])for(const width of [320,1440]){
   const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
   try{
    await page.goto('http://127.0.0.1:'+server.address().port+(apiMode?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
-   for(const [kind,fixture,action] of [['ordinary',ordinary,'training'],['source',navy,'choose-effect'],['borrowed',borrowed,'cross-career-training']]){
+   for(const [kind,fixture,action] of [['ordinary',ordinary,'training'],['ordinary-legacy',legacy,'training'],['source',navy,'choose-effect'],['borrowed',borrowed,'cross-career-training']]){
     await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();await page.locator('.training-info-trigger').first().waitFor();
     const before=await page.evaluate(key=>localStorage.getItem(key),key),trigger=page.locator('.training-info-trigger').first(),popup=page.locator('.training-information:popover-open');
-    const options=kind==='ordinary'?fixture.state.trainingOptions:kind==='source'?fixture.state.pendingChoice.options:fixture.state.currentCrossCareerTraining.options;
+    const options=kind.startsWith('ordinary')?fixture.state.trainingOptions:kind==='source'?fixture.state.pendingChoice.options:fixture.state.currentCrossCareerTraining.options;
     await trigger.focus();await trigger.press('Enter');await popup.waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),before);
     assert.deepEqual(await popup.locator(':scope > ul').first().locator('li').allTextContents(),options[0].information.entries,'The actual table entries and order are unchanged');
     const known=await popup.locator(':scope > ul').nth(1).locator('li').allTextContents();
     for(const row of known){const match=row.match(/^(.*) (\d+)$/);assert.ok(match,'Known row identifies an exact recorded skill and level');assert.equal(fixture.state.character.skills[match[1]],Number(match[2]));assert.ok(options[0].information.skills.some(name=>name===match[1]||!name.includes(' (')&&match[1].startsWith(name+' (')),'Known reference belongs to an eligible listed skill');}
-    if(kind==='ordinary')for(const row of ['Drive 0','Melee 0'])assert.ok(known.includes(row),'Owned level-zero skill stays visible: '+row);
+    if(kind.startsWith('ordinary'))for(const row of kind==='ordinary'?['Electronics 0','Melee 0']:['Drive 0','Melee 0'])assert.ok(known.includes(row),'Owned level-zero skill stays visible: '+row);
     assert.ok((await trigger.boundingBox()).width<=44);assert.equal(await popup.getAttribute('role'),'dialog');
     await page.keyboard.press('Escape');assert.equal(await popup.count(),0);assert.equal(await trigger.evaluate(el=>el===document.activeElement),true);
     await trigger.click();await popup.waitFor();await popup.locator('.training-info-close').click();assert.equal(await popup.count(),0);
