@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-export async function assertResultColor(page,status,{message=false}={}){
+export async function assertResultColor(page,status,{message=false,statusLabel=null}={}){
  const panel=page.locator('#last-action-result');
  assert.equal(await panel.getAttribute('data-result-status'),status);
- assert.equal(await panel.locator('.result-status').innerText(),{success:'Success',failure:'Failure',pending:'Pending resolution',info:'Information'}[status]);
+ assert.equal(await panel.locator('.result-status').innerText(),statusLabel??{success:'Success',failure:'Failure',pending:'Pending resolution',info:'Information'}[status]);
  // The shared failed-qualification window uses the approved dark career palette.
  // Keep exact color checks for both that shell and the legacy result surface.
  const dark=await page.locator('body').getAttribute('data-career-shell')==='imperial';

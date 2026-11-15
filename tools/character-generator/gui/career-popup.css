@@ -332,4 +332,7 @@
  body[data-stage="skill-choice"] #army-career-dialog #workspace:has(>.skill-award-origin)>#last-action-result h3{font-size:18px;line-height:1.4;color:#d1e1eb;margin:4px 0 8px;}
  body[data-stage="skill-choice"] #army-career-dialog #workspace:has(>.skill-award-origin)>#last-action-result p{font-size:16px;line-height:1.45;margin:6px 0;}
  body[data-stage="skill-choice"] #army-career-dialog #workspace:has(>.skill-award-origin)>#last-action-result .result-status{font-size:12px;}
+ #army-career-dialog p.army-current-rank{font-size:18px;font-weight:600;color:#d5e3eb;border:1px solid #517688;border-radius:8px;padding:10px 14px}
+ #army-career-dialog .term-exit-review[data-forced-exit] .actions{display:grid;grid-template-columns:1fr}
+ #army-career-dialog button.career-exit-primary{width:100%;background:linear-gradient(#f8da85,#dba941);border:1px solid #ffe6a2;color:#152332;font-weight:700;min-height:48px}
 }
