@@ -341,3 +341,6 @@
 
 /* Keep each recorded training option and its supporting labels in one column. */
 .basic-training-choices .choice{min-width:0;max-width:100%;flex-direction:column;align-items:stretch;gap:4px;overflow-wrap:anywhere}
+
+/* A pending fallback may have no specialty reference; do not draw an empty panel. */
+#army-rule-information .army-rule-specialty:empty{display:none}
