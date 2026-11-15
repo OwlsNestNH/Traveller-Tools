@@ -22,7 +22,7 @@ try{
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(firstCareer.session)});await page.reload();
    await page.getByRole('heading',{name:'Will you make it through?'}).waitFor();assert.equal(await page.locator('[data-action=training]').count(),0);
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(basic.session)});await page.reload();
-   await page.getByRole('heading',{name:'Choose a basic-training skill'}).waitFor();
+   await page.getByRole('heading',{name:'Choose a basic training skill'}).waitFor();
    assert.match(await page.locator('#workspace').innerText(),/level 0.*survival/s);
    const currentChoice=page.locator('[data-action=choose-effect][data-index="5"]');assert.match(await currentChoice.innerText(),/Persuade.*0/);await currentChoice.evaluate(button=>{button.click();button.click();});
    await page.getByRole('heading',{name:'Will you make it through?'}).waitFor();
@@ -31,9 +31,9 @@ try{
    await page.reload();await page.getByRole('heading',{name:'Will you make it through?'}).waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),currentRaw);
    // Preserve the full historical .31 ordinary-training route and its information popup.
    const historical={...basic.session,rulesRevision:'character-preview-2026-11-09.31'};
-   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:JSON.stringify(historical,null,2)});await page.reload();await page.getByRole('heading',{name:'Choose a basic-training skill'}).waitFor();
+   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:JSON.stringify(historical,null,2)});await page.reload();await page.getByRole('heading',{name:'Choose a basic training skill'}).waitFor();
    assert.match(await page.locator('#workspace').innerText(),/level 0.*regular training roll/s);
-   await page.getByRole('button',{name:'Persuade 0',exact:true}).evaluate(button=>{button.click();button.click();});
+   assert.match(await currentChoice.innerText(),/Persuade.*0/);await currentChoice.evaluate(button=>{button.click();button.click();});
    await page.getByRole('heading',{name:'Regular term training'}).waitFor();
    assert.match(await page.locator('#workspace').innerText(),/Basic training is complete.*later career.*p\. 18/s);
    const raw=await page.evaluate(key=>localStorage.getItem(key),key),trained=api({operation:'project',session:JSON.parse(raw)});
