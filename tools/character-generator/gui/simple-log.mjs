@@ -29,16 +29,20 @@ function checkFor(event,roll){
  }
  return null;
 }
+const choiceTypes=new Set(['setup','background','career','education-skill','education-service','preterm-commission','education-commission','skip-education-commission','leave-career','retire-career','continue-career','change-assignment']);
 export function simpleActionLog(log){
- return (log??[]).filter(event=>event.rolls?.length||['restore','gm-replay','enter-physical-statistic','gm-physical-dice'].includes(event.type)).map(event=>{
+ return (log??[]).filter(event=>event.rolls?.length||['restore','gm-replay','gm-override','enter-physical-statistic','gm-physical-dice'].includes(event.type)||choiceTypes.has(event.type)||event.type?.startsWith('choose-')).map(event=>{
   if(['enter-physical-statistic','gm-physical-dice'].includes(event.type))return 'Action '+event.number+': '+event.summary;
-  if(['restore','gm-replay'].includes(event.type))return 'Action '+event.number+': '+(event.type==='restore'?'GM restored an earlier step.':'GM replaced a roll and replayed an earlier step.')+' See Full Log for retained original and replacement history.';
+  if(event.type==='restore')return 'Action '+event.number+': GM restored an earlier step. Full Log retains the original history.';
+  if(event.type==='gm-override')return 'Action '+event.number+': GM change · '+event.summary;
+  const replacement=event.type==='gm-replay';
+  if(!replacement&&!event.rolls?.length)return 'Action '+event.number+': '+event.summary;
   const lines=event.rolls.map(roll=>{
-   const check=checkFor(event,roll),kept=roll.kept??roll.values??[],raw=kept.reduce((a,b)=>a+b,0);
-   const selection=JSON.stringify(kept)!==JSON.stringify(roll.values)?' → kept/converted ['+kept.join(', ')+']':'';
-   let text=roll.label+': ['+(roll.values??[]).join(', ')+']'+selection;
+   const check=checkFor(event,roll),kept=roll.kept??roll.values??[],raw=kept.length?kept.reduce((a,b)=>a+b,0):finite(roll.total)?roll.total:null;
+   const selection=kept.length&&JSON.stringify(kept)!==JSON.stringify(roll.values)?' → kept/converted ['+kept.join(', ')+']':'';
+   let text=roll.label+': '+(roll.values?.length?'['+roll.values.join(', ')+']':'faces not recorded')+selection;
    if(check){
-    text+='; DM '+signed(check.total-raw);
+    if(raw!==null)text+='; DM '+signed(check.total-raw);
     if(finite(check.dm)&&finite(check.modifier))text+=' ('+(check.stat??'characteristic')+' '+signed(check.dm)+', other '+signed(check.modifier)+')';
     return text+' = '+check.total+(finite(check.target)?' vs '+check.target+'+':'')+(typeof check.success==='boolean'?'; '+(check.success?'success':'failure'):'')+'.';
    }
@@ -50,7 +54,8 @@ export function simpleActionLog(log){
   const result=rollResult(event,{},{});
   const outcomes=(event.eventResults??[]).map(r=>r.title+(r.summary?': '+r.summary:''));
   const effects=characterEffectDetails({...event,changes:(event.changes??[]).filter(c=>/^(skills\.|stats\.|cash$|debt$|benefits\.\d+$|assets\.\d+$)/.test(c.path))},{});
-  return 'Action '+event.number+'\n'+lines.join('\n')+'\n'+[result?.title,...outcomes,...effects].filter(Boolean).join('\n');
+  const gmLabel=replacement?'GM replacement, not a new player roll. '+(event.summary?.match(/^GM replaced action \d+ roll \d+ \[[^\]]*\] → \[[^\]]*\]\./)?.[0]??'Original values remain in Full Log when recorded.')+'\n':'';
+  return 'Action '+event.number+'\n'+gmLabel+lines.join('\n')+'\n'+[replacement?null:result?.title,...outcomes,...effects].filter(Boolean).join('\n');
  }).join('\n\n');
 }
 
