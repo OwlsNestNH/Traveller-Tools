@@ -243,8 +243,8 @@
 
 @media screen and (max-width:850px){
  #army-career-dialog .army-specialty-requirements>.rite-qualification,#army-rule-information[data-career-species="aslan"] .army-specialty-requirements>.rite-qualification{display:block}
- #army-rule-information[data-career-species="aslan"] .army-rule-header{flex-wrap:wrap}
- #army-rule-information[data-career-species="aslan"] .army-rule-header h2{min-width:0;overflow-wrap:normal}
+ #army-rule-information .army-rule-header{flex-wrap:wrap}
+ #army-rule-information .army-rule-header h2{min-width:0;overflow-wrap:normal}
 }
 
 /* Editable sheet values remain quiet record controls, not primary actions. */
