@@ -11,3 +11,15 @@ export function force(r,type,payload,values){const next=run(r,type,payload);retu
 export function completeVargrSourceTerm(r,event=12){
  r=settleAssignment(r);if(r.state.stage==='training')r=settleAssignment(force(r,'training',{table:'personal'},[1]));assert.equal(r.state.stage,'survival');r=force(r,'survival-check',{},[6,6]);r=settleAssignment(force(r,'career-event',{},event===11?[5,6]:[6,6]));if(r.state.stage==='advancement')r=settleAssignment(force(r,'advancement',{},[4,4]));if(r.state.stage==='training')r=settleAssignment(force(r,'training',{table:'personal'},[1]));if(r.state.stage==='ageing')r=force(r,'ageing',{},[6,6]);if(r.state.stage==='term-end')r=run(r,'leave-career');for(let i=0;i<15&&r.state.stage==='benefits';i++)r=settleAssignment(force(r,'benefit',{cash:false},[2]));assert.ok(['career','failed-entry'].includes(r.state.stage),r.state.stage);return r;
 }
+
+const spacerFailures=new Map();
+export function vargrFailedSpacer(assignment='corsair',species='vargr'){
+ const key=species+'|'+assignment;if(spacerFailures.has(key))return structuredClone(spacerFailures.get(key));
+ for(let seed=0;seed<60;seed++){
+  let r=api({operation:'create',seed:'spacer-fallback-costume-'+species+'-'+assignment+'-'+seed});
+  for(const [t,p] of [['setup',{species,gender:'female',culture:'native',...(species==='aezorgh'?{aezorghCulture:'vargr'}:{}),name:'Synthetic Spacer costume review'}],...(species==='aezorgh'?[['configure',{extras:['CHA']}]]:[]),['roll-statistics',{}],['accept-statistics',{}]])r=run(r,t,p);
+  r=run(r,'background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)});r=run(r,'skip-precareer');r=run(r,'career',{id:'vargr.spacer',assignment});
+  if(r.state.stage==='failed-entry'){spacerFailures.set(key,structuredClone(r));return r;}
+ }
+ throw Error('No natural failed Spacer qualification fixture: '+assignment);
+}
