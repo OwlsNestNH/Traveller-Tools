@@ -37,3 +37,15 @@
 
 @media screen{#species-skill-dialog .species-skill-footer:has(>.screen-review-entry){flex-wrap:wrap}#species-skill-dialog .species-skill-footer>.screen-review-entry{margin:0;padding:0;border:0;flex:0 0 auto}#species-skill-dialog .screen-review-entry>button{min-width:88px;padding:8px 12px}#species-skill-dialog .species-skill-footer:has(>.screen-review-entry)>#background-selected-summary{min-width:0;flex:1}}
 @media screen and (max-width:760px){#species-skill-dialog .species-skill-footer:has(>.screen-review-entry)>#background-selected-summary{flex-basis:100%;order:-1}}
+@media screen{
+ #screen-review-dialog>[data-choice-preview]:not([hidden]){flex:0 1 auto;max-height:55%;overflow:auto;border:1px solid #91d6e8;border-radius:8px;padding:12px;background:#092435;overflow-wrap:anywhere;}
+ #screen-review-dialog [data-choice-preview] h3{margin:0 0 10px;color:#ffdc67;font-size:21px;}
+ #screen-review-dialog [data-choice-preview] button{min-height:44px;margin:4px 6px 0 0;}
+ #screen-review-dialog [data-choice-consequences]{padding-left:22px;line-height:1.5;}
+}
+@media screen{
+ #screen-review-dialog>[data-choice-preview]:not([hidden]){display:flex;flex-direction:column;flex:1;max-height:none;min-height:0;overflow:hidden;}
+ #screen-review-dialog [data-choice-consequences]{flex:1;min-height:0;overflow:auto;margin:10px 0;}
+ #screen-review-dialog [data-choice-crow] .crow-speaking-panel{margin:4px 0;}
+ #screen-review-dialog [data-choice-crow] img{max-width:100px;max-height:100px;object-fit:contain;}
+}

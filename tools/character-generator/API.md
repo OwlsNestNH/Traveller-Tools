@@ -433,3 +433,11 @@ Revision `.27`: Aezorgh CHA is absent by default. Explicit `configure {extras:["
 New revision `.30` enables `educationResultPresentation`. Only resolved native Core admission and attempted numeric graduation results can pause at `stage: "education-result"`. Its `educationResult` stores `kind`, education `id`, nullable `educationIndex`, the original numeric `result`, and `nextStage`. Original dice, effects, term completion and any pending source continuation are already recorded. `acknowledge-education-result {}` restores `nextStage` and removes the pause, without dice, repeated effects or time changes. Payload fields, stale and repeated acknowledgements are rejected. Notes and GM corrections remain available. University initial study choices continue using `education-skill` without an extra acknowledgement.
 
 The optional top-level `educationResultView` is read-only evidence: verified current-branch action identity, recorded dice/arithmetic, resolved education award changes and applicable career benefits. It excludes unrelated GM edits and does not manufacture outcomes for source-pending or event-blocked graduation. `.29` retains its Aslan flags and original education sequencing; reserved `.28`/`.26` are still rejected.
+
+Candidate current-term correction API: `current-term-choice-access` takes a
+validated session and target `revision`; `preview-current-term-choice` takes
+`payload: {revision, expectedRevision, replacement}` and returns all state
+consequences plus a confirmation fingerprint. `change-current-choice` requires
+that same payload and confirmation. Applying requires an unchanged revision;
+original accepted commands/rolls remain in the audit. Unsupported or changed-dice
+branches reject atomically. A preview never persists state or consumes RNG.

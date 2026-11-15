@@ -1,3 +1,4 @@
+import {currentTermChoiceAccess,assertRetainedRolls,choiceStateChanges} from './current-term-choice.mjs';
 import {CORE_ACADEMIES,legacyEducationWarDraftEvidence} from './education-war-draft-projection.mjs';
 import {copyWithAwardProvenance,markAwardEffects,inheritAwardOrigin,awardOrigin,beginAwardAction,recordSkillAward,appliedSkillAwards} from './award-provenance.mjs';
 import {AEZORGH_CULTURES} from '../shared/aezorgh-culture.mjs';
@@ -3332,7 +3333,8 @@ export function createSession(seed='traveller-'+Date.now()) {
  need(typeof seed==='string'&&seed.length>0&&seed.length<=120,'Invalid random seed.');
  return {format:'traveller-character-session',version:API_VERSION,rulesRevision:RULES_REVISION,seed,events:[]};
 }
-export function project(session) {
+export function project(session) {return replaySession(session);}
+function replaySession(session,rawOnly=false) {
  need(plain(session)&&session.format==='traveller-character-session'&&session.version===API_VERSION,'Unsupported save format.');
  need(COMPATIBLE_RULES_REVISIONS.includes(session.rulesRevision),'Legacy or different rules revision. Preserve the original save and review its recorded history before continuing.');
  need(typeof session.seed==='string'&&session.seed.length>0&&session.seed.length<=120,'Invalid random seed.');
@@ -3344,7 +3346,11 @@ export function project(session) {
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');
   const rolls=[];let summary;beginAwardAction(state);
-  if(event.command?.type==='gm-replay'){
+  if(event.command?.type==='change-current-choice'){
+   const preview=choiceChangePreview({...session,events:session.events.slice(0,i)},event.command.payload,{state,snapshots,log});
+   need(event.command.payload?.confirmation===preview.confirmation,'Preview and explicitly confirm these consequences before changing the choice.');
+   state=preview.state;beginAwardAction(state);summary=preview.summary;
+  }else if(event.command?.type==='gm-replay'){
    need(state.config.gm,'Enable GM mode before replacing a roll.');
    const payload=event.command.payload??{},target=integer(payload.revision,1,i,'Original action'),rollIndex=integer(payload.rollIndex,0,50,'Roll index');
    const original=session.events[target-1];need(!['gm-replay','restore'].includes(original.command.type),'Choose an original generation roll.');
@@ -3368,6 +3374,7 @@ export function project(session) {
   if(event.summary!==undefined)need(event.summary===summary,'Action summary mismatch at action '+(i+1)+'.');
   const appliedAwards=appliedSkillAwards(state);if(appliedAwards.length)skillAwards[i+1]=appliedAwards;log.push({number:i+1,id:event.id,type:event.command.type,summary,rolls,changes:characterChanges(snapshots[i].character,state.character)});sheetTiming[i+1]=characterSheetTiming(prior,state);snapshots.push(copy(state));
  }
+ if(rawOnly)return {state,snapshots,log};
  for(const career of state.character.careers)if(career.pensionExitStatusBasis){const socialClass=state.character.stats.SOC>=11?'noble':state.character.stats.SOC===10?'intendant':'prole';career.pensionStatusReviewRequired=socialClass!==career.pensionExitStatusBasis.socialClass;}
  if(state.optionalPsiRequiresTesting||state.psiActivationRequiresTesting)state.psionicTestingOptions=psionicTestingOptions(state);
  state.statisticsRerollThreshold=statisticsRerollThreshold(state);
@@ -3451,6 +3458,28 @@ function withSheetTiming(result,timing,awards,warDraft){
  Object.defineProperty(result,'characterSheetTiming',{value:timing,enumerable:false});Object.defineProperty(result,'skillAwardPresentation',{value:awards,enumerable:false});return result;
 }
 function apiProjection(result){return {...result,characterSheetTiming:result.characterSheetTiming,skillAwardPresentation:result.skillAwardPresentation,...(result.educationWarDraftView?{educationWarDraftView:result.educationWarDraftView}:{})};}
+function choiceChangePreview(session,payload,evidence=replaySession(session,true)) {
+ const {state:current,snapshots,log}=evidence,target=integer(payload?.revision,1,session.events.length,'Recorded choice');
+ need(payload?.expectedRevision===session.events.length,'This character changed. Preview the choice again before applying it.');
+ const original=session.events[target-1],replacement=payload?.replacement;
+ const access=currentTermChoiceAccess({current,before:snapshots[target-1],after:snapshots[target],command:original.command,subsequent:session.events.slice(target)});
+ need(access.editable,access.reason);need(plain(replacement)&&replacement.type===original.command.type,'Change the existing choice, not its action type.');
+ const candidate=copy(session);let replayFrom=target-1;
+ // Flatten only already-validated corrections in this temporary replay. Their
+ // original records remain untouched in the saved session. Notes are unchanged
+ // by the supported choice types, so these markers retain chronological slots.
+ for(let n=target;n<candidate.events.length;n++)if(candidate.events[n].command.type==='change-current-choice'){const prior=candidate.events[n].command.payload;replayFrom=Math.min(replayFrom,prior.revision-1);candidate.events[prior.revision-1].command=copy(prior.replacement);candidate.events[n].command={type:'notes',payload:{text:snapshots[n+1].character.notes}};}
+ const previousChoice=copy(candidate.events[target-1].command);need(JSON.stringify(replacement)!==JSON.stringify(previousChoice),'Choose a different option.');
+ candidate.events[target-1].command=copy(replacement);
+ for(let i=replayFrom;i<candidate.events.length;i++){delete candidate.events[i].summary;delete candidate.events[i].rolls;}
+ let revised;try{revised=replaySession(candidate,true);}catch(error){throw new Error('The change cannot retain the later accepted actions: '+error.message+' Your character is unchanged.');}
+ assertRetainedRolls(log,revised.log);need(current.rng===revised.state.rng,'The change would alter randomness. Your character is unchanged.');
+ need(current.stage===revised.state.stage&&current.active===revised.state.active&&current.character.terms===revised.state.character.terms,'The change would move the current flow or cross a completed term. Your character is unchanged.');
+ const changes=choiceStateChanges(current.character,revised.state.character),flowChanges=choiceStateChanges(Object.fromEntries(Object.entries(current).filter(([key])=>key!=='character')),Object.fromEntries(Object.entries(revised.state).filter(([key])=>key!=='character'))),consequences={changes,flowChanges,previousChoice,replacement:copy(replacement),retainedRolls:log.slice(target-1).flatMap(e=>e.rolls.map(r=>({action:e.number,...copy(r)}))),laterActions:log.slice(target).map((e,i)=>({number:e.number,before:e.summary,after:revised.log[target+i].summary})).filter(e=>e.before!==e.after&&session.events[e.number-1].command.type!=='change-current-choice')};
+ const confirmation=String(hash(JSON.stringify({revision:session.events.length,target,consequences})));
+ return {state:revised.state,consequences,confirmation,summary:'Changed current unfinished-term choice at action '+target+'. Original choice and all recorded rolls remain in history; randomness was not changed. Consequences: '+JSON.stringify(changes)+'.'};
+}
+export function previewCurrentTermChoice(session,payload){const result=choiceChangePreview(session,payload);return {ok:true,revision:session.events.length,consequences:result.consequences,confirmation:result.confirmation};}
 export function execute(session,command,{id,expectedRevision}={}) {
  const before=project(session);
  const actionId=id??'action-'+(before.revision+1);need(typeof actionId==='string'&&actionId.length<=120,'Invalid action ID.');
@@ -3477,6 +3506,16 @@ export function developmentApi(request) {
  need(plain(request),'Invalid request.');
  if(request.operation==='catalog')return {ok:true,...catalog()};
  if(request.operation==='create'){const session=createSession(request.seed);return {ok:true,session,...apiProjection(project(session))};}
+ if(request.operation==='current-term-choice-access'){
+  const evidence=replaySession(request.session,true),target=integer(request.revision,1,request.session.events.length,'Recorded choice'),access=currentTermChoiceAccess({current:evidence.state,before:evidence.snapshots[target-1],after:evidence.snapshots[target],command:request.session.events[target-1].command,subsequent:request.session.events.slice(target)});
+  if(!access.editable)return {ok:true,...access};
+  const effective=copy(request.session);let first=effective.events.length;
+  for(let n=0;n<effective.events.length;n++)if(effective.events[n].command.type==='change-current-choice'){const correction=effective.events[n].command.payload;first=Math.min(first,correction.revision-1);effective.events[correction.revision-1].command=copy(correction.replacement);effective.events[n].command={type:'notes',payload:{text:evidence.snapshots[n+1].character.notes}};}
+  const nextCommand=copy(effective.events[target-1].command);effective.events=effective.events.slice(0,target-1);for(let n=first;n<effective.events.length;n++){delete effective.events[n].rolls;delete effective.events[n].summary;}
+  try{const prefix=replaySession(effective,true);assertRetainedRolls(evidence.log.slice(0,target-1),prefix.log);}catch{return {ok:true,editable:false,label:'READ ONLY',reason:'The effective choice context cannot be reconstructed safely. Your character is unchanged.'};}
+  return {ok:true,...access,reviewSession:effective,nextCommand};
+ }
+ if(request.operation==='preview-current-term-choice')return previewCurrentTermChoice(request.session,request.payload);
  if(request.operation==='project')return {ok:true,...apiProjection(project(request.session))};
  if(request.operation==='import'){const session=importSession(request.raw);return {ok:true,session,...apiProjection(project(session))};}
  if(request.operation==='command')return {ok:true,...apiProjection(execute(request.session,request.command,{id:request.id,expectedRevision:request.expectedRevision}))};

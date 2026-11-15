@@ -75,3 +75,26 @@ Generic Cancel inside the career/education/completion panel invokes that panelâ€
 existing presentation Close handler. It does not open a new-character/reset
 confirmation. Command-specific equipment/source cancellation is unchanged;
 outside-popup confirmed cancellation and global New Character remain separate.
+
+## Guarded unfinished-term corrections (candidate)
+
+Back reviews accepted screens without changing the current character. Supported
+choices within the same unfinished career or education term may be proposed in
+that isolated screen. Completed terms, previous careers and unsupported actions
+are marked READ ONLY. Ageing and term-end follow the engine's term-completion
+checkpoint; they do not reopen the completed term.
+
+A proposed change is replay-validated separately. Its full character and flow
+consequences must be previewed and explicitly confirmed against the unchanged
+current revision. Applying it appends an audited `change-current-choice` command;
+original commands and accepted roll evidence remain in history. Every accepted
+roll must retain its label, individual values, kept values and total, and the
+current RNG position must remain identical. A changed roll sequence, invalid
+later action or crossed boundary rejects the entire operation. No GM mode,
+restore, silent reroll or automatic rewind is used.
+
+This initial candidate supports effect, skill, education-service/skill, companion
+skill, injury-loss and education-commission choices when their full subsequent
+action sequence can be retained. Other actions remain explicitly read only.
+Source-assisted/GM-replay/restore dependencies require separate review; they are
+not silently bypassed. Coverage is not every career or state.

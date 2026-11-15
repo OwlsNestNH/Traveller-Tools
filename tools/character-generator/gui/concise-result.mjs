@@ -35,6 +35,7 @@ function otherEffects(event,catalog,keep){
 }
 export function conciseResult(event,state,catalog){
  const full=rollResult(event,state,catalog);if(!full)return null;
+ if(event?.type==='change-current-choice'){const title='Current-term choice updated',details=unique(otherEffects(event,catalog,()=>true));return {title,details,status:'success',text:[title,...details].join(' '),full,compact:true,information:{title:'About this confirmed change',label:'About this confirmed change',retainCrow:true,contextual:true,paragraphs:unique(['Original choices and recorded rolls remain in the detailed log. Randomness was unchanged.',full.title,...full.details])}};}
  const educationEvent=!['deceased','finish','retirement'].includes(state?.stage)&&(state?.stage==='education-graduation'||catalog?.careers&&careerTemplateModel(state,catalog))&&(event.eventResults??[]).find(r=>r.table==='core.pre-career-events');
  if(educationEvent){
   const title=preCareerEventName(educationEvent.row)??educationEvent.description,details=unique([educationEvent.description,...((event.changes??[]).some(c=>/^educations\.\d+\.graduation\.graduated$/.test(c.path)&&c.after===false)?['Graduation failed.']:[]),...otherEffects(event,catalog,c=>c.path!=='age'&&c.path!=='terms')]);
