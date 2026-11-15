@@ -87,7 +87,13 @@ try{
    assert.match(await notes.locator('main').textContent(),/unverified, read-only recorded history/);
    const home=notes.getByRole('link',{name:'Traveller Tools',exact:true});await home.focus();check(name+' focus visible',await home.evaluate(el=>getComputedStyle(el).outlineStyle!=='none'));
    check(name+' navigation touch targets',await notes.locator('nav a').evaluateAll(nodes=>nodes.every(node=>node.getBoundingClientRect().height>=44)));
-   check(name+' notes fit',await notes.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+   const originalNotesFont=await notes.evaluate(()=>document.body.style.fontFamily);
+   for(const font of ['system-ui','DejaVu Sans']){
+    await notes.evaluate(f=>document.body.style.fontFamily=f,font);await notes.evaluate(()=>document.fonts.ready);
+    const notesFit=await notes.evaluate(()=>{const textOverflow=[],walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);while(walker.nextNode()){const n=walker.currentNode;if(!n.textContent.trim())continue;const range=document.createRange();range.selectNodeContents(n);for(const r of range.getClientRects())if(r.right>innerWidth+1&&textOverflow.length<12)textOverflow.push({text:n.textContent.slice(0,120),right:r.right});}return{fits:document.documentElement.scrollWidth<=innerWidth+1,width:innerWidth,scrollWidth:document.documentElement.scrollWidth,textOverflow,headingsInsideLists:document.querySelectorAll('ul h2,ul h3').length};});
+    check(name+' notes fit '+font+' '+JSON.stringify(notesFit),notesFit.fits);check(name+' release headings remain outside lists '+font,notesFit.headingsInsideLists===0);
+   }
+   await notes.evaluate(f=>document.body.style.fontFamily=f,originalNotesFont);
    await notes.screenshot({path:fileURLToPath(new URL('release-presentation-'+name+'-notes.png',out)),fullPage:true});
    await notes.getByRole('link',{name:'Open Character Generator',exact:true}).click();await waitForCharacter(notes,name+'-changelog-return');assert.equal(notes.url(),tool);
    await notes.goBack();await notes.getByRole('heading',{name:'Character Generator changelog',exact:true}).waitFor();assert.equal(notes.url(),notesURL);

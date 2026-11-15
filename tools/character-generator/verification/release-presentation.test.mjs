@@ -36,6 +36,7 @@ test('visible limitations, always-on log and unchanged read-only recovery remain
 });
 
 test('changelog has accessible navigation, existing feedback, source editions and publisher notice',()=>{
+ assert.equal((changes.match(/<ul(?:\s[^>]*)?>/g)??[]).length,(changes.match(/<\/ul>/g)??[]).length,'Release-note lists must be balanced rather than accumulating unintended indentation');
  for(const text of ['<html lang="en">','name="viewport"','nav aria-label="Page navigation"','href="../tools/character-generator/"','href="../#copyright-notice"','a:focus-visible','min-height:44px','id="release-beta-0-1"','datetime="2026-11-09"','Dates shown in UTC','Core Rulebook Update 2022','Companion Update 2024','Aliens of Charted Space Volume 1 Update 2026','Journal of the Travellers\' Aid Society Volume 11','publisher notice','Public source files expose'])assert.ok(changes.includes(text),text);
  const feedback=read('changes/robot.html').match(/href="(mailto:[^"]+)"/)[1];assert.ok(changes.includes('href="'+feedback+'"'));
  assert.doesNotMatch(changes,/<table|<script|C:[\\/]|\/workspace\/|\/agent_notes\//i);
