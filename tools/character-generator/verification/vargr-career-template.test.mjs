@@ -6,7 +6,7 @@ import {careerTemplateModel,careerCrowType,careerResultCrowType,careerResultTagl
 import {requiredHeadline} from '../gui/required-action.mjs';
 import {crowAsset} from '../gui/crow-assistance.mjs';
 const catalog=api({operation:'catalog'}),careers=catalog.careers.filter(c=>c.group==='vargr');
-const stateFor=(c,stage='survival')=>({stage,active:0,character:{species:'vargr',culture:'native',careers:[{id:c.id,assignment:c.assignments[0].id,rank:0,terms:0}]}});
+const stateFor=(c,stage='survival')=>({stage,active:0,vargrCitizenAssignmentBasic:true,character:{species:'vargr',culture:'native',careers:[{id:c.id,assignment:c.assignments[0].id,rank:0,terms:0}]}});
 test('all nine native Vargr profiles cover 27 specialties using projected labels and checks',()=>{
  assert.equal(careers.length,9);assert.equal(careers.reduce((n,c)=>n+c.assignments.length,0),27);
  for(const c of careers){const s=stateFor(c),raw=JSON.stringify(s),m=careerTemplateModel(s,catalog);assert.equal(m.species,'vargr');assert.equal(m.template.page,c.page);assert.equal(m.specialties.length,c.assignments.length);assert.equal(m.template.basicTraining.table,catalog.careerPresentation[c.id].basicTraining.table);for(const a of m.specialties){assert.ok(a.description);assert.ok(a.skills.length);assert.deepEqual(a.survival,c.assignments.find(x=>x.id===a.id).survival);}for(let phase=0;phase<7;phase++){const info=vargrRuleInformation({...m,phase},s);assert.match(info.book,/Update 2026/);assert.ok(info.url);assert.ok(vargrCareerGuidance({...m,phase},s));}assert.equal(JSON.stringify(s),raw);}

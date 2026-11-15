@@ -199,3 +199,6 @@ The off-by-default control preserves the existing score cards until clicked. Val
 ### Basic-training presentation evidence (candidate)
 
 Basic-training origin is rebuilt at the existing entry-effects producer using the same non-canonical provenance mechanism as rank and academy awards. It does not add saved fields, alter the queued effects or choose a skill. The current candidate has focused first-entry Army/Scholar/Scout desktop/phone static/API coverage, fixed-level versus specialisation-label tests and canonical projection comparison against deployed Beta 0.3 across 108 synthetic entry prefixes. This does not certify every later training, specialty or species screen. Zhodani provenance remains outside this batch.
+## Vargr Citizen basic-training correction (candidate)
+
+Rules revision .36 uses the selected Citizen assignment for first- and later-career basic training (Core 2022 p.18; Aliens Update 2026 pp.186,190). Prior revisions retain the historical service-table behavior and accepted awards. Rank rewards remain separate. Current compatibility tests compare 2,226 synthetic prior-revision histories, not every possible save. This candidate is unpublished and requires exact-head checks and independent review.
