@@ -341,3 +341,10 @@
 
 /* Keep each recorded training option and its supporting labels in one column. */
 .basic-training-choices .choice{min-width:0;max-width:100%;flex-direction:column;align-items:stretch;gap:4px;overflow-wrap:anywhere}
+/* Reuse the compact completion-screen treatment for recorded career speech. */
+@media screen and (max-width:600px){
+ #army-career-dialog .career-result-guidance{display:block;text-align:left}
+ #army-career-dialog .career-result-guidance>img{float:left;width:96px;height:112px;margin:8px 12px 6px 8px;object-fit:contain}
+ #army-career-dialog .career-result-guidance>.career-crow-bubble{display:block;width:100%;box-sizing:border-box;text-align:left}
+ #army-career-dialog .career-result-guidance::after{content:'';display:block;clear:both}
+}
