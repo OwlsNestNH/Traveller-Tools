@@ -344,3 +344,4 @@
 
 /* A pending fallback may have no specialty reference; do not draw an empty panel. */
 #army-rule-information .army-rule-specialty:empty{display:none}
+#qualification-review-result{margin-top:12px}
