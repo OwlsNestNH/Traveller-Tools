@@ -36,3 +36,19 @@ test('Army and Marine use approved military Crow without changing other career r
 test('final military benefits keep their recorded costume after the active career closes',()=>{for(const id of ['core.army','core.marine']){const state={active:null,character:{species:'human',careers:[{id}]}},event={type:'benefit',changes:[{path:'careers.0.benefitRolls',before:1,after:2}]};assert.equal(careerResultCrowType(event,{status:'success'},state),'military');assert.equal(careerResultCrowType(event,{status:'error'},state),'generic');assert.equal(careerResultCrowType({type:'choose-skill'},{},state),'generic');}assert.equal(careerResultCrowType({type:'benefit'},{},{active:null,character:{species:'human',careers:[{id:'core.citizen'}]}}),'generic');});
 
 test('approved career costumes cover guidance and recorded results, excluding errors',()=>{for(const [id,type] of [['core.navy','navy'],['core.rogue','rogue'],['core.noble','noble'],['core.scout','scout'],['core.merchant','merchant'],['core.entertainer','entertainer'],['core.scholar','scholar'],['core.agent','agent']]){for(const phase of [0,1,2,3,4,5,6])assert.equal(careerCrowType({career:{id},phase}),type);const state={active:null,character:{species:'human',careers:[{id}]}},event={type:'benefit',changes:[{path:'careers.0.benefitRolls',before:0,after:1}]};assert.equal(careerResultCrowType(event,{status:'success'},state),type);assert.equal(careerResultCrowType(event,{status:'error'},state),'generic');assert.equal(careerResultCrowType({type:'choose-skill'},{},state),'generic');}});
+
+test('current advancement takes precedence over retained event or mishap presentation context',()=>{
+ let count=0;
+ for(const career of catalog.careers.filter(c=>['core','companion','aslan','vargr'].includes(c.group)))for(const assignment of career.assignments)for(const kind of ['event','mishap']){
+  const character={species:career.group==='aslan'?'aslan':career.group==='vargr'?'vargr':'human',culture:career.group==='aslan'||career.group==='vargr'?'native':'imperial',careers:[{id:career.id,assignment:assignment.id,rank:0}]};
+  const state={stage:'advancement',active:0,character,nativeEventContext:{kind}},before=JSON.stringify(state),model=careerTemplateModel(state,catalog);
+  assert.equal(model.phase,4,career.id+'/'+assignment.id+'/'+kind);assert.equal(JSON.stringify(state),before);count++;
+  if(career.id==='core.prisoner'){assert.match(imperialCareerGuidance(model,state),/progression.*Parole Threshold/);assert.match(imperialRuleInformation(model).summary,/Prisoner progression/);assert.doesNotMatch(imperialCareerGuidance(model,state),/Resolve the event/);}
+ }
+ assert.equal(count,216);
+ // The pending consequence still owns its original event/mishap context.
+ for(const stage of ['effect-choice','skill-choice','borrowed-event-roll']){
+  const state={stage,active:0,character:{species:'human',careers:[{id:'core.prisoner',assignment:'fixer',rank:0}]},nativeEventContext:{kind:'mishap'}};
+  assert.equal(careerTemplateModel(state,catalog).phase,3);
+ }
+});
