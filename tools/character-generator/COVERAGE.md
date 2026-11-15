@@ -1,6 +1,6 @@
 # Coverage and release gates
 
-Status: source-assisted Beta 0.4 candidate; merge/deployment require the release gates below. A data table being present does not mean every resulting rule is automated. The UI must preserve this distinction.
+Status: source-assisted Beta 0.5 candidate; merge/deployment require the release gates below. A data table being present does not mean every resulting rule is automated. The UI must preserve this distinction.
 
 ## Source scope
 
