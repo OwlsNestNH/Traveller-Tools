@@ -31,12 +31,17 @@ try{
   }
   await page.locator('[name=name]').fill('Opening help regression');await page.locator('[name=homeworld]').fill('Test homeworld');await page.locator('[name=gender]').selectOption('female');await page.locator('[name=culture]').selectOption('imperial');
   await page.locator('#setup-gm-controls').evaluate(el=>el.open=true);await page.locator('#setup-gm-settings').evaluate(el=>el.open=true);await page.locator('[name=boons]').selectOption('2');
+  await page.locator('#setup-house-rules').evaluate(n=>n.open=true);
+  assert.equal(await page.locator('#setup-house-rules small').count(),0,'House Rules show titles only');
+  const rows=await page.locator('#setup-house-rules .opening-house-rule:visible').evaluateAll(ns=>ns.map(n=>({left:n.querySelector('input').getBoundingClientRect().left,help:n.querySelector('[data-opening-help]')?.dataset.openingHelp,associated:n.querySelector('label').control===n.querySelector('input')})));
+  assert.equal(rows.length,3);assert.deepEqual(rows.map(n=>n.help),['flatLuck','psiTesting','academy']);
+  assert.ok(rows.every(n=>n.associated&&Math.abs(n.left-rows[0].left)<1),'House Rule checkboxes align and retain associated labels');
   const before=await snapshot(page);
-  for(const id of ['species','upbringing','strain','gender','generation','extras','academy','logs']){
+  for(const id of ['species','upbringing','strain','gender','generation','extras','flatLuck','psiTesting','academy','logs']){
    if(['generation','extras','academy'].includes(id))await page.locator('#setup-gm-controls').evaluate(el=>el.open=true);
    if(id==='generation')await page.locator('#setup-gm-settings').evaluate(n=>n.open=true);
    if(id==='extras')await page.locator('#setup-optional-settings').evaluate(n=>n.open=true);
-   if(id==='academy')await page.locator('#setup-house-rules').evaluate(n=>n.open=true);
+   if(['flatLuck','psiTesting','academy'].includes(id))await page.locator('#setup-house-rules').evaluate(n=>n.open=true);
    const trigger=page.locator('[data-opening-help="'+id+'"]');
    if(['species','upbringing','strain','gender','generation'].includes(id)){
     const layout=await trigger.evaluate(n=>{const label=n.nextElementSibling,b=n.getBoundingClientRect(),l=label.getBoundingClientRect(),field=n.closest('.opening-info-field'),control=field.querySelector('select');return {button:{left:b.left,right:b.right,width:b.width,height:b.height},label:{left:l.left},associated:label.control===control,height:field.getBoundingClientRect().height,controlHeight:control.getBoundingClientRect().height};});
@@ -63,8 +68,8 @@ try{
   const saved=await page.evaluate(()=>localStorage.getItem('traveller-character-generator.v1'));const state=project(JSON.parse(saved)).state;
   assert.equal(state.character.name,'Opening help regression');assert.equal(state.character.homeworld,'Test homeworld');assert.equal(state.character.species,'vargr');assert.equal(state.character.culture,'imperial');assert.equal(state.character.gender,'female');assert.equal(state.config.boons,2);
   await page.reload();await page.locator('body[data-stage="statistics"]').waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('traveller-character-generator.v1')),saved);
-  assert.equal(apiRequests>0,transport==='http','HTTP runs must exercise the API transport');checks.push({transport,width,apiRequests,dialogs:8,keyboard:true,noMutation:true,leadingIcons:true,saveReload:true});await page.close();
+  assert.equal(apiRequests>0,transport==='http','HTTP runs must exercise the API transport');checks.push({transport,width,apiRequests,dialogs:10,keyboard:true,noMutation:true,leadingIcons:true,saveReload:true});await page.close();
  }
  assert.deepEqual(errors,[]);await writeFile(new URL('opening-informationals-results.json',out),JSON.stringify({checks,errors},null,2));
- console.log('Eight opening dialogs passed with static/HTTP transport at 1440/768/390/320: leading 44px icons, compact rows, source copy, keyboard, dismissal, focus restoration, unchanged form/save and setup/reload continuity.');
+ console.log('Ten opening dialogs passed with static/HTTP transport at 1440/768/390/320: leading 44px icons, compact rows, source copy, keyboard, dismissal, focus restoration, unchanged form/save and setup/reload continuity.');
 }finally{await browser.close();await new Promise(r=>server.close(r));}
