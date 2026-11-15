@@ -1,3 +1,4 @@
+import {gmAdjustedResultEvent} from './gm-adjusted-result.mjs';
 import {termExitView} from './term-exit-view.mjs';
 import {basicTrainingChoiceModel,mountBasicTrainingGuidance} from './basic-training-presentation.mjs';
 import {careerEntryPresentation} from './career-entry-presentation.mjs';
@@ -177,7 +178,8 @@ function syncClanShareControls(savedLot){
 function notify(message,error=false,status='info',action=false,context={}){$('#message').style.overflowWrap='anywhere';$('#message').className=error?'error':'result-'+status+(action?' action-announcement':'');$('#message').textContent=message;const popupError=$('#species-skill-error');if(popupError)popupError.textContent=error?message:'';if(error)window.CrowTechnicalError?.show(message,context);}
 function clearActionNotice(){if($('#message').classList.contains('action-announcement'))notify('');}
 function actionNotice(type,result){
- return statisticsRollFeedback(result.log.at(-1),result.state)??conciseResult(result.log.at(-1),result.state,catalog)?.text??'Action recorded.';
+ const event=gmAdjustedResultEvent(result.log.at(-1),result,result.session);
+ return statisticsRollFeedback(event,result.state)??conciseResult(event,result.state,catalog)?.text??'Action recorded.';
 }
 
 function updateRecovery(){
@@ -526,7 +528,7 @@ function sheetView(state){
 function render(){
  backgroundDraft=reconcileBackgroundDraft(backgroundDraft,backgroundDraftKey(session,projection.state),projection.state);
  const draftResult=requiredDraftResult(projection,session,currentActionNumbers(session));
- const displayedEvent=draftResult?.event??currentEducationEvent(projection,session)??currentResultEvent(projection,session);
+ const displayedEvent=gmAdjustedResultEvent(draftResult?.event??currentEducationEvent(projection,session)??currentResultEvent(projection,session),projection,session);
  const earnedResult=skillAwardResult(conciseResult(displayedEvent,projection.state,catalog),projection.skillAwardPresentation?.byAction?.[displayedEvent?.number],catalog,{event:displayedEvent});
  const commissionOffer=projection.state.stage==='advancement'&&projection.state.commissionAvailability?.available&&projection.state.commissionAvailability.automatic;
  const lastRollResult=draftResult?.result??(commissionOffer&&earnedResult?.information?{...earnedResult,information:{...earnedResult.information,retainCrow:true}}:earnedResult);
