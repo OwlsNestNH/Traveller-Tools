@@ -1,3 +1,4 @@
+import {advancementFixture} from './advancement-result-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -70,3 +71,14 @@ test('education acknowledgement describes only the accepted action and keeps its
 import {completionReviewFixtures} from './completion-review-fixtures.mjs';
 test('confirmed death is a compact failure outcome with complete recorded details retained',()=>{const r=completionReviewFixtures().find(([stage])=>stage==='deceased')[1],event=r.log.at(-1),before=exportSession(r.session),result=conciseResult(event,r.state,catalog);assert.equal(result.status,'failure');assert.equal(result.title,'This life path ended in death.');assert.match(result.text,/Recorded referee injury ruling/);assert.match(result.text,/not automatic death/);assert.match(result.text,/Synthetic referee confirmation/);assert.equal(result.compact,true);assert.deepEqual(result.full,rollResult(event,r.state,catalog));const html=latestResultView(result,{esc,tagline:'The result is recorded.'});assert.match(html,/result-failure/);assert.doesNotMatch(html,/<details[^>]* open/);for(const detail of result.full.details)assert.ok(html.includes(esc(detail)));assert.equal(exportSession(r.session),before);});
 test('retirement summary keeps the actual final benefit and complete audit',()=>{const r=completionReviewFixtures().find(([stage])=>stage==='retirement')[1],event=r.log.at(-1),before=exportSession(r.session),result=conciseResult(event,r.state,catalog);assert.equal(event.type,'benefit');assert.equal(result.title,'Clan Shares awarded: 2.');assert.equal(result.compact,true);assert.match(result.full.text,/Material benefit/);assert.match(result.text,/Clan Shares awarded: 2/);assert.match(result.text,/Unspent Clan Shares: 9/);assert.doesNotMatch(result.text,/Benefit: Clan Share × 9/);assert.deepEqual(result.full,rollResult(event,r.state,catalog));assert.equal(exportSession(r.session),before);});
+
+test('term-end advancement keeps the outcome, rank and age but moves counters into information',()=>{
+ const r=advancementFixture(false).after,event=r.log.at(-1),before=exportSession(r.session),original=JSON.stringify(event);
+ assert.equal(r.state.stage,'term-end');const full=rollResult(event,r.state,catalog),view=conciseResult(event,r.state,catalog);
+ assert.equal(view.title,full.title);assert.equal(view.status,full.status);assert.match(view.text,/Check total|Total/);assert.match(view.text,/Rank remains/);assert.match(view.text,/Age:/);
+ assert.doesNotMatch(view.text,/Completed terms:|Career terms:|Benefit rolls:/);
+ assert.deepEqual(view.information.paragraphs,[...new Set([full.title,...full.details].filter(Boolean))]);
+ assert.match(view.information.paragraphs.join(' '),/Completed terms:|Career terms:/);assert.deepEqual(view.full,full);
+ assert.equal(JSON.stringify(event),original);assert.equal(exportSession(r.session),before);
+ assert.equal(conciseResult(event,{...r.state,stage:'advancement'},catalog).compact,false);
+});

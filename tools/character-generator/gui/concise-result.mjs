@@ -184,6 +184,11 @@ export function conciseResult(event,state,catalog){
   const main=award?facts:title?details:facts;
   return {title:heading,details:unique(main),status:full.status,text:[heading,...main].join(' '),full,compact:true,information:{title:'Your mustering-out result',label:'About your mustering-out result',retainCrow:true,paragraphs:unique([full.title,...full.details]),contextual:true}};
  }
+ // Term counters are audit detail; the actual advancement, age and rank stay visible.
+ if(event.type==='advancement'&&state?.stage==='term-end'&&full.status!=='error'){
+  const main=full.details.filter(detail=>!/^Completed terms:|^Career terms:|^Benefit rolls:/.test(detail));
+  return {...full,details:main,text:[full.title,...main].join(' '),full,compact:true,information:{title:'Your advancement and term record',label:'About your advancement and term record',retainCrow:true,paragraphs:unique([full.title,...full.details]),contextual:true}};
+ }
  if(!title)return {...full,full,compact:false};
  const basicSkills=details.filter(detail=>/^Skill .*: untrained → 0\.$/.test(detail));
  if(basicSkills.length>1)details=[...details.filter(detail=>!basicSkills.includes(detail)),'Basic training: '+basicSkills.map(detail=>detail.slice(6).replace(': untrained → 0.',' 0')).join(', ')+'.'];
