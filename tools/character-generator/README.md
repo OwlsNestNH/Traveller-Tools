@@ -1,6 +1,6 @@
-# Traveller character generator (source-assisted Beta 0.7)
+# Traveller character generator (source-assisted Beta 0.8)
 
-Original, non-commercial source-assisted beta (`0.7.0-beta.1`). This is **not a complete, fully automated or rules-certified generator**. Some paths stop for source-book adjudication and unsupported consequences still need separate referee bookkeeping. See the [user-facing changelog](../../changes/character.html) for Beta 0.7 coverage and limitations. Merge and deployment require the exact-candidate tests and independent review in COVERAGE.md.
+Original, non-commercial source-assisted beta (`0.8.0-beta.1`). This is **not a complete, fully automated or rules-certified generator**. Some paths stop for source-book adjudication and unsupported consequences still need separate referee bookkeeping. See the [user-facing changelog](../../changes/character.html) for Beta 0.8 coverage and limitations. Merge and deployment require the exact-candidate tests and independent review in COVERAGE.md.
 
 ## Release scope
 
@@ -272,7 +272,7 @@ Luck remains outside placement and the six-score reroll total. Other extras reta
 
 ## Header beta notice
 
-The **Beta 0.7** informational in the header opens the complete existing beta limits in a centered, scrollable window. Close or Escape dismisses it and returns focus to the header control. The notice stays available throughout generation and does not alter character choices, saves or the action log. `verification/beta-notice-browser.mjs` covers static/HTTP, desktop/mobile, keyboard, repeated dismissal, intact content and unchanged state.
+The **Beta 0.8** informational in the header opens the complete existing beta limits in a centered, scrollable window. Close or Escape dismisses it and returns focus to the header control. The notice stays available throughout generation and does not alter character choices, saves or the action log. `verification/beta-notice-browser.mjs` covers static/HTTP, desktop/mobile, keyboard, repeated dismissal, intact content and unchanged state.
 
 ### Imperial Vargr Charisma
 
@@ -370,4 +370,4 @@ All eight approved six-line headline banks are retained. Selection is determinis
 
 Run `node --test tools/character-generator/verification/required-action.test.mjs` and `node tools/character-generator/verification/required-action-browser.mjs /path/to/playwright`. The browser suite uses real released screens in static and HTTP modes at 1440, 390 and 320px, and writes `required-action-*.png` plus its results JSON to the existing CI screenshot artifact directory.
 
-Release numbering: increment the displayed Beta 0.x number for each new public release, and match the application-version metadata (Beta 0.7 is `0.7.0-beta.1`). Assign the next number against deployed main when preparing a release, rather than preassigning parallel PRs. This presentation version is separate from the engine rules revision and does not migrate saves.
+Release numbering: increment the displayed Beta 0.x number for each new public release, and match the application-version metadata (Beta 0.8 is `0.8.0-beta.1`). Assign the next number against deployed main when preparing a release, rather than preassigning parallel PRs. This presentation version is separate from the engine rules revision and does not migrate saves.

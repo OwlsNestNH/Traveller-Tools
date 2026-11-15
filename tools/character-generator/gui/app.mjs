@@ -502,7 +502,7 @@ function stageView(state,insideEquipmentDialog=false){
  }
 }
 function printedNarrative(state){
- return '<section class="print-only sheet-section"><h3>Background notes</h3><p class="multiline">'+esc(state.character.notes||'No saved notes.')+'</p>'+(state.connections.length?'<h3>Connections</h3>'+state.connections.map(c=>'<p><strong>'+esc(c.person)+'</strong>: '+esc(c.note)+'<br>Connection skill: '+esc(c.skill)+'</p>').join(''):'')+'<p class="tiny">Source-assisted Beta 0.7. Review the recorded manual rulings with your referee.</p></section>';
+ return '<section class="print-only sheet-section"><h3>Background notes</h3><p class="multiline">'+esc(state.character.notes||'No saved notes.')+'</p>'+(state.connections.length?'<h3>Connections</h3>'+state.connections.map(c=>'<p><strong>'+esc(c.person)+'</strong>: '+esc(c.note)+'<br>Connection skill: '+esc(c.skill)+'</p>').join(''):'')+'<p class="tiny">Source-assisted Beta 0.8. Review the recorded manual rulings with your referee.</p></section>';
 }
 function syncOpeningPortrait(form){
  const figure=$('#opening-portrait');if(!figure||!form)return;
