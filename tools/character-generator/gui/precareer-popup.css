@@ -515,3 +515,23 @@ dialog:has(.required-action-warning:not([hidden])) .crow-speaking-panel{display:
  .education-war-record .education-recorded-dice{font-size:20px;}
  .education-war-record .education-recorded-dice svg{width:32px;height:32px;}
 }
+
+/* Tutor checks share the academy shell without crowding the pending action. */
+#precareer-dialog [data-education-choice="challenge"] .education-event-heading{gap:12px}
+#precareer-dialog [data-education-choice="challenge"] .education-event-heading h3{min-width:0;flex:1;font-size:24px}
+#precareer-dialog [data-education-choice="challenge"] .education-event-heading .precareer-art{width:48px;height:48px;flex:0 0 48px}
+#precareer-dialog [data-education-choice="challenge"]>.crow-speaking-panel{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:center;margin-block:14px}
+#precareer-dialog [data-education-choice="challenge"]>.crow-speaking-panel>img{width:96px;height:116px;object-fit:contain}
+#precareer-dialog [data-education-choice="challenge"]>.crow-speaking-panel blockquote{padding:12px}
+#precareer-dialog [data-education-choice="challenge"]>.crow-speaking-panel p{font-size:18px;line-height:1.4;margin:8px 0}
+.education-tutor-event-dice{color:#ffd34b;text-align:center;margin:14px 0}
+.education-tutor-event-dice .education-recorded-dice{display:flex;align-items:center;justify-content:center;gap:8px;font-size:28px}
+.education-tutor-event-dice svg{width:46px;height:46px}
+#precareer-dialog [data-education-choice="challenge"] .education-pending-dice svg{width:58px;height:58px}
+@media(max-width:600px){#precareer-dialog [data-education-choice="challenge"]>.crow-speaking-panel{grid-template-columns:64px minmax(0,1fr);gap:8px}#precareer-dialog [data-education-choice="challenge"]>.crow-speaking-panel>img{width:64px;height:88px}#precareer-dialog [data-education-choice="challenge"]>.crow-speaking-panel p{font-size:17px}#precareer-dialog [data-education-choice="challenge"] .education-event-heading h3{font-size:21px}}
+
+.education-tutor-check-result .education-recorded-dice{display:flex;justify-content:center;gap:8px}.education-tutor-check-result svg{width:46px;height:46px}
+#precareer-dialog [data-education-choice="challenge"]:has(>.education-pending-dice){display:block}
+#precareer-dialog [data-education-choice="challenge"] .education-tutor-guidance.crow-speaking-panel>blockquote{display:block}
+#precareer-dialog [data-education-choice="challenge"] .education-event-heading h3{flex:0 1 auto}
+#precareer-dialog [data-education-choice="challenge"] .education-tutor-guidance.crow-speaking-panel{border:0;padding:0;background:transparent}
