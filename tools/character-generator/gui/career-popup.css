@@ -341,3 +341,8 @@
 
 /* Keep each recorded training option and its supporting labels in one column. */
 .basic-training-choices .choice{min-width:0;max-width:100%;flex-direction:column;align-items:stretch;gap:4px;overflow-wrap:anywhere}
+
+/* One recorded mandatory career: keep the valid action and its information clear. */
+@media screen{#army-career-dialog[data-career-template="career-selection"] .choice-list.required-career-list{grid-template-columns:minmax(0,1fr);gap:14px}#army-career-dialog .required-career-list .career-choice-row{display:block;position:relative}#army-career-dialog .required-career-list .career-choice-row .choice{width:100%;min-height:80px;padding:16px 70px 16px 20px}#army-career-dialog .required-career-list .career-info-trigger{position:absolute;right:12px;top:50%;transform:translateY(-50%);z-index:1}#army-career-dialog .required-career-list .choice :is(strong,small){overflow-wrap:normal;word-break:normal}#army-career-dialog .required-career-information{margin:0 0 16px}}
+
+@media screen{#workspace .required-career-context{display:flex;align-items:center;gap:12px;margin:16px 0}#workspace button.required-career-information{flex:0 0 44px;width:44px;min-width:44px;max-width:44px;height:44px;min-height:44px;max-height:44px;padding:0;margin:0 0 16px;border:2px solid #ffd34b;border-radius:50%;background:#071c2a;color:#ffd34b;box-shadow:none;font:700 27px/1 Georgia,serif}#workspace .required-career-context button.required-career-information{margin:0}}
