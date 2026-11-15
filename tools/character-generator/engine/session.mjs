@@ -820,6 +820,7 @@ function enterCareer(state,career,assignment,rolls=[],transfer=null) {
   if(career.id==='core.prisoner')next.parole=mechanicalDice(state,'1D+2',rolls,'Parole threshold');
   const rows=pack.basicTraining.table==='assignment'?pack.training.assignments[assignment]:pack.training.service;
   const basic=first?rows.flatMap(asBasic):[{kind:'choice',...(state.careerEntryBasicOnly?{basicTraining:true}:{}),options:rows.map((row,i)=>({label:state.careerEntryBasicOnly?careerOutcomeSummary(asBasic(row)):'Basic-training option '+(i+1),effects:asBasic(row)}))}];
+  if(['core','companion','aslan','vargr'].includes(career.group))markAwardEffects(basic,{kind:'basic-training',careerId:career.id,careerIndex:state.active,assignment,firstCareer:first,table:pack.basicTraining.table,source:copy(pack.source??{id:career.source,pages:[career.page,career.page+1]})});
   next.entryEffects=[...basic,...educational.effects,...educational.unresolved];next.entryNext=first||state.careerEntryBasicOnly&&career.group==='core'||state.companionBasicEntryOnly&&career.group==='companion'?'survival':'new-career-training';
   // Explicit GM house option, not an academy graduation award. Never double a later-career roll.
   if(first&&state.config.academyServiceSkill&&state.character.educations?.some(e=>e.completed&&e.term===state.character.terms&&['core.army','core.marine','core.navy'].includes(career.id)&&e.id==='core.academy-'+career.id.slice(5))){next.academyServiceTraining='pending';next.entryNext='new-career-training';}

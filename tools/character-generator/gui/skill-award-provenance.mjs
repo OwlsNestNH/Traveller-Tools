@@ -1,3 +1,4 @@
+import {basicTrainingChoiceModel} from './basic-training-presentation.mjs';
 // Presentation only: origin is supplied by replay at the actual award producer.
 // A current rank or a matching skill name is never proof of an award's source.
 import {showOpeningInformation} from './opening-help.mjs';
@@ -5,6 +6,7 @@ import {characterEffectDetails,pendingEffectDetails} from './roll-result-view.mj
 export function skillAwardSource(origin,catalog){
  if(!origin)return null;
  const career=catalog.careers?.find(c=>c.id===origin.careerId)?.name;
+ if(origin.kind==='basic-training'&&career)return career+' basic training award';
  if(origin.kind==='rank'&&career&&Number.isInteger(origin.rank)){
   const track=origin.track==='officer'?'officer ':origin.track==='enlisted'?'enlisted ':'';
   return (origin.reason==='source-assisted-mapping'||origin.mapping?.kind==='referee-selected'?'Referee-selected ':'')+career+' '+track+'rank '+origin.rank+(origin.title?' · '+origin.title:'')+' award';
@@ -31,15 +33,16 @@ export function pendingSkillAwardSource(presentation,state,catalog,{esc}){
 export function pendingAwardInformation(presentation,state,catalog){
  const origin=presentation?.pending,title=skillAwardSource(origin,catalog);if(!title)return null;
  const effect=state.pendingChoice??state.pending?.effect??state.psionicTraining?.award;
- const rule=state.stage==='psionic-training'?'Resolve the offered talent acquisition. This source identifies the opportunity; it does not grant a free talent or an unrecorded skill level.':effect?.mode==='set'&&Number.isInteger(effect.value)?'This is an award to at least level '+effect.value+', not an extra +'+effect.value+'. A chosen skill already at that level or higher keeps its existing level.':'Resolve the specific offered award. Its level and any specialisation are kept separately from other earned awards.';
- return {title,paragraphs:[title+'.',rule,origin.kind==='rank'?'This reward belongs to the rank actually attained on this career track. Academy service awards are separate.':'This academy award is separate from any reward for an actual career rank.','The paperwork has a source. Your memory was apparently unavailable.'],source:sourceCitation(origin,catalog)??'Recorded award; source citation unavailable.'};
+ const basic=basicTrainingChoiceModel(state,origin,catalog);
+ const rule=basic?.fixedLevel!==null&&basic?.fixedLevel!==undefined?'Each offered skill is awarded to at least level '+basic.fixedLevel+', not an extra increase. A skill already at that level or higher keeps its existing level.':state.stage==='psionic-training'?'Resolve the offered talent acquisition. This source identifies the opportunity; it does not grant a free talent or an unrecorded skill level.':effect?.mode==='set'&&Number.isInteger(effect.value)?'This is an award to at least level '+effect.value+', not an extra +'+effect.value+'. A chosen skill already at that level or higher keeps its existing level.':'Resolve the specific offered award. Its level and any specialisation are kept separately from other earned awards.';
+ return {title,paragraphs:[title+'.',rule,origin.kind==='basic-training'?'This is career basic training, separate from academy awards and actual rank rewards.':origin.kind==='rank'?'This reward belongs to the rank actually attained on this career track. Academy service awards are separate.':'This academy award is separate from any reward for an actual career rank.','The paperwork has a source. Your memory was apparently unavailable.'],source:sourceCitation(origin,catalog)??'Recorded award; source citation unavailable.'};
 }
 export function mountPendingAwardInformation(document,presentation,state,catalog,{crowType='generic'}={}){
  const trigger=document.querySelector('[data-award-source-information]'),info=pendingAwardInformation(presentation,state,catalog);if(!trigger||!info)return;
  trigger.addEventListener('click',()=>showOpeningInformation(document,{...info,crowType},trigger));
 }
 export function skillAwardResult(result,awards,catalog,{event=null}={}){
- const known=(awards??[]).map(award=>({...award,source:skillAwardSource(award.origin,catalog)})).filter(a=>a.source&&a.origin.kind!=='academy-entry');
+ const known=(awards??[]).map(award=>({...award,source:skillAwardSource(award.origin,catalog)})).filter(a=>a.source&&a.origin.kind!=='academy-entry'&&a.origin.kind!=='basic-training');
  if(!result||!known.length)return result;
  const lines=known.map(a=>a.name+' '+a.after+' — '+a.source+(a.changed?'':'; already satisfied, no increase.'));
  // Retain every original consequence and audit detail, including other awards.
