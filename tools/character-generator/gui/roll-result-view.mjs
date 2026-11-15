@@ -43,7 +43,17 @@ function recordDetails(field,value,before){
   case 'futureConditions':return ['Future condition: '+words(value.trigger)+(value.effects?.length?' → '+value.effects.map(futureEffect).filter(Boolean).join(', '):'')+'.'];
   case 'traits':return ['Trait: '+(value.name??value.text??words(value.kind)??'recorded')+'.'];
   case 'annualIncome':return ['Annual income'+(value.name?' ('+value.name+')':'')+': '+(finite(value.amount)?amount(value.amount):finite(value.annualCredits)?amount(value.annualCredits):value.name??'recorded')+(value.condition?' ('+value.condition+')':'')+'.'];
-  case 'benefitAwards':return [(value.status==='resolved'?'Benefit award recorded: ':'Benefit award pending: ')+(value.name??(value.definitionId?words(value.definitionId):'award'))+'.'];
+  case 'benefitAwards':{
+   const name=value.name??(value.definitionId?words(value.definitionId):'award');
+   if(value.forfeited===true||finite(value.forfeitedQuantity)&&value.forfeitedQuantity>0){
+    const previous=finite(before?.forfeitedQuantity)?before.forfeitedQuantity:before?.forfeited===true?null:0;
+    const added=finite(value.forfeitedQuantity)&&previous!==null?value.forfeitedQuantity-previous:null;
+    if(added>0)return ['Benefit forfeited: '+name+' × '+added+'.'];
+    if(before&&(before.forfeited===true||finite(before.forfeitedQuantity)&&before.forfeitedQuantity>0))return ['Forfeited benefit record updated: '+name+'.'];
+    return ['Benefit forfeited: '+name+'.'];
+   }
+   return [(value.status==='resolved'?'Benefit award recorded: ':'Benefit award pending: ')+name+'.'];
+  }
   case 'lifeBenefitBonuses':return ['Life event benefit bonus'+(finite(value.value)?' +'+value.value:'')+(value.status?' ('+words(value.status)+')':'')+'.'];
   case 'lifeBenefitLosses':return ['Life event benefit loss recorded.'];
   case 'relationshipLosses':return ['Relationship loss recorded'+(value.role?': '+value.role:'')+'.'];
