@@ -5,7 +5,7 @@ import {careerEntryPresentation} from './career-entry-presentation.mjs';
 import {currentActionNumbers} from './final-sheet-history.mjs';
 import {requiredDraftPresentation,requiredDraftChoices,requiredDraftResult} from './required-draft-presentation.mjs';
 import {educationWarDraftModel,educationWarDraftView} from './education-war-draft.mjs';
-import {isEmbeddedScreenReview,awaitScreenReviewSession,lockScreenReview,guardScreenReviewEvents,mountScreenReview,annotateRecordedReviewChoice} from './screen-review.mjs';
+import {isEmbeddedScreenReview,awaitScreenReviewSession,lockScreenReview,guardScreenReviewEvents,mountScreenReview,annotateRecordedReviewChoice,configureScreenReviewChoice,proposeScreenReviewChoice} from './screen-review.mjs';
 import {pendingSkillAwardSource,skillAwardResult,mountPendingAwardInformation,skillAwardSource} from './skill-award-provenance.mjs';
 import {knownSkillOptions} from './skill-knowledge.mjs';
 import {currentEducationEvent} from './current-education-event.mjs';
@@ -106,7 +106,7 @@ let notesDraft=null,inspectionRaw=null,inspectionHistory=null,inspectionOriginal
 let aezorghGroup='',aezorghGroupKey='';
 let session,projection,catalog,busy=false,selectedCareer='',effects=[],storageWarning='',operationGeneration=0,recoveryRaw=null;
 const recoveryDrafts=createNavigationDrafts();
-const screenReview=mountScreenReview({document,getSession:()=>session,isBusy:()=>busy,onNewCharacter:()=>$('#new').click(),onFailure:recovery=>window.CrowTechnicalError?.show('The earlier review screen could not be loaded. Your current character and unsaved choices are unchanged.',{kind:'presentation',actions:[{id:'retry-screen-review',kind:'navigate',label:'Try again',available:recovery.available,run:recovery.retry},{id:'return-from-screen-review',kind:'navigate',label:'Return to current screen',available:recovery.available,run:recovery.close}]})});
+const screenReview=mountScreenReview({document,getSession:()=>session,isBusy:()=>busy,onNewCharacter:()=>$('#new').click(),getChoiceAccess:(session,revision)=>call({operation:'current-term-choice-access',session,revision}),previewChange:(session,payload)=>call({operation:'preview-current-term-choice',session,payload}),applyChange:payload=>send('change-current-choice',payload),getCrowType:()=>careerCrowType(careerTemplateModel(projection.state,catalog,selectedCareer)),onFailure:recovery=>window.CrowTechnicalError?.show('The earlier review screen could not be loaded. Your current character and unsaved choices are unchanged.',{kind:'presentation',actions:[{id:'retry-screen-review',kind:'navigate',label:'Try again',available:recovery.available,run:recovery.retry},{id:'return-from-screen-review',kind:'navigate',label:'Return to current screen',available:recovery.available,run:recovery.close}]})});
 const recoveryKey=()=>JSON.stringify([operationGeneration,session?.seed,projection?.revision,selectedCareer,aslanManualReviewKey]);
 function recoveryActions({technical=false}={}){return screenReview.available()?[{id:'go-back',kind:'navigate',label:technical?'Review earlier screens':'Back (read only)',available:screenReview.available,run:opener=>screenReview.open(opener)}]:[];}
 window.CrowTechnicalError?.setRecoveryProvider((context={})=>({diagnostics:{stage:projection?.state.stage??'startup',revision:projection?.revision??null},actions:!isEmbeddedScreenReview&&session?[{id:'save-accepted-character',kind:'backup',label:'Save accepted character',available:()=>!busy,run:()=>download('traveller-accepted-character.json',exportSession(session))},...(context.startup||context.kind==='presentation'?[]:recoveryActions({technical:true}))]:[]}));
@@ -222,7 +222,7 @@ function focusAfterAction(previousStage,focused){
  if(!target||target.disabled)target=$('#step-title');target?.focus();
 }
 async function send(type,payload={},recoveryOptions={}){
- if(isEmbeddedScreenReview)return false;
+ if(isEmbeddedScreenReview)return proposeScreenReviewChoice({type,payload});
  if(busy)return false;
  const token=operationGeneration,previousState=projection.state,previousStage=previousState.stage;let committed=false;
  const focused={id:document.activeElement?.id,action:document.activeElement?.dataset.action};
@@ -831,7 +831,7 @@ async function start(){
  setBusy(true);
  try{
   catalog=await call({operation:'catalog'});if(!catalog.ok)throw new Error(catalog.error.message);
-  if(isEmbeddedScreenReview){const supplied=await awaitScreenReviewSession();projection=await call({operation:'import',raw:JSON.stringify(supplied.session)});if(!projection.ok)throw new Error(projection.error.message);session=projection.session;selectedCareer=supplied.nextCommand?.type==='career'?supplied.nextCommand.payload.id:'';
+  if(isEmbeddedScreenReview){const supplied=await awaitScreenReviewSession();configureScreenReviewChoice(supplied.editableCommandType);projection=await call({operation:'import',raw:JSON.stringify(supplied.session)});if(!projection.ok)throw new Error(projection.error.message);session=projection.session;selectedCareer=supplied.nextCommand?.type==='career'?supplied.nextCommand.payload.id:'';
    const hint=supplied.nextCommand;if(hint?.type==='background'&&projection.state.stage==='background')backgroundDraft={key:backgroundDraftKey(session,projection.state),skills:hint.payload.skills};
    render();
    if(hint?.type==='setup'&&$('#setup-form')){const form=$('#setup-form');for(const name of ['name','homeworld','species','gender'])if(form.elements[name]&&hint.payload[name]!==undefined)form.elements[name].value=hint.payload[name];syncIdentityOptions(form);for(const name of ['culture','variant'])if(form.elements[name]&&hint.payload[name]!==undefined)form.elements[name].value=hint.payload[name];syncOpeningPortrait(form);}
