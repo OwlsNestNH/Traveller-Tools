@@ -8,7 +8,7 @@ import {eventResultDetails} from './event-result-view.mjs';
 // Presentation only. The full result and immutable action log remain available.
 import {rollResult,characterEffectDetails,modifierEffectDetails,pendingEffectDetails} from './roll-result-view.mjs';
 import {survivalResult} from './survival-result.mjs';
-import {recordedCoverCheck} from './check-outcome.mjs';
+import {recordedCoverCheck,recordedConsequenceCheck} from './check-outcome.mjs';
 const finite=n=>typeof n==='number'&&Number.isFinite(n);
 const unique=values=>[...new Set(values.filter(Boolean))];
 const amount=n=>'Cr'+n.toLocaleString('en-US');
@@ -59,7 +59,14 @@ export function conciseResult(event,state,catalog){
  const cover=recordedCoverCheck(event);
  if(cover&&!['deceased','finish','retirement'].includes(state?.stage)){
   const title='Undercover Deception check '+(cover.success?'succeeded.':'failed.'),details=['Total '+cover.total+' against '+cover.target+'+.',state?.stage==='borrowed-event-roll'?'Roll the pending '+state.pendingBorrowedRoll.label+' before continuing.':state?.stage==='cross-career-training'?'Choose an offered training table below.':'Follow the offered next step.'];
-  return {title,details,status:cover.success?'success':'failure',text:[title,...details].join(' '),full,compact:true,information:{title:'About your undercover result',label:'About your undercover result',paragraphs:unique([title,...details,full.title,...full.details]),contextual:true}};
+  return {title,details,status:cover.success?'success':'failure',text:[title,...details].join(' '),full,compact:true,information:{title:'About your undercover result',label:'About your undercover result',retainCrow:true,paragraphs:unique([title,...details,full.title,...full.details]),contextual:true}};
+ }
+ const consequence=recordedConsequenceCheck(event);
+ if(consequence&&catalog?.careers&&careerTemplateModel(state,catalog)&&!['deceased','finish','retirement'].includes(state?.stage)){
+  const title=consequence.label+' '+(consequence.success?'succeeded.':'failed.'),details=unique(['Total '+consequence.total+' against '+consequence.target+'+.',...otherEffects(event,catalog,c=>c.path!=='terms'&&!/^careers\.\d+\.(terms|successfulTerms)$/.test(c.path))]);
+  const award=state?.stage==='skill-choice'?state.pendingChoice:null;
+  if(award?.scope==='existing'&&award.mode==='increase'&&finite(award.value)&&award.value>0)details.push('Choose one existing skill to improve by '+award.value+'.');
+  return {title,details,status:consequence.success?'success':'failure',text:[title,...details].join(' '),full,compact:true,information:{title:'About your '+consequence.label,label:'About your '+consequence.label,retainCrow:true,paragraphs:unique([full.title,...full.details]),contextual:true}};
  }
  if(event?.type==='fallback'&&state?.pending?.kind==='vargr-draft'&&event.rolls?.some(r=>r.label==='Vargr draft')){const title='Draft result: '+state.pending.vargrDraft.label+'.',details=['The die is recorded. Confirm a source/referee mapping before entering a career.'];return {title,details,status:'pending',text:[title,...details].join(' '),full,compact:true};}
  if(event?.type==='fallback'&&state?.stage==='vargr-fallback-choice'){const career=catalog.careers.find(c=>c.id===state.pendingVargrFallback?.careerId),title=(career?.name??'Fallback')+' selected.',details=['Choose a specialty; no new qualification roll is needed.'];return {title,details,status:'info',text:[title,...details].join(' '),full,compact:true};}
@@ -92,7 +99,7 @@ export function conciseResult(event,state,catalog){
   if(title){
    const details=unique([...narratives.slice(1),...otherEffects(event,catalog,c=>c.path!=='terms'&&!/^careers\.\d+\.(terms|successfulTerms)$/.test(c.path)),...(state?.stage==='book-step'?['Source resolution is pending; unresolved effects have not been awarded.']:[])]);
    const mishap=event.eventResults.some(r=>/\.mishaps$/.test(r.table)),status=mishap&&full.status!=='error'&&!['success','failure'].includes(full.status)?'failure':full.status;
-   return {title,details,status,text:[title,...details].join(' '),full,compact:true,information:{title:mishap?'About your career mishap':'About your career event',label:mishap?'About your career mishap':'About your career event',paragraphs:unique([title,...full.details]),contextual:true,...(mishap?{retainCrow:true}:{})}};
+   return {title,details,status,text:[title,...details].join(' '),full,compact:true,information:{title:mishap?'About your career mishap':'About your career event',label:mishap?'About your career mishap':'About your career event',paragraphs:unique([title,...full.details]),contextual:true,retainCrow:true}};
   }
  }
  if(full.status!=='error'&&state?.stage==='deceased'&&state.character?.deceased===true){const title='This life path ended in death.',injury=state.character.injuries?.findLast(i=>i.deceased&&i.zeroRuling?.survives===false),details=state.character.ironManDeath?['Iron Man: failed Survival was fatal instead of rolling a mishap. Companion Update 2024 p. 13.',...diceDetails(event)]:injury?['Recorded referee injury ruling; this was not automatic death from a failed Survival check or a single zero score.','Referee reason: '+injury.zeroRuling.note]:[];return {title,details,status:'failure',text:[title,...details].join(' '),full,compact:true};}
@@ -189,7 +196,8 @@ export function mountResultInformation(document,result,{crowType='generic',tagli
  const info=result.information.contextual?{...result.information,crowType,paragraphs:unique([tagline,...result.information.paragraphs])}:result.information;
  trigger.addEventListener('click',()=>showOpeningInformation(document,info,trigger));
  // The existing career popup has already supplied the progression control and recorded dice.
- // Supporting Crow guidance now belongs with the event's informational, not a second main panel.
+ // Information-only results suppress standalone guidance; contextual interactive results
+ // explicitly retain the single pictured speaker merged by the career template.
  if(!result.information.retainCrow)document.querySelector('#workspace>.career-pilot-guidance')?.remove();
  for(const p of document.querySelectorAll('#workspace>p'))if(p.textContent==='Your term events are recorded. Resolve advancement for your assignment.')p.remove();
 }
