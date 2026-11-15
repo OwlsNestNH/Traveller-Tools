@@ -53,6 +53,7 @@ export function imperialRuleInformation(model){
 }
 
 export function imperialCareerGuidance(model,state){
+ if(state?.stage==='preterm-commission'){const automatic=state.character.careers[state.active]?.educationCommission?.automatic;return automatic?'Accept or decline your education commission. Accepting needs no roll. An offer, not a coronation. Choose.':'Apply for the education commission, or decline. Applying rolls for success. Your ambition is not a modifier.';}
  if(model.fallback)return 'Your application failed. Pick the next permitted route. Your paperwork has finally acquired a plot.';
  if(state?.stage==='ageing')return 'Roll ageing to complete this term’s review. Your completed term is recorded. Time has reviewed your application.';
  if(model.selection)return 'Pick a career. Optimism is still not a qualification.';
