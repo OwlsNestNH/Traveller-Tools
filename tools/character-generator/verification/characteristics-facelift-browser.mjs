@@ -53,12 +53,14 @@ async function statisticsOrder(page) {
     const nodes = selectors.map(selector => document.querySelector(selector)).filter(Boolean);
     const bounds = nodes.map(node => {const r=node.getBoundingClientRect(); return {top:r.top,bottom:r.bottom};});
     const total = document.querySelector('.statistics-total-value');
-    return {bounds, last: document.querySelector('#workspace').lastElementChild.id,
+    const workspace=document.querySelector('#workspace'),footer=workspace.querySelector(':scope>.screen-review-footer');
+    return {bounds, last: [...workspace.children].filter(n=>!n.matches('.screen-review-footer')).at(-1).id, reviewFooter:footer?{last:workspace.lastElementChild===footer,children:footer.children.length,back:!!footer.querySelector('[data-screen-review-back]'),cancel:!!footer.querySelector('#cancel-character'),fields:footer.querySelectorAll('input,select,textarea').length}:null,
       totalFont:parseFloat(getComputedStyle(total).fontSize), labelFont:parseFloat(getComputedStyle(total.parentElement).fontSize),
       order:nodes.every((node,index) => !index || !!(nodes[index-1].compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING))};
   });
   assert.equal(result.order, true, 'DOM and keyboard order follows the requested sequence');
-  assert.equal(result.last, 'statistics-gm-controls', 'GM controls are at the very bottom');
+  assert.equal(result.last, 'statistics-gm-controls', 'GM controls are the final content block before shared navigation');
+  if(result.reviewFooter)assert.deepEqual(result.reviewFooter,{last:true,children:2,back:true,cancel:true,fields:0},'Only Back and Cancel navigation may follow the GM content');
   for (let i=1;i<result.bounds.length;i++) assert.ok(result.bounds[i].top >= result.bounds[i-1].bottom-1, 'visual order follows DOM order');
   assert.ok(result.totalFont >= 36 && result.totalFont >= result.labelFont*2, 'raw total number is prominent');
 }
