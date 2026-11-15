@@ -90,5 +90,7 @@ export function annotateRecordedReviewChoice(document,command,state){
  if(command.type==='training')selected=[...document.querySelectorAll('[data-action="training"]')].find(n=>n.dataset.table===command.payload.table);
  if(selected){selected.dataset.recordedChoice='true';selected.setAttribute('aria-pressed','true');}
  const annotation=document.createElement('p');annotation.className='screen-review-recorded-choice';annotation.setAttribute('role','note');annotation.textContent='Recorded choice: '+text+'. This screen is locked; Forward reviews the recorded result.';
- const scope=document.querySelector('dialog[open] form')??document.querySelector('#workspace');scope?.prepend(annotation);
+ const scope=document.querySelector('dialog[open] form')??document.querySelector('#workspace');
+ const guidance=scope?.querySelector('.academy-training-crow,.career-pilot-guidance,.crow-speaking-panel'),heading=scope?.querySelector('#step-title');
+ if(guidance)guidance.after(annotation);else if(heading)heading.after(annotation);else scope?.prepend(annotation);
 }
