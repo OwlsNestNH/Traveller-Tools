@@ -28,7 +28,8 @@ export function vargrRuleInformation(model,state){
  ],[topic,summary]=topics[model.phase]??topics[0],notes=[];
  if(d.id==='vargr.loner')notes.push('Loner is a single-term career; ordinary continuation is unavailable.');
  if(d.id==='vargr.psion')notes.push('Psionic eligibility, tested PSI and talent-specific choices remain required. No talent or additional roll is granted by this summary.');
- if(model.career.sourceConflict||d.id==='vargr.citizen')notes.push('The source summary and detailed career page contain a documented discrepancy. The engine’s recorded detailed-page interpretation remains in force.');
+ if(d.id==='vargr.citizen')notes.push('The source has a documented discrepancy: the career summary (p. 187) gives Worker advancement as CHA 4+; the detailed Citizen page (p. 190) gives CHA 6+. This tool retains the detailed-page CHA 6+ requirement. This information does not change an accepted check or result.');
+ else if(model.career.sourceConflict)notes.push('The source summary and detailed career page contain a documented discrepancy. The engine’s recorded detailed-page interpretation remains in force.');
  if(state.stage==='failed-entry')notes.push('Use only the fallback or draft choices currently offered. Prior draft use and recorded source permissions remain authoritative.');
  const step=model.stepSource;return {title:model.career.name+' '+topic,summary:summary+' '+notes.join(' '),book:step?.book??book,page:step?.page??(model.phase===3?d.eventPage:d.page),url:step&&step.book!==book?step.url:url};
 }
