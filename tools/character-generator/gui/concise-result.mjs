@@ -34,6 +34,13 @@ function otherEffects(event,catalog,keep){
  return [...characterEffectDetails({...event,changes:(event.changes??[]).filter(keep)},catalog),...modifierEffectDetails(event.modifierChanges?{modifiers:event.modifierChanges.before}:null,{modifiers:event.modifierChanges?.after},catalog),...pendingEffectDetails(event,catalog)];
 }
 export function conciseResult(event,state,catalog){
+ if(event?.gmCorrection){
+  const {gmCorrection:correction,...underlying}=event,result=conciseResult(underlying,state,catalog);if(!result)return result;
+  const title='GM-adjusted: '+result.title,main=underlying.type==='advancement'&&state?.stage==='term-end'?result.details.filter(line=>!/^Career terms:|^Completed terms:|^Benefit rolls:/.test(line)):result.details,details=['GM changed this recorded roll. The original remains in Full Log.',...main];
+  const rollText=roll=>'['+(roll.values??[]).join(', ')+']'+(finite(roll.total)?' = '+roll.total:'');
+  const evidence=['Original '+rollText(correction.original)+'.','Replacement '+rollText(correction.replacement)+'.','Referee reason: '+correction.reason];
+  return {...result,title,details,text:[title,...details].join(' '),compact:true,information:{...result.information,title:'About this GM-adjusted result',label:'About this GM-adjusted result',contextual:true,retainCrow:true,paragraphs:unique([...(result.information?.paragraphs??[]),...evidence,result.full?.title??result.title,...(result.full?.details??result.details)])}};
+ }
  const full=rollResult(event,state,catalog);if(!full)return null;
  const educationEvent=!['deceased','finish','retirement'].includes(state?.stage)&&(state?.stage==='education-graduation'||catalog?.careers&&careerTemplateModel(state,catalog))&&(event.eventResults??[]).find(r=>r.table==='core.pre-career-events');
  if(educationEvent){
