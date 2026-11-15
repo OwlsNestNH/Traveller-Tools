@@ -39,7 +39,7 @@ export function conciseResult(event,state,catalog){
   const title='GM-adjusted: '+result.title,main=underlying.type==='advancement'&&state?.stage==='term-end'?result.details.filter(line=>!/^Career terms:|^Completed terms:|^Benefit rolls:/.test(line)):result.details,details=['GM changed this recorded roll. The original remains in Full Log.',...main];
   const rollText=roll=>'['+(roll.values??[]).join(', ')+']'+(finite(roll.total)?' = '+roll.total:'');
   const evidence=['Original '+rollText(correction.original)+'.','Replacement '+rollText(correction.replacement)+'.','Referee reason: '+correction.reason];
-  return {...result,title,details,text:[title,...details].join(' '),compact:true,information:{...result.information,title:'About this GM-adjusted result',label:'About this GM-adjusted result',contextual:true,retainCrow:true,paragraphs:unique([...(result.information?.paragraphs??[]),...evidence,result.full?.title??result.title,...(result.full?.details??result.details)])}};
+  return {...result,title,details,text:[title,...details].join(' '),compact:true,information:{...result.information,title:result.information?.title??'About this GM-adjusted result',label:result.information?.label??'About this GM-adjusted result',contextual:true,retainCrow:true,paragraphs:unique([...(result.information?.paragraphs??[]),...evidence,result.full?.title??result.title,...(result.full?.details??result.details)])}};
  }
  const full=rollResult(event,state,catalog);if(!full)return null;
  const educationEvent=!['deceased','finish','retirement'].includes(state?.stage)&&(state?.stage==='education-graduation'||catalog?.careers&&careerTemplateModel(state,catalog))&&(event.eventResults??[]).find(r=>r.table==='core.pre-career-events');

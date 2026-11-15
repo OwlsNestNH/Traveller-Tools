@@ -5,3 +5,20 @@ test('later notes retain the same corrected result without changing state, RNG o
 test('ordinary actions retain identity and incomplete correction context cannot invent a result',()=>{const event={number:1,type:'survival-check',summary:'Accepted check',rolls:[]};assert.equal(gmAdjustedResultEvent(event,{},{}),event);const unknown={number:3,type:'gm-replay',summary:'Recorded correction'};assert.equal(gmAdjustedResultEvent(unknown,{log:[]},{events:[]}),unknown);});
 
 test('actual action announcement confirms new notes while the main view retains the GM result',async()=>{const{readFile}=await import('node:fs/promises'),vm=await import('node:vm'),app=await readFile(new URL('../gui/app.mjs',import.meta.url),'utf8'),begin=app.indexOf('function actionNotice('),end=app.indexOf('\nfunction updateRecovery',begin);assert.ok(begin>=0&&end>begin);let r=buildAssignmentFixture({forcedExit:true});r=run(r,'notes',{text:'New note after correction'});const notice=vm.runInNewContext(app.slice(begin,end)+'\nactionNotice("notes",result)',{result:r,gmAdjustedResultEvent,statisticsRollFeedback:()=>null,conciseResult,catalog});assert.match(notice,/notes/i);assert.doesNotMatch(notice,/GM-adjusted|Advancement failed/);assert.match(conciseResult(gmAdjustedResultEvent(currentResultEvent(r,r.session),r,r.session),r.state,catalog).title,/GM-adjusted: Advancement failed/);});
+
+
+test('GM injury and treatment corrections retain contextual information and full correction evidence',async()=>{
+ const {assignmentSetup,run:step,force,settleAssignment}=await import('./assignment-fixtures.mjs');
+ let r=settleAssignment(force(step(assignmentSetup('gm-injury-context'),'skip-precareer'),'career',{id:'core.army',assignment:'infantry'},[6,6]));
+ r=force(r,'survival-check',{},[1,1]);r=force(r,'career-mishap',{},[6]);
+ r=force(r,'roll-borrowed-event',{pendingId:r.state.pendingBorrowedRoll.id},[1]);
+ r=force(r,'roll-borrowed-event',{pendingId:r.state.pendingBorrowedRoll.id},[4]);const loss=r;
+ r=step(r,'injury-loss',{index:0});r=force(r,'injury-treatment',{restore:r.state.injuryRestorable,inService:true},[6,6]);
+ for(const [snapshot,label] of [[loss,'About your injury and medical care'],[r,'About your treatment and medical bill']]){
+  const before=exportSession(snapshot.session),event=gmAdjustedResultEvent(snapshot.log.at(-1),snapshot,snapshot.session),{gmCorrection,...underlying}=event;assert.ok(gmCorrection);
+  const normal=conciseResult(underlying,snapshot.state,catalog),adjusted=conciseResult(event,snapshot.state,catalog);
+  assert.equal(adjusted.information.label,label);assert.equal(adjusted.information.title,normal.information.title);assert.match(adjusted.title,/^GM-adjusted:/);assert.equal(adjusted.status,normal.status);
+  for(const paragraph of normal.information.paragraphs)assert.ok(adjusted.information.paragraphs.includes(paragraph));
+  assert.match(adjusted.information.paragraphs.join(' '),/Original \[/);assert.match(adjusted.information.paragraphs.join(' '),/Replacement \[/);assert.match(adjusted.information.paragraphs.join(' '),/Referee reason:/);assert.equal(exportSession(snapshot.session),before);
+ }
+});
