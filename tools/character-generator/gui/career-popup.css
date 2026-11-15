@@ -341,3 +341,15 @@
 
 /* Keep each recorded training option and its supporting labels in one column. */
 .basic-training-choices .choice{min-width:0;max-width:100%;flex-direction:column;align-items:stretch;gap:4px;overflow-wrap:anywhere}
+
+/* A rank entitlement uses the existing chooser in a compact native dialog. */
+.rank-award-dialog{box-sizing:border-box;width:min(540px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;padding:22px;border:2px solid #9cdbed;border-radius:14px;background:#071d2a;color:#f5f7fa}
+.rank-award-dialog::backdrop{background:#000a}
+.rank-award-heading{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.rank-award-heading h2{margin:0;color:#ffd34b;font-size:28px}
+.rank-award-identity{font-size:21px;font-weight:700;overflow-wrap:anywhere}
+.rank-award-dialog label{display:block;margin:12px 0}
+.rank-award-dialog select,.rank-award-dialog input{box-sizing:border-box;width:100%;min-width:0;max-width:100%}
+.rank-award-dialog .skill-award-origin .eyebrow{font-size:14px;overflow-wrap:anywhere}
+.rank-award-dialog button{min-height:44px;max-width:100%;white-space:normal}
+@media screen and (max-width:540px){.rank-award-dialog{padding:16px}.rank-award-identity{font-size:19px}}

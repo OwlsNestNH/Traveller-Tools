@@ -20,6 +20,7 @@ try{for(const http of [false,true])for(const width of [1440,390,320]){
   const beforeText=await p.locator('#last-action-result').innerText(),beforeDice=await dice(),before=project(importSession(await saved()));
   if(name!=='rank-source')assert.ok(beforeDice?.includes('svg'),'Accepted Survival faces are visible');
   for(const text of ['Synthetic review note','Revised synthetic review note']){
+   const rankDialog=p.locator('#rank-award-dialog[open]');if(await rankDialog.count()){const accepted=await saved();await rankDialog.locator('[data-close-rank-award]').click();await rankDialog.waitFor({state:'hidden'});assert.equal(await saved(),accepted,'Closing pending rank award to edit notes does not accept or discard the award');assert.equal(await p.locator('[data-open-rank-award]').isVisible(),true);}
    const notes=p.locator('#notes-connections');if(!await notes.evaluate(n=>n.open))await notes.locator(':scope > summary').click();
    await p.locator('#character-notes').fill(text);const count=JSON.parse(await saved()).events.length;
    await p.locator('[data-action=save-notes]').evaluate(n=>{n.click();n.click();});
