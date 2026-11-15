@@ -19,11 +19,11 @@ test('homepage exposes source-assisted beta fourth and Ship Combat before the re
 });
 
 test('beta version, notice, printable disclaimer and notes agree with the released catalogue',()=>{
- assert.equal(version(tool),'0.3.0-beta.1');assert.equal(version(changes),version(tool));
- assert.match(tool,/id="release-version">Beta 0\.3<\/span>/);
+ assert.equal(version(tool),'0.4.0-beta.1');assert.equal(version(changes),version(tool));
+ assert.match(tool,/id="release-version">Beta 0\.4<\/span>/);
  assert.match(tool,/Source-assisted beta/);assert.match(tool,/not a fully automated or independently rules-certified generator/);
- assert.match(read('tools/character-generator/gui/app.mjs'),/Source-assisted Beta 0\.3/);
- assert.match(read('tools/character-generator/README.md'),/0\.3\.0-beta\.1/);
+ assert.match(read('tools/character-generator/gui/app.mjs'),/Source-assisted Beta 0\.4/);
+ assert.match(read('tools/character-generator/README.md'),/0\.4\.0-beta\.1/);
  assert.match(read('tools/character-generator/NOTICE.html'),/Non-commercial source-assisted beta/);
  assert.doesNotMatch(tool+read('tools/character-generator/README.md'),/development preview|Do not publish/);
  const catalog=api({operation:'catalog'});assert.equal(catalog.ok,true);assert.equal(catalog.species.length,4);assert.equal(catalog.careers.length,36);
@@ -36,6 +36,7 @@ test('visible limitations, always-on log and unchanged read-only recovery remain
 });
 
 test('changelog has accessible navigation, existing feedback, source editions and publisher notice',()=>{
+ assert.equal((changes.match(/<ul(?:\s[^>]*)?>/g)??[]).length,(changes.match(/<\/ul>/g)??[]).length,'Release-note lists must be balanced rather than accumulating unintended indentation');
  for(const text of ['<html lang="en">','name="viewport"','nav aria-label="Page navigation"','href="../tools/character-generator/"','href="../#copyright-notice"','a:focus-visible','min-height:44px','id="release-beta-0-1"','datetime="2026-11-09"','Dates shown in UTC','Core Rulebook Update 2022','Companion Update 2024','Aliens of Charted Space Volume 1 Update 2026','Journal of the Travellers\' Aid Society Volume 11','publisher notice','Public source files expose'])assert.ok(changes.includes(text),text);
  const feedback=read('changes/robot.html').match(/href="(mailto:[^"]+)"/)[1];assert.ok(changes.includes('href="'+feedback+'"'));
  assert.doesNotMatch(changes,/<table|<script|C:[\\/]|\/workspace\/|\/agent_notes\//i);

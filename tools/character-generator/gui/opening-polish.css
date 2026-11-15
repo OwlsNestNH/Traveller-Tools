@@ -1,0 +1,113 @@
+/* The established academy visual language, applied to the opening forms.
+   Presentation only: no layout relocation, choices, dice or commands change. */
+@media screen {
+ body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace {
+  border:1px solid #91d6e8;
+  border-radius:15px;
+  background:radial-gradient(ellipse at top left,#0b2e41,#051b2a 85%);
+  box-shadow:inset 0 1px 0 #b9f0ff18,0 12px 32px #0005,0 0 22px #4dbfe00b;
+  padding:32px;
+ }
+ body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace .step-count {
+  display:block;color:#ffd34b;font-size:14px;letter-spacing:.08em;font-weight:800;margin:0 0 12px;
+ }
+ body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace #step-title {
+  display:flex;align-items:center;gap:16px;
+  font-size:clamp(30px,3.2vw,44px);line-height:1.15;font-weight:800;letter-spacing:-.02em;
+  color:#f5f7fa;margin:0 0 24px;overflow-wrap:normal;
+ }
+ body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace #step-title::before {
+  content:'';display:block;flex:none;width:40px;height:40px;margin:0;
+  background:transparent center / contain no-repeat;
+ }
+ body[data-stage="identity"] #workspace #step-title::before {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23ffd34b' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='20' cy='12' r='7'/%3E%3Cpath d='M7 35v-5a13 13 0 0 1 26 0v5M14 35h12'/%3E%3C/svg%3E");
+ }
+ body[data-stage="statistics"] #workspace #step-title::before {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23ffd34b' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M7 11h26M7 29h26M12 4v14M28 22v14'/%3E%3Ccircle cx='12' cy='11' r='4' fill='%23092739'/%3E%3Ccircle cx='28' cy='29' r='4' fill='%23092739'/%3E%3C/svg%3E");
+ }
+ body[data-stage="background"] #workspace #step-title::before {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23ffd34b' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M5 7h11a6 6 0 0 1 4 2 6 6 0 0 1 4-2h11v26H24a6 6 0 0 0-4 2 6 6 0 0 0-4-2H5zM20 9v26'/%3E%3C/svg%3E");
+ }
+ body[data-stage="identity"] #setup-form>.form-grid {
+  gap:24px;padding:24px;border:1px solid #4e8196;border-radius:12px;
+  background:linear-gradient(135deg,#0c2b3d90,#051b2a60);
+ }
+ body[data-stage="identity"] #setup-form>.form-grid label {font-size:18px;color:#eaf3f8;}
+ body[data-stage="identity"] #setup-form :is(input:not([type="checkbox"]),select) {
+  min-height:54px;border-color:#719eaf;border-radius:8px;background:#041925;
+ }
+ body[data-stage="identity"] #setup-form>.actions>button {width:100%;min-height:64px;font-size:25px;}
+ body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace>.crow-speaking-panel {
+  margin:0 0 24px;gap:20px;align-items:center;
+ }
+ body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace>.crow-speaking-panel blockquote {
+  border:1px solid #609db3;background:linear-gradient(135deg,#0d3042,#071e2d);border-radius:12px;padding:18px 22px;
+ }
+ body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace>.crow-speaking-panel blockquote p {font-size:18px;line-height:1.5;}
+ body[data-stage="statistics"] .statistics-heading {align-items:start;margin-bottom:0;}
+ body[data-stage="statistics"] #workspace .stat {border-color:#659bae;border-radius:10px;background:linear-gradient(#0a2a3c,#061b29);padding-bottom:18px;box-shadow:inset 0 1px 0 #b9f0ff0d;}
+ body[data-stage="statistics"] #workspace .stat strong {font-size:42px;color:#ffdc67;}
+ body[data-stage="statistics"] #workspace .stat>span:not(.code) {font-size:13px;line-height:1.6;}
+ body[data-stage="statistics"] .statistics-summary {padding:20px;border:1px solid #648c9f;border-radius:12px;background:linear-gradient(110deg,#153746,#082333);gap:14px 24px;margin-block:22px;}
+ body[data-stage="statistics"] .statistics-summary .total {font-size:18px;}
+ body[data-stage="statistics"] .statistics-total-value {font-size:48px;}
+ body[data-stage="statistics"] .statistics-summary :is(.help,.help span,.statistics-total-help) {font-size:14px;line-height:1.5;}
+ body[data-stage="statistics"] .statistics-swap {padding:18px;border:1px solid #3d697f;border-radius:10px;background:#061b29;}
+ body[data-stage="statistics"] .statistics-swap label {font-size:16px;}
+ body[data-stage="statistics"] .statistics-actions>.statistics-primary {min-height:64px;font-size:24px;}
+ body[data-stage="background"] #workspace > #background-form .background-counter {padding:18px 20px;border-color:#78acbe;background:linear-gradient(110deg,#173c4d,#0a2636);border-radius:12px;}
+ body[data-stage="background"] #workspace > #background-form .background-counter strong {font-size:26px;}
+ body[data-stage="background"] #workspace > #background-form .background-counter span {font-size:17px;}
+ body[data-stage="background"] #workspace > #background-form .background-options legend {font-size:14px;letter-spacing:.06em;color:#ffd34b;margin-bottom:16px;}
+ body[data-stage="background"] #workspace > #background-form .background-grid {gap:14px;}
+ body[data-stage="background"] #workspace > #background-form .background-tile {min-height:64px;padding:14px;border-radius:10px;border-color:#6697ab;background:linear-gradient(135deg,#0b2d40,#062131);box-shadow:inset 0 1px 0 #c5edff12;}
+ body[data-stage="background"] #workspace > #background-form .background-tile span {font-size:18px;font-weight:600;}
+ body[data-stage="background"] #workspace > #background-form .background-tile.is-selected {padding:14px;border-color:#ffdc67;background:linear-gradient(135deg,#254453,#173444);box-shadow:inset 0 0 0 1px #ffdc67;}
+ body[data-stage="background"] #workspace > #background-form #background-selected-summary {font-size:18px;line-height:1.6;}
+ body[data-stage="background"] #workspace > #background-form button[type="submit"] {min-height:64px;font-size:24px;color:#101b21;border-color:#ffe59a;background:linear-gradient(#ffe18b,#ffca36);box-shadow:inset 0 1px 0 #fff1b1,0 4px 12px #0005;}
+ body[data-stage="background"] #workspace > #background-form button[type="submit"]:disabled {background:#112c3b;border-color:#557380;color:#91aab8;box-shadow:none;}
+}
+@media screen and (max-width:760px) {
+ body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace {padding:24px 18px;}
+ body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace #step-title {font-size:30px;gap:12px;}
+ body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace #step-title::before {width:30px;height:34px;}
+ body[data-stage="statistics"] .statistics-heading {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 10px;}
+ body[data-stage="statistics"] .statistics-heading #step-title {min-width:0;display:block;grid-column:1 / -1;}
+ body[data-stage="statistics"] .statistics-heading>.opening-info-trigger {grid-column:2;margin:0 0 16px;}
+ body[data-stage="statistics"] .statistics-heading #step-title::before {display:inline-block;vertical-align:middle;margin-right:10px;}
+ body[data-stage="identity"] #setup-form>.form-grid {padding:18px 14px;gap:22px;}
+ body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace>.crow-speaking-panel {grid-template-columns:72px minmax(0,1fr);gap:12px;}
+ body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace>.crow-speaking-panel>img {width:72px;height:96px;object-fit:contain;}
+ body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace>.crow-speaking-panel blockquote {padding:14px;}
+ body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace>.crow-speaking-panel blockquote p {font-size:17px;}
+ body[data-stage="statistics"] .statistics-summary {padding:16px;}
+ body[data-stage="statistics"] .statistics-summary .total {white-space:normal;}
+ body[data-stage="background"] #workspace > #background-form .background-counter {padding:16px;}
+ body[data-stage="background"] #workspace > #background-form .background-counter strong {font-size:24px;}
+ body[data-stage="background"] #workspace > #background-form button[type="submit"],body[data-stage="statistics"] .statistics-actions>.statistics-primary {font-size:21px;}
+}
+@media screen and (max-width:360px) {
+ body:is([data-stage="identity"],[data-stage="statistics"],[data-stage="background"]) #workspace #step-title {font-size:26px;}
+ body[data-stage="statistics"] .statistics-heading {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 10px;}
+ body[data-stage="statistics"] .statistics-heading #step-title {grid-column:1 / -1;}
+ body[data-stage="statistics"] .statistics-heading>.opening-info-trigger {grid-column:2;margin:0 0 16px;}
+}
+@media screen and (min-width:1101px) {
+ /* Keep the established desktop Background choices and action compact. */
+ body[data-stage="background"] #workspace {padding:20px;}
+ body[data-stage="background"] #workspace .step-count {margin-bottom:8px;}
+ body[data-stage="background"] #workspace #step-title {font-size:36px;margin-bottom:18px;}
+ body[data-stage="background"] #workspace>.crow-speaking-panel {margin-bottom:12px;}
+ body[data-stage="background"] #workspace>.crow-speaking-panel>img {width:80px;height:80px;}
+ body[data-stage="background"] #workspace>.crow-speaking-panel blockquote {padding:14px 18px;}
+ body[data-stage="background"] #workspace > #background-form .background-counter {min-height:64px;padding:12px 18px;}
+ body[data-stage="background"] #workspace > #background-form .background-counter strong {font-size:24px;}
+ body[data-stage="background"] #workspace > #background-form .background-options legend {margin-bottom:12px;}
+ body[data-stage="background"] #workspace > #background-form .background-grid {gap:2px 12px;}
+ body[data-stage="background"] #workspace > #background-form .background-tile,body[data-stage="background"] #workspace > #background-form .background-tile.is-selected {min-height:53px;padding:11px 12px;}
+ body[data-stage="background"] #workspace > #background-form .background-tile span {font-size:17px;}
+ body[data-stage="background"] #workspace > #background-form #background-selected-summary {margin:12px 0 14px;}
+}
+
+@media screen{#opening-portrait{position:relative}#opening-portrait>.opening-info-trigger{position:absolute;right:-4px;bottom:0;min-width:44px;min-height:44px;background:#061b29;box-shadow:0 0 0 3px #061b29}}
