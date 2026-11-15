@@ -26,6 +26,10 @@ jobs:
         run: |
           node tools/character-generator/verification/career-control-clarity-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/toolbar-fit-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/final-benefit-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/psionic-access-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/psionic-course-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/psionic-payment-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
@@ -33,4 +37,7 @@ jobs:
           path: |
             tools/character-generator/verification/artifacts/career-control-*.png
             tools/character-generator/verification/artifacts/toolbar-fit-*.png
+            tools/character-generator/verification/artifacts/psi-*.png
+            tools/character-generator/verification/artifacts/final-benefit-*.png
+            tools/character-generator/verification/artifacts/after-final-benefit-*.png
           if-no-files-found: error
