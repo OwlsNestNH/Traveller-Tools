@@ -25,7 +25,7 @@ try{
    const accepted=await saved(p);await p.reload();await idle(p);assert.equal(await saved(p),accepted);if(id==='core.army')await shot(p,'02-army-result',width,http);checks.push({name:id,width,http,separate:true,repeated:true,reload:true});await p.close();
   }
   {
-   const r=laterBasicFixture(),p=await browser.newPage({viewport:{width,height:1000}});await load(p,r,http);assert.match(await p.locator('#workspace').innerText(),/Choose a basic-training skill/);await shot(p,'03-later-basic',width,http);
+   const r=laterBasicFixture(),p=await browser.newPage({viewport:{width,height:1000}});await load(p,r,http);assert.match(await p.locator('#workspace').innerText(),/Choose a basic training skill/);await shot(p,'03-later-basic',width,http);
    const raw=await saved(p);await p.locator('[data-action=choose-effect][data-index="4"]').evaluate(n=>{n.click();n.click();});await idle(p);const after=api({operation:'import',raw:await saved(p)});assert.equal(after.state.stage,'survival');assert.equal(after.state.character.skills.Investigate,0);assert.equal(after.session.events.length,JSON.parse(raw).events.length+1);assert.deepEqual(after.log.at(-1).rolls,[]);assert.equal(await p.locator('[data-action=training]').count(),0);await shot(p,'04-later-survival',width,http);checks.push({name:'later-basic',width,http,noExtraRoll:true});await p.close();
   }
   {
