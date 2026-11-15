@@ -341,3 +341,11 @@
 
 /* Keep each recorded training option and its supporting labels in one column. */
 .basic-training-choices .choice{min-width:0;max-width:100%;flex-direction:column;align-items:stretch;gap:4px;overflow-wrap:anywhere}
+
+/* Keep pending career instructions readable at phone width without changing desktop. */
+@media screen and (max-width:600px){
+ body:not([data-completion-shell="true"]) #army-career-dialog .career-pilot-guidance:not(.career-result-guidance){display:flex;flex-direction:column;align-items:stretch;gap:8px}
+ body:not([data-completion-shell="true"]) #army-career-dialog .career-pilot-guidance:not(.career-result-guidance)>.crow-assistance{align-self:center}
+ body:not([data-completion-shell="true"]) #army-career-dialog .career-pilot-guidance:not(.career-result-guidance) .crow-assistance-image{width:96px;height:112px;flex-basis:96px}
+ body:not([data-completion-shell="true"]) #army-career-dialog .career-pilot-guidance:not(.career-result-guidance)>.career-crow-bubble{width:100%;box-sizing:border-box}
+}

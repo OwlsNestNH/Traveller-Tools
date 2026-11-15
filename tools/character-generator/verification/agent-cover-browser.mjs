@@ -29,6 +29,7 @@ try{
     const guidance=await page.locator('.career-pilot-guidance').innerText();assert.match(guidance,/Choose a cover and roll Deception 8\+/);assert.equal(await page.locator('.career-pilot-guidance .crow-assistance-image').count(),1);
     assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),exportSession(fixture.session));
     assert.equal(await page.locator('.cover-check-instruction').count(),0);
+    assert.equal(await page.locator('.career-pilot-guidance').getAttribute('data-tone'),'information');if(width<=600){const fit=await page.locator('.career-pilot-guidance').evaluate(n=>({row:n.getBoundingClientRect().width,bubble:n.querySelector('.career-crow-bubble').getBoundingClientRect().width}));assert.ok(fit.bubble>=fit.row-1,'Pending instructions use the full phone row width');}
     await page.screenshot({path:fileURLToPath(new URL('agent-cover-pending-'+(vargr?'vargr':'core')+'-'+width+(apiMode?'-http':'-static')+'.png',out)),fullPage:true});
     await page.reload();await ready(page);await page.locator('[data-action=cross-career-cover][data-career="'+(vargr?'vargr.citizen':'core.citizen')+'"]').evaluate(b=>{b.click();b.click();});await ready(page);
     assert.equal(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key)).events.length,fixture.session.events.length+1);
