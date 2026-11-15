@@ -83,7 +83,7 @@ test('actual GUI startup reports missing browser UUID instead of rendering a par
  assert.ok(begin>=0&&end>begin,'Inspect the actual startup function, not a rewritten implementation');
  async function run(crypto){
   const calls=[],messages=[];let renders=0;
-  const context={crypto,restoredAslanTrainingTagline,call:async request=>{calls.push(request.operation);return api(JSON.parse(JSON.stringify(request)));},localStorage:{getItem:()=>null},key:'test',projection:undefined,storageWarning:'',setBusy:()=>{},updateRecovery:()=>{},render:()=>renders++,notify:(message,error)=>messages.push({message,error})};
+  const context={crypto,isEmbeddedScreenReview:false,restoredAslanTrainingTagline,call:async request=>{calls.push(request.operation);return api(JSON.parse(JSON.stringify(request)));},localStorage:{getItem:()=>null},key:'test',projection:undefined,storageWarning:'',setBusy:()=>{},updateRecovery:()=>{},render:()=>renders++,notify:(message,error)=>messages.push({message,error})};
   const ready=await vm.runInNewContext(app.slice(begin,end)+'\nstart();',context);return{calls,messages,renders,ready};
  }
  const unavailable=await run({});assert.equal(unavailable.ready,false);assert.equal(unavailable.renders,0);assert.deepEqual(unavailable.calls,['catalog']);assert.equal(unavailable.messages[0].error,true);assert.match(unavailable.messages[0].message,/Unable to start the rules engine: crypto.randomUUID is not a function/);

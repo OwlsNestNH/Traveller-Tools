@@ -3,6 +3,7 @@ import {careerEntryPresentation} from './career-entry-presentation.mjs';
 import {currentActionNumbers} from './final-sheet-history.mjs';
 import {requiredDraftPresentation,requiredDraftChoices,requiredDraftResult} from './required-draft-presentation.mjs';
 import {educationWarDraftModel,educationWarDraftView} from './education-war-draft.mjs';
+import {isEmbeddedScreenReview,awaitScreenReviewSession,lockScreenReview,guardScreenReviewEvents,mountScreenReview,annotateRecordedReviewChoice} from './screen-review.mjs';
 import {pendingSkillAwardSource,skillAwardResult,mountPendingAwardInformation,skillAwardSource} from './skill-award-provenance.mjs';
 import {knownSkillOptions} from './skill-knowledge.mjs';
 import {currentEducationEvent} from './current-education-event.mjs';
@@ -15,7 +16,7 @@ import {vargrDraftView,vargrFallbackChoiceView} from './vargr-draft-view.mjs';
 import {mountCompletionPopup,sourceAssistedCoverageView} from './completion-popup.mjs';
 import {crowSpeakingPanel,mountCrowStageGuidance,mountCrowCompletionGuidance,mountCrowTaglineAttribution} from './crow-speaking-panel.mjs';
 import {careerTemplateModel,careerCrowType,mountCareerTemplate,careerResultTagline,careerResultCrowType,syncCareerSpecialty} from './career-template.mjs';
-import {mountRewindConfirmation,createNavigationDrafts} from './recovery-actions.mjs';
+import {createNavigationDrafts} from './recovery-actions.mjs';
 import {mountCrowIntroduction} from './crow-assistance.mjs';
 import {mountRequiredActions,clearRequiredActions} from './required-action.mjs';
 import {physicalSexSelectView} from './physical-sex-setup.mjs';
@@ -97,23 +98,16 @@ const $=selector=>document.querySelector(selector);
 const numberInput=selector=>{const input=$(selector);return input&&input.value!==''?Number(input.value):undefined;};
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const key='traveller-character-generator.v1';
+if(isEmbeddedScreenReview)guardScreenReviewEvents(document);
 let backgroundDraft=null;
 let notesDraft=null,inspectionRaw=null,inspectionHistory=null,inspectionOriginal=null;
 let aezorghGroup='',aezorghGroupKey='';
 let session,projection,catalog,busy=false,selectedCareer='',effects=[],storageWarning='',operationGeneration=0,recoveryRaw=null;
 const recoveryDrafts=createNavigationDrafts();
+const screenReview=mountScreenReview({document,getSession:()=>session,isBusy:()=>busy,onNewCharacter:()=>$('#new').click(),onFailure:recovery=>window.CrowTechnicalError?.show('The earlier review screen could not be loaded. Your current character and unsaved choices are unchanged.',{kind:'presentation',actions:[{id:'retry-screen-review',kind:'navigate',label:'Try again',available:recovery.available,run:recovery.retry},{id:'return-from-screen-review',kind:'navigate',label:'Return to current screen',available:recovery.available,run:recovery.close}]})});
 const recoveryKey=()=>JSON.stringify([operationGeneration,session?.seed,projection?.revision,selectedCareer,aslanManualReviewKey]);
-const recoveryRewind=mountRewindConfirmation({document,getSession:()=>session,getProjection:()=>projection,getKey:recoveryKey,isBusy:()=>busy,onBackup:()=>download('traveller-accepted-character.json',exportSession(session)),onRestore:async revision=>{const ok=await send('restore',{revision},{discardDrafts:true});if(ok)window.CrowTechnicalError?.close();return ok;}});
-function recoveryActions({control,technical=false}={}){
- const scope=control?.closest('dialog[open]')??[...document.querySelectorAll('dialog[open]')].findLast(d=>!['crow-error-dialog','crow-rewind-dialog'].includes(d.id))??$('#workspace');
- // Explicit presentation-only adapters. Do not add command/cancel buttons here.
- for(const selector of ['#precareer-admission-back','#precareer-options-back','[data-action="career-list"]','[data-action="aslan-event-choices"]']){
-  const back=scope?.querySelector(selector);if(back&&!back.disabled&&!back.closest('[hidden],dialog:not([open])')&&back.getClientRects().length)return [{id:'go-back',kind:'navigate',label:'Go back',available:()=>!busy&&back.isConnected,run:()=>{recoveryDrafts.capture($('#workspace'),recoveryKey());back.click();}}];
- }
- if(!technical&&projection?.state.config.gm&&projection.revision)return [{id:'review-rewind',kind:'rewind',label:'Go back…',available:()=>!busy&&!!projection?.state.config.gm,run:opener=>recoveryRewind.open(opener,{technical})}];
- return [];
-}
-window.CrowTechnicalError?.setRecoveryProvider((context={})=>({diagnostics:{stage:projection?.state.stage??'startup',revision:projection?.revision??null},actions:session?[{id:'save-accepted-character',kind:'backup',label:'Save accepted character',available:()=>!busy,run:()=>download('traveller-accepted-character.json',exportSession(session))},...(context.startup||context.kind==='presentation'?[]:recoveryActions({technical:true}))]:[]}));
+function recoveryActions({technical=false}={}){return screenReview.available()?[{id:'go-back',kind:'navigate',label:technical?'Review earlier screens':'Back (read only)',available:screenReview.available,run:opener=>screenReview.open(opener)}]:[];}
+window.CrowTechnicalError?.setRecoveryProvider((context={})=>({diagnostics:{stage:projection?.state.stage??'startup',revision:projection?.revision??null},actions:!isEmbeddedScreenReview&&session?[{id:'save-accepted-character',kind:'backup',label:'Save accepted character',available:()=>!busy,run:()=>download('traveller-accepted-character.json',exportSession(session))},...(context.startup||context.kind==='presentation'?[]:recoveryActions({technical:true}))]:[]}));
 const stageNames={'aslan-rite-result':'Your Rite of Passage result','aslan-pride-result':'Your pride result','aslan-clan-result':'Your clan result','aslan-family-result':'Your family result','aslan-birth-result':'Your birth-order result','equipment-finalization':'Assets & benefits','borrowed-event-roll':'Discover the next part of your story','career-event':'Discover your career event','career-mishap':'Resolve your career mishap','relationship-event':'Choose the relationship consequence','cross-career-cover':'Choose your cover career','benefit-wager':'Choose an optional benefit wager','aslan-family':'Discover your family background','aslan-birth-order':'Your place in the family','aslan-estate':'Record the family land baseline','aslan-clan':'Find your clan','aslan-pride':'Find your pride','aslan-rite':'Complete your rite','aslan-officer-entry':'Qualify for the officer career','aslan-officer-rank':'GM officer rank mapping','assignment-entry':'Qualify for your new assignment','advisory-cash-source':'Resolve the unprinted cash result','advisory-career':'Choose your advisory career','advisory-cash':'Resolve your advisory cash benefit','cross-career-training':'Choose your extra training','relationship-loss':'Choose a relationship to remove','merchant-fine-roll':'Roll the Merchant fine','merchant-fine-decision':'Resolve the Merchant fine','reeducation-roll':'Re-education outcome','reeducation-fine':'Re-education fine','reeducation-decisions':'Resolve re-education decisions','psionic-games-preliminaries':'Compete in the Psionic Games','psionic-games-final':'The Psionic Games final','psionic-games-decisions':'Resolve the Games term',retirement:'Retired from character creation','psionic-training':'Explore your psionic talents','injury-loss':'Resolve the injury','injury-treatment':'Choose injury treatment','companion-admission':'Check education admission','companion-skill':'Choose your education awards','education-skill':'Choose your study skills','education-service':'Choose academy service awards','education-event':'Your education term','education-check':'Demonstrate what you learned','education-graduation':'Graduation','preterm-commission':'Education commission opportunity',identity:'Start your Traveller',statistics:'Roll and place characteristics',background:'Choose background skills',precareer:'Before your career',career:'Choose your next career','failed-entry':'Choose a new direction','book-step':'Resolve a source step',survival:'Will you make it through?',advancement:'Your career develops',training:'Choose a training table','effect-choice':'Make a life-path choice','skill-choice':'Choose your new skill','term-end':'The end of a term',benefits:'What you take with you',finish:'Your Traveller is ready to review',ageing:'The passing years',deceased:'The end of a life path'};
 const coverageLabels={'zhodani-relationship-loss':'Missing relationship source decision','zhodani-reeducation':'Re-education source decisions','zhodani-anagathic-ageing':'Anagathic ageing credit','zhodani-ageing-psi':'PSI ageing decision','career-transfer':'Career transfer rank decisions','psionic-games':'Psionic Games source decisions','native-effect':'A special event or award','benefit-equipment':'Equipment selections','benefit-ship':'Ship choices and history','benefit-source':'Special benefit rulings',pension:'Pension eligibility or payment conditions','injury-zero':'Injury survival rulings','injury-medical':'Employer medical contributions','medical-settlement':'Medical bill financing','ageing-financing':'Ageing-care financing','psionic-training-terms':'Psionic training access, costs and timing','psionic-history':'Earlier psionic attempt history','psionic-repeat-training':'Repeated psionic training','psionic-retry':'A psionic replacement award','missing-characteristic-check':'A cross-species characteristic check','species-setup':'Species upbringing details','companion-career-rights':'Education rights in a later career'};
 const button=(label,action,cls='',attributes='')=>'<button type="button" data-action="'+action+'" class="'+cls+'" '+attributes+'>'+label+'</button>';
@@ -204,8 +198,10 @@ function setBusy(value){
  if(projection?.state.stage==='background')syncBackgroundSkills(document,projection.state,backgroundDraft?.skills??[],{esc},value);
  if(value){for(const el of document.querySelectorAll('button,input[type=file],#character-notes'))if(!el.disabled){el.dataset.busyDisabled='true';el.disabled=true;}}
  else {for(const el of document.querySelectorAll('[data-busy-disabled]')){el.disabled=false;delete el.dataset.busyDisabled;}$('#legacy-text').disabled=inspectionHistory===null;}
+ if(isEmbeddedScreenReview)lockScreenReview(document);else screenReview.refresh();
 }
 function persist(){
+ if(isEmbeddedScreenReview)return;
  if(recoveryRaw!==null){storageWarning='Your unreadable stored draft is preserved. This new draft is only in memory. Save a file, or use the recovery controls to replace the stored draft.';return;}
  try{localStorage.setItem(key,exportSession(session));storageWarning='';}
  catch{storageWarning='This browser could not save the draft. Use Save character & log to keep a backup.';}
@@ -224,6 +220,7 @@ function focusAfterAction(previousStage,focused){
  if(!target||target.disabled)target=$('#step-title');target?.focus();
 }
 async function send(type,payload={},recoveryOptions={}){
+ if(isEmbeddedScreenReview)return false;
  if(busy)return false;
  const token=operationGeneration,previousState=projection.state,previousStage=previousState.stage;let committed=false;
  const focused={id:document.activeElement?.id,action:document.activeElement?.dataset.action};
@@ -592,6 +589,7 @@ function render(){
  mountEquipmentDialog(document,()=>send('cancel-deferred-equipment'));
  recoveryDrafts.restore($('#workspace'),recoveryKey(),{afterField:node=>{if(node.id==='award-base')syncAwardBase(state,catalog,document,esc);if(node.id==='award-speciality')syncAwardSpeciality(document);}});
  syncCareerSpecialty(document,careerTemplateModel(state,catalog,selectedCareer));
+ if(isEmbeddedScreenReview)lockScreenReview(document);else screenReview.refresh();
 }
 function renderEffects(){
  const list=$('#effect-list');clearRequiredActions(list.closest('dialog[open]')??$('#workspace'));
@@ -800,15 +798,17 @@ $('#new').onclick=async()=>{
 };
 const cancelCharacter=createCharacterCancel({document,canOpen:()=>!busy,onConfirm:()=>startNewCharacter()});
 async function startNewCharacter({replaceRecovery=false}={}){
+ if(isEmbeddedScreenReview)return false;
  if(busy)return;
  const token=++operationGeneration;setBusy(true);
  try{
   const result=await call({operation:'create',seed:crypto.randomUUID()});if(token!==operationGeneration)return;if(!result.ok)throw new Error(result.error.message);
-  trainingTagline=null;session=result.session;projection=result;aslanManualReviewKey=null;notesDraft=null;backgroundDraft=null;selectedCareer='';effects=[];if(replaceRecovery)recoveryRaw=null;closeHistory();persist();updateRecovery();render();$('#step-title')?.focus();notify(storageWarning||'New character started.',!!storageWarning,'info',!storageWarning);
+  screenReview.close();trainingTagline=null;session=result.session;projection=result;aslanManualReviewKey=null;notesDraft=null;backgroundDraft=null;selectedCareer='';effects=[];if(replaceRecovery)recoveryRaw=null;closeHistory();persist();updateRecovery();render();$('#step-title')?.focus();notify(storageWarning||'New character started.',!!storageWarning,'info',!storageWarning);
  }catch(error){if(token===operationGeneration)notify('Could not start a new character: '+error.message,true);}
  finally{if(token===operationGeneration)setBusy(false);}
 };
 $('#import').onchange=async event=>{
+ if(isEmbeddedScreenReview){event.target.value='';return;}
  const file=event.target.files[0];if(!file)return;
  if(busy){event.target.value='';notify('Wait for the current action to finish before loading another character.',true);return;}
  const token=++operationGeneration;let incomingRaw=null,decodeIssue='';setBusy(true);
@@ -826,6 +826,13 @@ async function start(){
  setBusy(true);
  try{
   catalog=await call({operation:'catalog'});if(!catalog.ok)throw new Error(catalog.error.message);
+  if(isEmbeddedScreenReview){const supplied=await awaitScreenReviewSession();projection=await call({operation:'import',raw:JSON.stringify(supplied.session)});if(!projection.ok)throw new Error(projection.error.message);session=projection.session;selectedCareer=supplied.nextCommand?.type==='career'?supplied.nextCommand.payload.id:'';
+   const hint=supplied.nextCommand;if(hint?.type==='background'&&projection.state.stage==='background')backgroundDraft={key:backgroundDraftKey(session,projection.state),skills:hint.payload.skills};
+   render();
+   if(hint?.type==='setup'&&$('#setup-form')){const form=$('#setup-form');for(const name of ['name','homeworld','species','gender'])if(form.elements[name]&&hint.payload[name]!==undefined)form.elements[name].value=hint.payload[name];syncIdentityOptions(form);for(const name of ['culture','variant'])if(form.elements[name]&&hint.payload[name]!==undefined)form.elements[name].value=hint.payload[name];syncOpeningPortrait(form);}
+   if(hint?.type==='career'&&$('#career-assignment')){$('#career-assignment').value=hint.payload.assignment;syncCareerSpecialty(document,careerTemplateModel(projection.state,catalog,selectedCareer));}
+   if(hint?.type==='choose-skill'&&$('#award-base')){const name=hint.payload.name,base=name.split(' (')[0];$('#award-base').value=base;syncAwardBase(projection.state,catalog,document,esc);if($('#award-speciality'))$('#award-speciality').value=name;$('#award-skill').value=name;}
+   annotateRecordedReviewChoice(document,hint,projection.state);lockScreenReview(document);parent.postMessage({protocol:'traveller-read-only-screen-v1',type:'rendered',token:new URLSearchParams(location.search).get('review-token')},location.origin);return true;}
   let saved;try{saved=localStorage.getItem(key);}catch{storageWarning='Browser storage unavailable. Save character & log regularly.';}
   if(saved){try{projection=await call({operation:'import',raw:saved});if(!projection.ok)throw new Error(projection.error.message);session=projection.session;}
    catch(error){recoveryRaw=saved;storageWarning='The stored draft could not be opened. Its raw file is preserved. Use the recovery controls to download it before choosing whether to replace it.';}}

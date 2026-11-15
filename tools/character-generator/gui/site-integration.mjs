@@ -5,7 +5,7 @@ export function attachSiteLinks(document, location) {
  const published=location.hostname==='owlsnestnh.github.io'&&[canonicalPath,canonicalPath+'index.html'].includes(location.pathname);
  const changelog=document.getElementById('release-changelog');
  if(changelog&&!/\/tools\/character-generator\/(?:index\.html)?$/.test(location.pathname))changelog.href='https://owlsnestnh.github.io/Traveller-Tools/changes/character.html';
- if(published){
+ if(published&&new URLSearchParams(location.search).get('screen-review')!=='read-only'){
   const counter=document.createElement('script');
   counter.src='../../assets/js/tool-visits.js';
   counter.async=true;

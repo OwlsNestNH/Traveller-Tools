@@ -28,6 +28,6 @@ export function createCharacterCancel({document,onConfirm,canOpen}) {
   let actions=workspace.querySelector('#setup-form > .actions')??[...workspace.querySelectorAll(':scope > .actions')].at(-1);
   if(!actions){actions=document.createElement('div');actions.className='actions';workspace.append(actions);}
   const button=document.createElement('button');button.type='button';button.id='cancel-character';button.className='quiet';button.textContent='Cancel';
-  button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls',dialog.id);button.addEventListener('click',()=>open(button));actions.append(button);
+  button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls',dialog.id);button.addEventListener('click',()=>{const panel=button.closest('#army-career-dialog[open],#precareer-dialog[open],#completion-dialog[open]');const dismiss=panel?.querySelector('#army-career-close,#precareer-dismiss,#completion-close');if(dismiss){dismiss.click();return;}open(button);});actions.append(button);
  }};
 }
