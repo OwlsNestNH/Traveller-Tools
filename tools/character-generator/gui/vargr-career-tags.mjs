@@ -1,3 +1,4 @@
+import {crowCareerAssignment} from './crow-career-assignment.mjs';
 import {aezorghCulture} from '../shared/aezorgh-culture.mjs';
 import {imperialOutcome,IMPERIAL_OUTCOME_LINES} from './imperial-career-tags.mjs';
 import {outcomeTagline} from './outcome-taglines.mjs';
@@ -12,4 +13,4 @@ export function vargrResultCareer(event,state){
 }
 export function vargrResultTagline(event,result,state){const id=vargrResultCareer(event,state),kind=imperialOutcome(event,result);return result?.status!=='error'&&id&&kind&&event?.id?outcomeTagline(kind,id+'|'+event.id,IMPERIAL_OUTCOME_LINES):null;}
 
-export function vargrResultCrowType(event,state){const id=vargrResultCareer(event,state);if(!id)return null;const records=state.character.careers??[],active=records[state.active],record=active?.id===id?active:event?.type==='benefit'&&records.at(-1)?.id===id?records.at(-1):null;return id==='vargr.spacer'&&record?.assignment==='corsair'?'corsair':VARGR_CAREER_DEFINITIONS[id]?.crow??null;}
+export function vargrResultCrowType(event,state){const id=vargrResultCareer(event,state);if(!id)return null;return id==='vargr.spacer'&&crowCareerAssignment(state,id,event)==='corsair'?'corsair':VARGR_CAREER_DEFINITIONS[id]?.crow??null;}
