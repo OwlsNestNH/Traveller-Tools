@@ -460,3 +460,6 @@ body[data-stage="background"] #message{max-width:var(--tool-content-width);margi
  body[data-stage] nav.toolbar>.log-switch>button.opening-info-trigger{position:static;grid-column:2;grid-row:1 / span 2;align-self:center;justify-self:center;transform:none;width:44px;height:44px;min-height:44px;min-width:44px;border-radius:50%;padding:0}
 }
 @media screen and (max-width:360px){body .toolbar>.log-switch>#simple-log-view,body .toolbar>.log-switch>#log-view{font-size:14px;line-height:1.15;white-space:nowrap;padding-inline:4px}}
+
+/* Result information remains a full touch target in shared and standalone views. */
+@media screen{#last-action-result [data-result-information]{width:44px;height:44px;min-width:44px;min-height:44px;flex:0 0 44px}}
