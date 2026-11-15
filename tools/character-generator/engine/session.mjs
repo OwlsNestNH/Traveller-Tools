@@ -2759,6 +2759,10 @@ function apply(state,command,rolls) {
  }
  case 'fallback': {
   need(state.stage==='failed-entry','No failed qualification to resolve.');
+  if(payload.assignment!==undefined){
+   need(!payload.draft&&!forcedDraftPending(state)&&fallbackOptions(state).normal.careerId==='core.drifter','This fallback does not permit a Drifter specialty selection.');
+   need(findCareer('core.drifter').assignments.some(a=>a.id===payload.assignment),'Choose a valid Drifter specialty.');
+  }
   if(forcedDraftPending(state)){
    need(state.active===null&&payload.draft===true,'Roll the required draft after collecting this career’s benefits.');
    const id=['core.navy','core.army','core.marine','core.merchant','core.scout','core.agent'][dice(state,1,rolls,'Forced Core draft')-1],career=findCareer(id),assignment=id==='core.merchant'?'marine':id==='core.agent'?'law':career.assignments[0].id;
@@ -2781,7 +2785,7 @@ function apply(state,command,rolls) {
   if(species==='zhodani'){sourceStep(state,'draft','aliens',255,'Resolve the Zhodani draft; select the resulting career with GM correction.','career');state.failedQualification=false;return 'Zhodani draft requires source resolution.';}
   const outwardFailure=nativeAslan(state)&&state.failedQualificationContext?.group==='core'&&!!accessContext(state),outwardDrifter=nativeAslan(state)&&state.failedQualificationContext?.group==='aslan'&&accessForAttempt(state,'core.drifter')?.route==='outside-failed-entry';
   let id=outwardFailure||outwardDrifter?'core.drifter':species==='aslan'&&state.character.culture==='native'?'aslan.outcast':species==='vargr'&&state.character.culture==='native'?'vargr.loner':'core.drifter';
-  let assignment;
+  let assignment=payload.assignment;
   if(payload.draft){
    need(!state.draftUsed,'The ordinary draft has already been used.');need(outwardFailure&&!accessContext(state).careerIds||!['aslan','vargr'].includes(species)||state.character.culture==='imperial','Use the culture-specific fallback; departure does not grant a second qualification or a new draft outside the recorded career scope.');
    id=['core.navy','core.army','core.marine','core.merchant','core.scout','core.agent'][dice(state,1,rolls,'Draft')-1];state.draftUsed=true;state.pendingDraft=true;
