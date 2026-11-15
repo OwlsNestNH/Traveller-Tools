@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {createServer} from '../server.mjs';
+import {api,exportSession,project} from '../engine/session.mjs';
+import {qualificationFixture} from './qualification-fallback-fixtures.mjs';
+import {buildAslanAccessFixture} from './aslan-access-fixtures.mjs';
+import {vargrFailedQualification,run} from './vargr-fallback-fixtures.mjs';
+function aezorghFailure(){
+ for(let i=0;i<60;i++){
+  let r=api({operation:'create',seed:'spacer-fallback-costume-aezorgh-corsair-'+i});
+  for(const [type,payload]of [['setup',{species:'aezorgh',aezorghCulture:'vargr',gender:'female',culture:'native',name:'Synthetic Aezorgh fallback information'}],['configure',{extras:['CHA']}],['roll-statistics',{}],['accept-statistics',{}]])r=run(r,type,payload);
+  r=run(r,'background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)});r=run(r,'skip-precareer');r=run(r,'career',{id:'vargr.spacer',assignment:'corsair'});
+  if(r.state.stage==='failed-entry')return r;
+ }
+ throw Error('No natural failed Aezorgh Vargr-path qualification fixture');
+}
+const fixtures=[['core',qualificationFixture(),'18–20'],['aslan',buildAslanAccessFixture({route:'outside-failed-entry'}),'18–23'],['vargr',vargrFailedQualification(),'186–187'],['aezorgh',aezorghFailure(),'186–187']],key='traveller-character-generator.v1',out=new URL('./artifacts/',import.meta.url),checks=[],errors=[];
+const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright'),server=createServer();await mkdir(out,{recursive:true});await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({headless:true});
+try{for(const [route,r,pages]of fixtures)for(const width of[1440,390,320])for(const http of[false,true]){
+ const raw=exportSession(r.session),p=await browser.newPage({viewport:{width,height:1000}});let apiRequests=0;p.on('pageerror',e=>errors.push(e.message));p.on('request',r=>{if(new URL(r.url()).pathname==='/api/v1')apiRequests++;});
+ await p.addInitScript(({key,raw})=>{if(!localStorage.getItem(key))localStorage.setItem(key,raw);},{key,raw});await p.goto('http://127.0.0.1:'+server.address().port+'/'+(http?'?api=local':''));await p.waitForFunction(()=>!document.querySelector('#export').disabled);const main=p.locator('#qualification-fallback');await main.waitFor();
+ assert.match(await main.innerText(),/Your failed roll stays recorded/);assert.doesNotMatch(await main.innerText(),/Rulebook|Aliens of Charted|projected|once per lifetime/);
+ for(const reason of[r.state.fallbackOptions.normal.reason,r.state.fallbackOptions.draft.reason].filter(Boolean))assert.ok((await main.innerText()).includes(reason));
+ const actions=await main.locator('[data-action]').evaluateAll(ns=>ns.map(n=>({action:n.dataset.action,disabled:n.disabled}))),info=p.locator('.career-crow-heading [aria-controls="army-rule-information"]');assert.equal(await info.count(),1);await info.focus();await p.keyboard.press('Enter');const dialog=p.locator('#army-rule-information[open]');await dialog.waitFor();const text=await dialog.innerText();assert.match(text,/After failed qualification/);assert.ok(text.includes(pages));
+ if(route==='core')assert.match(text,/once per lifetime/);else if(route==='aslan')assert.match(text,/does not by itself grant a Core draft/);else{assert.match(text,/confirmed with the referee/);assert.match(text,/Core Drifter, Loner or the Vargr draft/);}
+ for(const end of[false,true]){await dialog.evaluate((d,end)=>d.scrollTop=end?d.scrollHeight:0,end);const close=dialog.getByRole('button',{name:/Close/}),rect=await close.boundingBox();assert.ok(rect&&rect.width>=44&&rect.height>=44&&rect.y>=0&&rect.y+rect.height<=1000);if(!http&&width===390)await p.screenshot({path:new URL('qualification-fallback-information-'+route+'-'+width+(end?'-bottom':'-top')+'.png',out).pathname});}
+ await p.keyboard.press('Escape');assert.equal(await info.evaluate(n=>n===document.activeElement),true);assert.equal(await p.evaluate(k=>localStorage.getItem(k),key),raw);assert.deepEqual(await main.locator('[data-action]').evaluateAll(ns=>ns.map(n=>({action:n.dataset.action,disabled:n.disabled}))),actions);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);if(!http&&width!==320)await p.screenshot({path:new URL('qualification-fallback-information-'+route+'-'+width+'-main.png',out).pathname,fullPage:true});
+ await p.reload();await p.waitForFunction(()=>!document.querySelector('#export').disabled);assert.equal(await p.evaluate(k=>localStorage.getItem(k),key),raw);assert.deepEqual(project(JSON.parse(raw)).state,r.state);assert.equal(http?apiRequests>0:apiRequests===0,true);if(route==='aezorgh')assert.equal(r.state.character.species,'aezorgh');checks.push({route,width,http,sourcePages:pages,information:true,closeVisible:true,focusRestored:true,unchangedBytes:true,unchangedRights:true,reload:true});await p.close();
+}assert.deepEqual(errors,[]);await writeFile(new URL('qualification-fallback-information-results.json',out),JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({checks,errors}));}
+finally{await browser.close();server.closeAllConnections();await new Promise(r=>server.close(r));}
