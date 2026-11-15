@@ -55,7 +55,7 @@ try{
    check(name+' home fits',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    const launch=page.waitForEvent('popup');await card.getByRole('link',{name:'Launch Tool',exact:true}).click();const editor=await launch;
    await waitForCharacter(editor,name+'-launch');assert.equal(editor.url(),tool);
-   assert.equal(await editor.locator('#release-version').textContent(),'Beta 0.2');
+   assert.equal(await editor.locator('#release-version').textContent(),'Beta 0.3');
    assert.deepEqual(await editor.locator('[name=species] option').evaluateAll(nodes=>nodes.map(node=>node.value)),['human','aslan','vargr','aezorgh']);
    assert.equal(await editor.locator('#setup-gm-controls').evaluate(n=>n.open),false);await editor.locator('#opening-gm-title').click();
    const optional=editor.locator('#setup-optional-settings'),optionalSummary=optional.locator('summary');

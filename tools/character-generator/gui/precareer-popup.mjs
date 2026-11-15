@@ -1,3 +1,4 @@
+import {educationWarDraftModel,educationWarDraftInformation} from './education-war-draft.mjs';
 import {currentEducationEvent} from './current-education-event.mjs';
 import {mountRecordBars} from './record-bars.mjs';
 import {mountCrowSpeakingContent} from './crow-speaking-panel.mjs';
@@ -32,6 +33,7 @@ export function preCareerChoicesView(state,catalog,{esc,button}){
 const signed=value=>value>=0?'+'+value:String(value);
 // This prompt changes presentation only; the existing command owns all event effects.
 export function educationEventModel(state,projection){
+ const war=educationWarDraftModel(projection);if(war)return war;
  const training=academyTrainingModel(state);if(training)return training;
  const checkpoint=educationCheckpointModel(projection);
  const potential=educationPotentialModel(state);if(potential)return potential;
@@ -139,7 +141,7 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  const c=state.character,species=catalog.species.find(s=>s.id===c.species)?.name??c.species;
  const overview=context.querySelector('#precareer-overview');overview.innerHTML='<p class="precareer-eyebrow">YOUR TRAVELLER</p><h2>'+esc(c.name||'Your Traveller')+'</h2>';
  const step=workspace.querySelector('.step-count');step.textContent=species.toUpperCase()+' · PRE-CAREER';
- const title=root.querySelector('#step-title');title.textContent='Pre-Career';
+ const title=root.querySelector('#step-title');title.textContent=eventModel?.kind==='war-draft'?'War and the draft':'Pre-Career';
  step.insertAdjacentHTML('beforebegin','<button type="button" id="precareer-dismiss">Cancel</button>');
  workspace.querySelector('#precareer-dismiss').addEventListener('click',dismiss);
  const sessionKey=JSON.stringify([generation,session.seed,session.events[0]?.id]);
@@ -204,6 +206,7 @@ export function mountPreCareerPopup(root,{state,catalog,projection,session,esc,s
  });
  }
  if(eventModel&&eventModel.kind!=='academy-training'){const instruction=['.education-event-content','.education-checkpoint-next','.education-checkpoint-neutral','.education-checkpoint-controls'].map(selector=>workspace.querySelector(selector)).find(Boolean);if(instruction?.classList.contains('education-checkpoint-next')){const text=root.createElement('div');text.className='education-checkpoint-instruction';for(const child of [...instruction.children]){if(!['H4','P'].includes(child.tagName)||child.querySelector('button,input,select,textarea'))break;text.append(child);}instruction.prepend(text);mountCrowSpeakingContent(root,text,{type:'skills'});}else mountCrowSpeakingContent(root,instruction,{type:'skills'});const checkpoint=workspace.querySelector('.education-checkpoint'),outerHeading=checkpoint?.querySelector(':scope > .education-event-heading h3');if(outerHeading)for(const nested of checkpoint.querySelectorAll('.education-checkpoint-controls .education-event-heading'))if(nested.querySelector('h3')?.textContent===outerHeading.textContent)nested.remove();}
+ if(eventModel?.kind==='war-draft'){title.textContent='War and the draft';info.querySelector('#precareer-information-rules').innerHTML=educationWarDraftInformation(eventModel,{esc,sourceLabel});workspace.querySelector('#precareer-result-open').hidden=true;}
  if(resultModel||eventModel)workspace.querySelector('#precareer-dismiss').textContent='Close';
  if(eventModel){for(const small of workspace.querySelectorAll('.precareer-information-rows small'))small.remove();if(dialog.open&&!dialog.matches(':modal')){dialog.close();open();}}
  if(!eventModel&&dialog.open&&dialog.matches(':modal')){dialog.close();open();}

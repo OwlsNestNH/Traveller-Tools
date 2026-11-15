@@ -469,3 +469,49 @@ dialog:has(.required-action-warning:not([hidden])) .crow-speaking-panel{display:
 #precareer-dialog [data-current-education-event] .opening-info-trigger{flex:0 0 44px;min-width:44px;min-height:44px}
 
 #precareer-dialog [data-current-education-event]>p{font-size:20px;font-weight:600}
+@media screen {
+ #precareer-dialog .education-war-context{font-size:16px;color:#ffdc67;margin:16px 0;}
+ #precareer-dialog .education-war-outcome{font-size:clamp(26px,3vw,36px);line-height:1.25;margin:18px 0;color:#ffdc67;}
+ #precareer-dialog .education-war-outcome[data-tone="failure"]{color:#ffb7b7;}
+ #precareer-dialog .education-war-outcome[data-tone="success"]{color:#b7edbe;}
+ .education-war-rolls{display:flex;flex-wrap:wrap;gap:18px 32px;align-items:center;margin:22px 0;}
+ .education-war-record h4{margin:0 0 12px;font-size:20px;}
+ .education-war-record .education-recorded-dice{margin:0;gap:10px;display:flex;align-items:center;}
+ .education-war-equation{flex-basis:100%;font-size:22px;font-weight:750;margin:0;color:#ffdc67;}
+ .education-war-choices{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+ #precareer-dialog .education-war-choices .education-event-roll{display:flex;flex-direction:column;gap:8px;margin:0;width:100%;}
+ .education-war-choices small{font-size:17px;font-weight:500;line-height:1.4;}
+ .education-war-draft>.crow-speaking-panel{margin-block:20px;}
+ .education-war-destination,.education-war-pending{font-size:22px;line-height:1.4;}
+}
+@media screen and (max-width:650px){
+ .education-war-choices{grid-template-columns:1fr;}
+ .education-war-rolls{gap:20px;}
+ .education-war-record .education-recorded-dice svg{width:58px;height:58px;}
+ .education-war-equation{font-size:19px;}
+ .education-war-draft>.crow-speaking-panel{grid-template-columns:72px minmax(0,1fr);gap:12px;}
+ .education-war-draft>.crow-speaking-panel>img{width:72px;height:96px;object-fit:contain;}
+}
+@media screen {
+ .education-war-record .education-recorded-dice{color:#ffd34b;}
+ .education-war-draft>.crow-speaking-panel{display:grid;grid-template-columns:144px minmax(0,1fr);align-items:center;gap:18px;}
+ .education-war-draft>.crow-speaking-panel>img{width:144px;height:144px;object-fit:contain;}
+}
+@media screen and (max-width:650px){
+ .education-war-draft>.crow-speaking-panel{grid-template-columns:72px minmax(0,1fr);gap:12px;}
+ .education-war-draft>.crow-speaking-panel>img{width:72px;height:96px;}
+ .education-war-draft>.crow-speaking-panel>blockquote{padding:14px;}
+ .education-war-draft>.crow-speaking-panel>blockquote p{font-size:17px;line-height:1.4;}
+ .education-war-rolls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px;}
+ .education-war-record h4{font-size:17px;}
+ .education-war-record .education-recorded-dice{gap:5px;font-size:23px;}
+ .education-war-record .education-recorded-dice svg{width:40px;height:40px;}
+ .education-war-equation{grid-column:1 / -1;}
+ .education-war-choices{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+ #precareer-dialog .education-war-choices .education-event-roll{font-size:27px;min-height:100px;padding:12px 8px;}
+ .education-war-choices small{font-size:15px;}
+}
+@media screen and (max-width:360px){
+ .education-war-record .education-recorded-dice{font-size:20px;}
+ .education-war-record .education-recorded-dice svg{width:32px;height:32px;}
+}

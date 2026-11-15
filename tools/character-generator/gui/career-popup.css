@@ -310,3 +310,19 @@
 
 @media screen and (max-width:360px){#army-career-dialog .army-specialty-choices[data-count="3"][data-narrow-long-labels="true"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}#army-career-dialog .army-specialty-choices[data-count="3"][data-narrow-long-labels="true"] button:last-child{grid-column:1 / -1}}
 @media screen and (max-width:360px){#army-career-dialog .career-pilot-guidance{grid-template-columns:72px minmax(0,1fr)}#army-career-dialog .crow-assistance-image{width:72px;height:96px;flex-basis:72px}#army-career-dialog .career-crow-bubble{padding:8px}#army-career-dialog .career-crow-speech{font-size:16px}}
+@media screen {
+ #army-career-dialog button.required-draft-choice:not(:disabled){color:#101b21;border:2px solid #ffe59a;background:linear-gradient(#ffe59a,#ffca36);box-shadow:inset 0 1px 0 #fff4c0,0 4px 14px #0005;}
+ #army-career-dialog button.required-draft-choice:not(:disabled) :is(strong,small){color:#101b21;}
+ #army-career-dialog button.required-draft-choice:not(:disabled):hover{background:linear-gradient(#fff0b9,#ffda62);}
+ #army-career-dialog button.required-draft-choice:focus-visible{outline:4px solid #fff4c0;outline-offset:4px;}
+ #army-career-dialog .career-choice-row:has(.required-draft-choice) .career-info-trigger{background:#062334;color:#ffdc67;border-color:#89bdcf;}
+}
+@media screen and (max-width:650px){
+ body[data-required-draft="true"] #army-career-dialog .choice-list:has(.required-draft-choice){grid-template-columns:minmax(0,1fr);gap:14px;}
+ body[data-required-draft="true"] #army-career-dialog .career-choice-row .choice{min-width:0;min-height:80px;padding:14px 60px 14px 14px;}
+ body[data-required-draft="true"] #army-career-dialog .career-choice-row .choice :is(strong,small){overflow-wrap:normal;word-break:normal;}
+ body[data-required-draft="true"] #army-career-dialog .career-pilot-guidance{grid-template-columns:64px minmax(0,1fr);gap:10px;}
+ body[data-required-draft="true"] #army-career-dialog .crow-assistance-image{width:64px;height:88px;flex-basis:64px;object-fit:contain;}
+ body[data-required-draft="true"] #army-career-dialog .career-crow-bubble{padding:12px;}
+ body[data-required-draft="true"] #army-career-dialog .career-crow-speech{font-size:17px;line-height:1.45;}
+}

@@ -1,3 +1,4 @@
+import {CORE_ACADEMIES,legacyEducationWarDraftEvidence} from './education-war-draft-projection.mjs';
 import {copyWithAwardProvenance,markAwardEffects,inheritAwardOrigin,awardOrigin,beginAwardAction,recordSkillAward,appliedSkillAwards} from './award-provenance.mjs';
 import {AEZORGH_CULTURES} from '../shared/aezorgh-culture.mjs';
 import {vargrDraftLabel,vargrDraftMappings} from './vargr-draft.mjs';
@@ -1405,11 +1406,11 @@ function queueEffects(state,effects,next,rolls) {
 // education/career consumers retain their historical effect-draining behavior.
 function educationEventContext(state){
  const context=state.educationEventContext,record=state.character.educations?.[state.education];
- return context&&context.educationIndex===state.education&&record?.id==='core.university'&&record.event===context.row&&!record.completed?context:null;
+ return context&&context.educationIndex===state.education&&(record?.id==='core.university'||record&&context.educationId===record.id&&CORE_ACADEMIES.includes(record.id)&&context.row===11)&&record.event===context.row&&!record.completed?context:null;
 }
 function finishEducationEventCheckpoint(state,rolls,context=educationEventContext(state),nextStage='education-graduation'){
  if(!context)return false;
- state.educationEventResult={id:context.id+'-result',educationIndex:context.educationIndex,row:context.row,eventRoll:copy(context.eventRoll),rolls:copy([...(context.rolls??[]),...rolls]),nextStage,pending:copy(state.pending??null),source:{id:'core',page:17},status:'resolved'};
+ state.educationEventResult={id:context.id+'-result',educationIndex:context.educationIndex,...(context.educationId?{educationId:context.educationId}:{}),row:context.row,eventRoll:copy(context.eventRoll),rolls:copy([...(context.rolls??[]),...rolls]),nextStage,pending:copy(state.pending??null),source:{id:'core',page:17},status:'resolved'};
  delete state.educationEventContext;state.stage='education-event-result';return true;
 }
 function educationEventCheckpointView(state){
@@ -2622,7 +2623,7 @@ function apply(state,command,rolls) {
  }
  case 'roll-education-event-step':{
   const pending=state.pendingEducationEventRoll,e=state.effectsQueue?.[0],context=educationEventContext(state);
-  need(state.educationEventCheckpoints&&state.stage==='education-event-roll'&&pending&&context,'No education roll is pending.');
+  need((state.educationEventCheckpoints||context?.educationId)&&state.stage==='education-event-roll'&&pending&&context,'No education roll is pending.');
   need(Object.keys(payload).length===1&&payload.pendingId===pending.id,'Choose the current education roll.');
   need(JSON.stringify(educationRollPending(state,e))===JSON.stringify(pending),'The pending education roll context changed.');
   delete state.pendingEducationEventRoll;drainEffects(state,rolls,e);
@@ -2632,7 +2633,7 @@ function apply(state,command,rolls) {
  }
  case 'acknowledge-education-event':{
   const result=state.educationEventResult,record=state.character.educations?.[result?.educationIndex];
-  need(state.educationEventCheckpoints&&state.stage==='education-event-result'&&result&&record?.id==='core.university'&&record.event===result.row&&(result.educationIndex===state.education||record.completed&&state.education===null),'No education event result awaits acknowledgement.');
+  need((state.educationEventCheckpoints||result?.educationId)&&state.stage==='education-event-result'&&result&&(record?.id==='core.university'||record&&result.educationId===record.id&&CORE_ACADEMIES.includes(record.id)&&result.row===11)&&record.event===result.row&&(result.educationIndex===state.education||record.completed&&state.education===null),'No education event result awaits acknowledgement.');
   need(Object.keys(payload).length===1&&payload.pendingId===result.id,'Acknowledge the current education event result.');
   need((result.nextStage==='education-graduation'&&record.graduationAllowed||['career','book-step'].includes(result.nextStage)&&record.completed||result.nextStage==='deceased'&&state.character.deceased)&&JSON.stringify(state.pending??null)===JSON.stringify(result.pending),'The education event continuation has changed.');
   delete state.educationEventResult;state.stage=result.nextStage;return 'Education event acknowledged. No additional dice or awards.';
@@ -2643,9 +2644,11 @@ function apply(state,command,rolls) {
  }
  case 'education-event':{
   need(state.stage==='education-event','No education event is due.');
+  if(Object.hasOwn(payload,'separateAcademyWarRolls'))need(payload.separateAcademyWarRolls===true&&CORE_ACADEMIES.includes(educationRecord(state).id)&&educationRecord(state).entry?.success===true&&!educationRecord(state).entry?.manual,'Separate academy event rolls require an admitted Core academy.');
   const total=dice(state,2,rolls,'Pre-career event');educationRecord(state).event=total;
   const record=educationRecord(state),effects=isCompanionEducation(record.id)?companionEvent({id:record.id,entered:true,roll:total}).effects:PRECAREER_EVENTS[total];
   if(state.educationEventCheckpoints&&record.id==='core.university'&&([2,4,5,6,8,10,11,12].includes(total)||EDUCATION_LIFE_CHECKPOINTS&&total===7||EDUCATION_FINAL_ROWS&&[3,9].includes(total))&&record.graduationAllowed&&!record.entry?.manual)state.educationEventContext={id:'education-'+state.education+'-event-'+total,educationIndex:state.education,row:total,eventRoll:copy(rolls.at(-1))};
+  if(payload.separateAcademyWarRolls===true&&total===11&&record.graduationAllowed)state.educationEventContext={id:'education-'+state.education+'-event-'+total,educationId:record.id,educationIndex:state.education,row:total,eventRoll:copy(rolls.at(-1))};
   queueEffects(state,sourcedEffects(effects,{id:'core',page:17}),'education-graduation',rolls);return 'Pre-career event '+total+'.';
  }
  case 'education-graduation':{
@@ -3438,24 +3441,26 @@ export function project(session) {
  const educationEventView=educationEventEvidence(educationEventCheckpointView(state),{state,log,snapshots,events:session.events,skillModifier:skillCheckDM});
  const activeEducation=state.character.educations?.[state.education];
  const educationStory=activeEducation&&!activeEducation.completed?educationEventText(activeEducation.event):null;
- return withSheetTiming({state,log,revision:session.events.length,...(educationStory?{educationEventContext:educationStory}:{}),...(educationEventView?{educationEventView}:{}),...(state.stage==='precareer'?{educationAdmissionPreviews}:{}),...(educationResultView?{educationResultView}:{}),...(educationGraduationPreview?{educationGraduationPreview}:{})},sheetTiming,{pending:copy(awardOrigin(state.pendingChoice??state.pending?.effect??state.psionicTraining?.award)),deferred:(state.character.deferredSkillAwards??[]).filter(a=>a.status==='pending').map(a=>({id:a.id,origin:copy(awardOrigin(a))})),byAction:skillAwards});
+ const warDraft=legacyEducationWarDraftEvidence({state,log,snapshots,events:session.events},characteristicDM);
+ return withSheetTiming({state,log,revision:session.events.length,...(educationStory?{educationEventContext:educationStory}:{}),...(educationEventView?{educationEventView}:{}),...(state.stage==='precareer'?{educationAdmissionPreviews}:{}),...(educationResultView?{educationResultView}:{}),...(educationGraduationPreview?{educationGraduationPreview}:{})},sheetTiming,{pending:copy(awardOrigin(state.pendingChoice??state.pending?.effect??state.psionicTraining?.award)),deferred:(state.character.deferredSkillAwards??[]).filter(a=>a.status==='pending').map(a=>({id:a.id,origin:copy(awardOrigin(a))})),byAction:skillAwards},warDraft);
 }
 // Presentation metadata is deliberately outside the enumerable historical projection.
-function withSheetTiming(result,timing,awards){
+function withSheetTiming(result,timing,awards,warDraft){
+ if(warDraft)Object.defineProperty(result,'educationWarDraftView',{value:warDraft,enumerable:false});
  Object.defineProperty(result,'characterSheetTiming',{value:timing,enumerable:false});Object.defineProperty(result,'skillAwardPresentation',{value:awards,enumerable:false});return result;
 }
-function apiProjection(result){return {...result,characterSheetTiming:result.characterSheetTiming,skillAwardPresentation:result.skillAwardPresentation};}
+function apiProjection(result){return {...result,characterSheetTiming:result.characterSheetTiming,skillAwardPresentation:result.skillAwardPresentation,...(result.educationWarDraftView?{educationWarDraftView:result.educationWarDraftView}:{})};}
 export function execute(session,command,{id,expectedRevision}={}) {
  const before=project(session);
  const actionId=id??'action-'+(before.revision+1);need(typeof actionId==='string'&&actionId.length<=120,'Invalid action ID.');
  const existing=session.events.find(e=>e.id===actionId);
- if(existing){need(JSON.stringify(existing.command)===JSON.stringify(command),'Action ID was already used for a different command.');return withSheetTiming({session:copy(session),...before},before.characterSheetTiming,before.skillAwardPresentation);}
+ if(existing){need(JSON.stringify(existing.command)===JSON.stringify(command),'Action ID was already used for a different command.');return withSheetTiming({session:copy(session),...before},before.characterSheetTiming,before.skillAwardPresentation,before.educationWarDraftView);}
  if(expectedRevision!==undefined)need(expectedRevision===before.revision,'This character changed. Reload before applying the command.');
  need(session.events.length<LIMIT,'Action-log limit reached. Export this character before continuing.');
  const next=copy(session);next.events.push({id:actionId,command:copy(command)});
  const result=project(next);const last=result.log.at(-1);next.events.at(-1).rolls=last.rolls;next.events.at(-1).summary=last.summary;
  need(saveSize(next)<=MAX_SAVE_BYTES,'Save size limit reached. The action was not accepted. Export your current character before continuing.');
- return withSheetTiming({session:next,...result},result.characterSheetTiming,result.skillAwardPresentation);
+ return withSheetTiming({session:next,...result},result.characterSheetTiming,result.skillAwardPresentation,result.educationWarDraftView);
 }
 export function importSession(raw) {
  need(typeof raw==='string'&&new TextEncoder().encode(raw).byteLength<=MAX_SAVE_BYTES,'Save is too large.');const session=JSON.parse(raw);project(session);return session;
