@@ -51,7 +51,7 @@
  #army-career-rail .army-record-section[open] summary::after{content:'−'}
  #army-career-dialog .career-pilot-guidance{display:grid;grid-template-columns:160px minmax(0,1fr);gap:16px;align-items:center;border:0;padding:0 0 18px;background:none;margin:0 0 16px;color:#f5f7fa}
  #army-career-dialog .crow-assistance{justify-content:center;gap:8px;margin:0;font-size:11px;align-self:center}
- #army-career-dialog .crow-assistance-image{width:160px;height:128px;flex-basis:160px;object-fit:cover;object-position:50% 60%}
+ #army-career-dialog .crow-assistance-image{width:160px;height:128px;flex-basis:160px;object-fit:contain;object-position:center}
  #army-career-dialog .crow-assistance-info{width:44px;min-width:44px;height:44px;min-height:44px;padding:0;font-size:15px;background:#185876;border:1px solid #78bbdc;color:#fff;box-shadow:none}
  #army-career-dialog .career-crow-bubble{padding:12px 16px;border:2px solid #9cdbed;border-top:3px solid #d8b76a;border-radius:10px;background:#061b29}
  #army-career-dialog .career-crow-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;font-weight:800;letter-spacing:.06em;color:#e6c978}
