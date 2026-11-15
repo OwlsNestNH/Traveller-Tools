@@ -109,3 +109,5 @@
  body[data-stage="background"] #workspace > #background-form .background-tile span {font-size:17px;}
  body[data-stage="background"] #workspace > #background-form #background-selected-summary {margin:12px 0 14px;}
 }
+
+@media screen{#opening-portrait{position:relative}#opening-portrait>.opening-info-trigger{position:absolute;right:-4px;bottom:0;min-width:44px;min-height:44px;background:#061b29;box-shadow:0 0 0 3px #061b29}}
