@@ -16,7 +16,8 @@ try{for(const http of [false,true])for(const width of [320,1440]){
   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();
   await page.locator('#award-base').waitFor();assert.equal(await page.getByRole('button',{name:'Allocate specializations now'}).count(),0);
   assert.equal(await page.locator('#award-base').inputValue(),'Electronics');
-  const options=await page.locator('#award-speciality option').evaluateAll(os=>os.map(o=>o.value).filter(Boolean));
+  const options=await page.locator('#award-speciality option').evaluateAll(os=>os.map(o=>o.value).filter(v=>v&&v!=='__custom__'));
+  assert.equal(await page.locator('#award-speciality option').last().getAttribute('value'),'__custom__');
   assert.deepEqual(options,['Electronics (comms)','Electronics (computers)','Electronics (remote ops)','Electronics (sensors)']);
   await page.reload();await page.locator('#award-speciality').waitFor();await page.locator('#award-speciality').selectOption('Electronics (computers)');
   assert.equal(await page.locator('#award-skill').inputValue(),'Electronics (computers)');await page.getByRole('button',{name:'Accept skill',exact:true}).click();

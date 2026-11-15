@@ -52,7 +52,7 @@ import {equipmentFinalizationView,deferredEquipmentSummary,mountEquipmentDialog}
 import {equipmentCatalogueView,syncEquipmentCatalogue} from './equipment-catalogue.mjs';
 let aslanManualReviewKey=null;
 import {aslanEventOutcomesView,aslanEventOutcomesSheet} from './aslan-event-outcomes-view.mjs';
-import {skillAwardView,syncAwardBase,deferredAwardsView} from './skill-award-view.mjs';
+import {skillAwardView,syncAwardBase,syncAwardSpeciality,chosenAwardSkill,deferredAwardsView} from './skill-award-view.mjs';
 import {educationStudySelectionValid,educationSkillTitle,educationSkillView,syncEducationSubject,syncEducationStudyContinue,companionSkillSuggestions} from './education-skill-view.mjs';
 import {createLogViewer} from './log-viewer.mjs';
 import {prisonerEscapeTitle,prisonerEscapeView} from './prisoner-escape-view.mjs';
@@ -504,7 +504,7 @@ function stageView(state,insideEquipmentDialog=false){
  }
 }
 function printedNarrative(state){
- return '<section class="print-only sheet-section"><h3>Background notes</h3><p class="multiline">'+esc(state.character.notes||'No saved notes.')+'</p>'+(state.connections.length?'<h3>Connections</h3>'+state.connections.map(c=>'<p><strong>'+esc(c.person)+'</strong>: '+esc(c.note)+'<br>Connection skill: '+esc(c.skill)+'</p>').join(''):'')+'<p class="tiny">Source-assisted Beta 0.4. Review the recorded manual rulings with your referee.</p></section>';
+ return '<section class="print-only sheet-section"><h3>Background notes</h3><p class="multiline">'+esc(state.character.notes||'No saved notes.')+'</p>'+(state.connections.length?'<h3>Connections</h3>'+state.connections.map(c=>'<p><strong>'+esc(c.person)+'</strong>: '+esc(c.note)+'<br>Connection skill: '+esc(c.skill)+'</p>').join(''):'')+'<p class="tiny">Source-assisted Beta 0.5. Review the recorded manual rulings with your referee.</p></section>';
 }
 function syncOpeningPortrait(form){
  const figure=$('#opening-portrait');if(!figure||!form)return;
@@ -589,7 +589,7 @@ function render(){
  },onNameClan:async name=>{if(!await send('name-aslan-clan',{name}))throw new Error($('#message').textContent||'Clan name could not be recorded.');},onChooseClan:async payload=>{if(!await send('choose-aslan-clan',payload))throw new Error($('#message').textContent||'Clan could not be recorded.');},onToggleGM:async enabled=>{if(!await send('gm-mode',{enabled}))throw new Error($('#message').textContent||'GM setting could not be recorded.');const detail=$('#aslan-clan-record')?.closest('details');if(detail)detail.open=true;if(enabled)$('#aslan-clan-name')?.focus();}});
  mountAslanClanInformation(document);mountAslanPrideInformation(document);mountAslanBackgroundInformation(document);mountAslanRiteInformation(document,{resultKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id,projection.log.findLast(event=>event.type==='roll-aslan-rite')?.id,state.currentAslanOrigin?.rite?.dice,state.currentAslanOrigin?.rite?.statsBefore,state.currentAslanOrigin?.rite?.modifier,state.currentAslanOrigin?.rite?.additionalRolls])});
  mountEquipmentDialog(document,()=>send('cancel-deferred-equipment'));
- recoveryDrafts.restore($('#workspace'),recoveryKey());
+ recoveryDrafts.restore($('#workspace'),recoveryKey(),{afterField:node=>{if(node.id==='award-base')syncAwardBase(state,catalog,document,esc);if(node.id==='award-speciality')syncAwardSpeciality(document);}});
  syncCareerSpecialty(document,careerTemplateModel(state,catalog,selectedCareer));
 }
 function renderEffects(){
@@ -671,7 +671,7 @@ document.addEventListener('click',async event=>{
   if(action==='injury-treatment')return send(action,{restore:Object.fromEntries([...document.querySelectorAll('[data-injury-restore]')].map(input=>[input.dataset.injuryRestore,Number(input.value)])),inService:$('#injury-in-service').checked});
   if(action==='choose-effect'){if((educationPotentialModel(projection.state)||educationCheckpointModel(projection))&&(event.detail>1||el.disabled))return;return send(action,{index:Number(el.dataset.index)});}
  if(action==='allocate-specializations')return send(action);
- if(action==='choose-skill')return send(action,{name:$('#award-skill').value});
+ if(action==='choose-skill')return send(action,{name:chosenAwardSkill(document)});
  if(['roll-education-event-step','acknowledge-education-event'].includes(action)){if(event.detail>1||el.disabled)return;return send(action,{pendingId:el.dataset.pendingId});}
  if(['education-event','education-graduation'].includes(action)){if(event.detail>1||el.disabled)return;return send(action);}
  if(action==='acknowledge-education-result'){if(event.detail>1||el.disabled)return;return send(action);}
@@ -853,7 +853,7 @@ document.addEventListener('change',event=>{if(['life-outcome','life-funding'].in
 
 document.addEventListener('change',event=>{if(event.target.id==='education-subject'){syncEducationSubject(projection.state,catalog,document,esc);syncEducationStudyContinue(projection.state,catalog,document);}});
 
-document.addEventListener('change',event=>{if(event.target.id==='award-base')syncAwardBase(projection.state,catalog,document,esc);if(event.target.id==='award-speciality')$('#award-skill').value=event.target.value;});
+document.addEventListener('change',event=>{if(event.target.id==='award-base')syncAwardBase(projection.state,catalog,document,esc);if(event.target.id==='award-speciality')syncAwardSpeciality(document);});
 
 document.addEventListener('change',event=>{if(event.target.id==='benefit-item-id')syncEquipmentCatalogue(projection.state.pending,document);});
 

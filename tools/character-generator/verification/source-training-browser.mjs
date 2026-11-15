@@ -1,3 +1,4 @@
+import {selectAwardSkill} from './skill-award-browser-controls.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -21,7 +22,7 @@ try{
     await page.reload();await page.locator('[data-action=choose-effect]').first().click();
    }else{
     assert.equal(fixture.state.stage,'skill-choice');assert.equal(fixture.state.character.deferredSkillAwards,undefined);
-    await page.locator('#award-skill').waitFor();await page.reload();await page.locator('#award-skill').fill('Language (Vilani)');await page.locator('[data-action=choose-skill]').click();
+    await page.locator('#award-base').waitFor();await page.reload();await selectAwardSkill(page,'Language (Vilani)');await page.locator('[data-action=choose-skill]').click();
    }
    await page.waitForFunction(()=>!document.querySelector('#new').disabled&& !document.querySelector('[data-action=choose-effect]')&&!document.querySelector('#award-skill'));
    const before=project(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key)));assert.equal(before.state.character.sourceTraining.length,1);assert.equal(before.state.character.sourceTraining[0].status,'completed');assert.equal(before.state.stage,navy?'term-end':'advancement');if(!navy){assert.equal(before.state.character.skills['Language (vilani)'],1);assert.equal(before.state.character.deferredSkillAwards,undefined);}

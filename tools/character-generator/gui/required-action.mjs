@@ -1,3 +1,4 @@
+import {chosenAwardSkill} from './skill-award-view.mjs';
 import {VARGR_CAREER_DEFINITIONS} from './vargr-career-definitions.mjs';
 import {ASLAN_CAREER_DEFINITIONS} from './aslan-career-definitions.mjs';
 import {recoveryButton} from './recovery-actions.mjs';
@@ -129,9 +130,12 @@ export function mountRequiredActions({document:root,getState,isBusy,backgroundSe
    const inputs=[...root.querySelectorAll('[data-companion-skill]')],values=inputs.map(n=>n.value.trim()),count=state.pendingChoice?.count??1;
    if(values.some(n=>!n)||new Set(values).size!==count)return fail(inputs.find(n=>!n.value.trim())??inputs[0],'skills','Choose exactly '+count+' distinct study skills; include a specialisation where this award requires one.');
   }
-  // The optional free-text name mirrors the native specialty selector. Point
-  // Aslan warnings at that actual missing choice while retaining manual entry.
-  if(action==='choose-skill'&&['aslan','vargr'].includes(state.character?.species)&&!root.querySelector('#award-skill')?.value.trim()){const specialty=root.querySelector('#award-speciality');if(active(specialty)&&missingField(specialty))return fail(specialty,'skills','Choose the awarded skill and its required specialisation, or use the offered deferral.');}
+  if(action==='choose-skill'){
+   const base=root.querySelector('#award-base'),specialty=root.querySelector('#award-speciality'),custom=root.querySelector('#award-skill');
+   if(active(base)&&missingField(base))return fail(base,'skills','Choose the skill awarded by this result.');
+   if(active(specialty)&&missingField(specialty))return fail(specialty,'skills','Choose the awarded specialisation, Custom, or the offered deferral.');
+   if(specialty?.value==='__custom__'&&!chosenAwardSkill(root))return fail(custom,'skills','Enter a custom specialisation for the selected skill.');
+  }
   for(const rule of actionRequirements(action,state,{...trigger.dataset,species:root.querySelector('#setup-species')?.value})){
    const control=root.querySelector(rule.selector);if(!active(control))continue;
    // The existence of optional fields is not a requirement for these branches.

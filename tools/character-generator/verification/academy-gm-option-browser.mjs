@@ -1,3 +1,4 @@
+import {selectAwardSkill} from './skill-award-browser-controls.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -25,7 +26,7 @@ async function choices(page){for(let n=0;n<25;n++){await ready(page);const s=pro
  if(s.stage==='preterm-commission')await page.locator('[data-action=skip-education-commission]').click();
  else if(s.stage==='effect-choice')await page.locator('[data-action=choose-effect]').last().click();
  else if(s.stage==='education-service'){const names=s.pendingChoice.options.filter(n=>!s.pendingChoice.picked.includes(n)),name=['Recon','Athletics','Gun Combat'].find(n=>names.includes(n))??names[0];await page.locator('[data-action=education-service][data-name="'+name+'"]').click();}
- else if(s.stage==='skill-choice'){assert.equal(s.character.deferredSkillAwards,undefined);const suggestions=s.skillChoiceSuggestions;assert.ok(suggestions.length);await page.locator('#award-skill').fill(suggestions[0]);await page.getByRole('button',{name:'Accept skill',exact:true}).click();}
+ else if(s.stage==='skill-choice'){assert.equal(s.character.deferredSkillAwards,undefined);const suggestions=s.skillChoiceSuggestions;assert.ok(suggestions.length);await selectAwardSkill(page,suggestions[0]);await page.getByRole('button',{name:'Accept skill',exact:true}).click();}
  else return s;
  }throw Error('Academy browser choices exceeded bound');}
 try{for(const http of [false,true])for(const width of [320,1440]){

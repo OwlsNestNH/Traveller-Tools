@@ -1,3 +1,4 @@
+import {selectAwardSkill} from './skill-award-browser-controls.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -29,7 +30,7 @@ try{
   }
   {
    const r=requiredAwardFixture(),p=await browser.newPage({viewport:{width,height:1000}});await load(p,r,http);const raw=await saved(p);await p.locator('#book-confirm').check();await p.locator('[data-action=resolve-book]').click();await p.locator('#book-note[aria-invalid=true]').waitFor();assert.equal(await saved(p),raw);await shot(p,'05-required-award',width,http);
-   await p.locator('[data-action=retry-skill-choice]').click();await idle(p);await p.locator('#award-skill').fill('Gun Combat (slug)');await p.locator('[data-action=choose-skill]').click();await idle(p);const after=api({operation:'import',raw:await saved(p)});assert.equal(after.state.character.skills['Gun Combat (slug)'],1);assert.equal(after.state.stage,'survival');checks.push({name:'required-rank-award',width,http,guard:true,retry:true});await p.close();
+   await p.locator('[data-action=retry-skill-choice]').click();await idle(p);await selectAwardSkill(p,'Gun Combat (slug)');await p.locator('[data-action=choose-skill]').click();await idle(p);const after=api({operation:'import',raw:await saved(p)});assert.equal(after.state.character.skills['Gun Combat (slug)'],1);assert.equal(after.state.stage,'survival');checks.push({name:'required-rank-award',width,http,guard:true,retry:true});await p.close();
   }
   {
    let r=awardedEquipmentFixture();while(r.state.stage==='benefits')r=force(r,'benefit',{cash:true},[1]);r=run(r,'finish');const p=await browser.newPage({viewport:{width,height:1000}});await load(p,r,http);await shot(p,'06-equipment-checklist',width,http);assert.equal(await p.getByRole('button',{name:'Finish character',exact:true}).isDisabled(),true);
