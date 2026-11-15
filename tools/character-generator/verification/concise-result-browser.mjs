@@ -5,7 +5,7 @@ import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {createServer} from '../server.mjs';
-import {exportSession} from '../engine/session.mjs';
+import {exportSession,project} from '../engine/session.mjs';
 import {laterCareerFixture,treatmentFixture,equipmentFixture,failedSurvivalFixture} from './concise-result-fixtures.mjs';
 import {downloadedActionLog} from './download-log-browser.mjs';
 import {assertResultColor} from './result-color-browser-assertions.mjs';
@@ -33,12 +33,12 @@ try{
    const checkpoint=await page.evaluate(key=>localStorage.getItem(key),key),checkSave=JSON.parse(checkpoint);assert.equal(checkSave.events.length,fixtures.survival.before.revision+1);assert.equal(checkSave.events.at(-1).rolls.length,1);assert.match(await panel.innerText(),/Survival failed/);assert.doesNotMatch(await panel.innerText(),/Mishap rolled:|Rival/);await assertResultColor(page,'failure',{message:true});
    await page.reload();await page.locator('[data-action=career-mishap]').waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),checkpoint);
    await page.locator('[data-action=career-mishap]').evaluate(button=>{button.click();button.click();});await page.getByRole('heading',{name:'The end of a term',exact:true}).waitFor();
-   const splitRaw=await page.evaluate(key=>localStorage.getItem(key),key);assert.equal(JSON.parse(splitRaw).events.length,fixtures.survival.before.revision+2);assert.equal(JSON.parse(splitRaw).events.at(-1).command.type,'career-mishap');assert.match(await recordedResultDetails(page),/Table outcome:/);assert.match(await recordedResultDetails(page),/Roll \[2\] = 2/);assert.match(await panel.innerText(),/Rival/);assert.deepEqual(await panel.locator('.army-dice-faces svg').evaluateAll(ns=>ns.map(n=>n.querySelectorAll('circle').length)),[2]);await assertResultColor(page,'failure');
+   const splitRaw=await page.evaluate(key=>localStorage.getItem(key),key);assert.equal(JSON.parse(splitRaw).events.length,fixtures.survival.before.revision+2);assert.equal(JSON.parse(splitRaw).events.at(-1).command.type,'career-mishap');assert.match(await recordedResultDetails(page),/Table outcome:/);assert.match(await recordedResultDetails(page),/Roll \[2\] = 2/);assert.match(await panel.innerText(),/Rival/);assert.deepEqual(await panel.locator('.army-dice-faces svg').evaluateAll(ns=>ns.map(n=>n.querySelectorAll('circle').length)),[2]);const forcedState=project(JSON.parse(splitRaw)).state;assert.equal(forcedState.character.careers[forcedState.active].forcedExit,true);await assertResultColor(page,'failure',{statusLabel:'Career ended'});
    await page.reload();await panel.waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),splitRaw);
    // Retain the historical combined-command concise presentation checks separately.
    await load(fixtures.survival.after);
    const survivalText=await panel.innerText();assert.match(survivalText,/Survival failed/);assert.match(survivalText,/Check \[1, 3\]: total 5 against target 7\+/);assert.match(survivalText,/Mishap rolled: 2/);assert.match(survivalText,/Rival/);assert.doesNotMatch(survivalText,/Age:|Completed terms:|Career terms:|Must leave this career/);assert.match(survivalText,/Table outcome:/);assert.match(survivalText,/Source:/);await assertResultColor(page,'failure');
-   assert.equal(await page.getByRole('button',{name:'Leave and take benefits',exact:true}).isEnabled(),true);assert.equal(await page.getByRole('button',{name:'Continue this career',exact:true}).isEnabled(),false);
+   assert.equal(await page.getByRole('button',{name:'Leave and take benefits',exact:true}).isEnabled(),true);assert.equal(await page.getByRole('button',{name:'Continue this career',exact:true}).count(),0);const forcedLegacy=project(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key))).state;assert.equal(forcedLegacy.character.careers[forcedLegacy.active].forcedExit,true);
    const survivalRaw=await page.evaluate(key=>localStorage.getItem(key),key);assert.equal(JSON.parse(survivalRaw).events.length,fixtures.survival.before.revision+1);
    await panel.locator('summary').click();assert.match(await panel.innerText(),/Career terms:|Must leave this career/);await panel.locator('summary').click();assert.match(await downloadedActionLog(page),/careers\.0\.forcedExit/);
    await page.reload();await panel.waitFor();assert.equal(await panel.innerText(),survivalText);assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),survivalRaw);await page.locator('#workspace').screenshot({path:fileURLToPath(new URL('concise-survival-'+name+'.png',out))});
