@@ -299,7 +299,7 @@
 .skill-award-origin h3{color:#ffd34b;font-size:28px;line-height:1.25;margin:8px 0}
 .skill-award-origin-heading{display:flex;justify-content:space-between;align-items:start;gap:12px}
 .skill-award-origin-heading>div{min-width:0}
-.skill-award-origin-heading>.opening-info-trigger{flex:0 0 44px}
+.skill-award-origin-heading>.opening-info-trigger{flex:0 0 44px;width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:2px solid #ffd34b;border-radius:50%;background:#071c2a;color:#ffd34b;box-shadow:none;font-size:27px}
 
 .deferred-award-source{display:block;font-size:14px;color:#c5d9e5}
 
@@ -338,3 +338,6 @@
 }
 
 @media screen{#army-career-dialog .career-crow-heading>[data-support-information]{flex:0 0 44px;margin:0}}
+
+/* Keep each recorded training option and its supporting labels in one column. */
+.basic-training-choices .choice{min-width:0;max-width:100%;flex-direction:column;align-items:stretch;gap:4px;overflow-wrap:anywhere}

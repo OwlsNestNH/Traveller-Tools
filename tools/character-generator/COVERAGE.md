@@ -1,6 +1,6 @@
 # Coverage and release gates
 
-Status: source-assisted Beta 0.10 candidate; merge/deployment require the release gates below. A data table being present does not mean every resulting rule is automated. The UI must preserve this distinction.
+Status: source-assisted Beta 0.11 candidate; merge/deployment require the release gates below. A data table being present does not mean every resulting rule is automated. The UI must preserve this distinction.
 
 ## Source scope
 
@@ -195,3 +195,7 @@ The unchecked PSI activation control is independent of whole-character GM mode. 
 ### Physical dice score entry
 
 The off-by-default control preserves the existing score cards until clicked. Valid raw totals save on Enter, Tab or clicking outside; Escape cancels. Manual provenance remains in both logs and the live/final/printed sheet. Unit coverage includes species formulas, incomplete sets, historical opt-in, same-value provenance, restore/replay and preserved deferred Zhodani optional PSI. Browser checks cover static/HTTP at desktop and 320px, click-to-edit, valid/invalid click-outside, equal-value entry, off/on recovery, keyboard flow, swaps, reload, logs and print.
+
+### Basic-training presentation evidence (candidate)
+
+Basic-training origin is rebuilt at the existing entry-effects producer using the same non-canonical provenance mechanism as rank and academy awards. It does not add saved fields, alter the queued effects or choose a skill. The current candidate has focused first-entry Army/Scholar/Scout desktop/phone static/API coverage, fixed-level versus specialisation-label tests and canonical projection comparison against deployed Beta 0.3 across 108 synthetic entry prefixes. This does not certify every later training, specialty or species screen. Zhodani provenance remains outside this batch.
