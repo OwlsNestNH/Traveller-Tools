@@ -6,8 +6,8 @@ export function armyEntryAward(seed='rank-award-entry'){
  return settleEffects(force(run(assignmentSetup(seed),'skip-precareer'),'career',{id:'core.army',assignment:'infantry'},[6,6]));
 }
 export function settleEffects(r){while(r.state.stage==='effect-choice')r=run(r,'choose-effect',{index:0});return r;}
-export function academyCommissionOffer(id='core.academy-army',outcome='honours'){
- return run(run(graduationFixture(id,outcome),'acknowledge-education-result'),'career',{id:id.replace('academy-',''),assignment:id.endsWith('navy')?'crew':'support'});
+export function academyCommissionOffer(id='core.academy-army',outcome='honours',assignment=null){
+ return run(run(graduationFixture(id,outcome),'acknowledge-education-result'),'career',{id:id.replace('academy-',''),assignment:assignment??(id.endsWith('navy')?'crew':'support')});
 }
 export function armyAcademyAwards(accepted=false){
  let r=settleEffects(run(academyCommissionOffer(),'preterm-commission',{attempt:accepted}));
