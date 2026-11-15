@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import{academyTutorFixture}from'./academy-tutor-fixtures.mjs';
-import{forceEducation}from'./education-result-fixtures.mjs';
+import{forceEducation,educationReady}from'./education-result-fixtures.mjs';
 import{educationNestedChoiceModel,educationNestedChoiceView,educationEventModel}from'../gui/precareer-popup.mjs';
 import{educationTutorOutcome,educationTutorOutcomeView}from'../gui/education-tutor-outcome.mjs';
 import{exportSession,project}from'../engine/session.mjs';
@@ -12,3 +12,4 @@ for(const id of ['core.academy-army','core.academy-marine','core.academy-navy'])
 });
 test('an earlier active row10 cannot replace the current event faces',()=>{const r=academyTutorFixture(),p=structuredClone(r);p.log[0].eventResults=[{table:'core.pre-career-events',row:10,roll:{values:[4,6],total:10}}];const html=educationNestedChoiceView(educationNestedChoiceModel(p.state),p.state,{esc,projection:p,session:p.session});assert.equal((html.match(/data-recorded-face="5"/g)||[]).length,2);assert.doesNotMatch(html,/data-recorded-face="[46]"/);});
 test('study evidence retains accepted totals after skill edits and labels missing faces honestly',()=>{const r=forceEducation(academyTutorFixture(),'education-check',{name:'Vacc Suit'},[6,6]),p=structuredClone(r);p.state.character.skills['Vacc Suit']=99;p.log.at(-1).rolls[0].values=undefined;const m=educationTutorOutcome(p,p.session);assert.equal(m.total,12);assert.equal(m.modifier,0);assert.equal(m.faces,null);const html=educationTutorOutcomeView(m,{esc});assert.match(html,/Recorded roll total 12; individual faces unavailable/);assert.doesNotMatch(html,/data-study-face/);});
+test('the accepted University challenge keeps its original header, information control and layout classes',()=>{const r=forceEducation(educationReady(),'education-event',{},[5,5]),html=educationNestedChoiceView(educationNestedChoiceModel(r.state),r.state,{esc,projection:r,session:r.session});assert.match(html,/data-education-choice="challenge"/);assert.match(html,/class="education-event-content"/);assert.match(html,/Choose a skill you learned/);assert.match(html,/data-education-info="nested"/);assert.doesNotMatch(html,/academy-challenge|education-tutor-event-dice/);});
