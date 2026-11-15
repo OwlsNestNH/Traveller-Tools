@@ -31,6 +31,6 @@
 
 @media screen{#workspace>.screen-review-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}#workspace>.screen-review-footer>.screen-review-entry{border:0;padding:0;margin:0}#workspace>.screen-review-footer>#cancel-character{margin-left:auto;min-height:44px}}
 
-@media screen{#workspace>.screen-review-footer{flex-wrap:nowrap}#workspace>.screen-review-footer>#cancel-character{width:auto;flex:0 0 auto}}
+@media screen{#workspace>.screen-review-footer{flex-wrap:wrap}#workspace>.screen-review-footer>#cancel-character{width:auto;flex:0 0 auto}}
 
 @media screen{#precareer-dialog .screen-review-information-footer{display:flex;align-items:center;gap:12px;border-top:1px solid #9cdbed}#precareer-dialog .screen-review-information-footer>.screen-review-entry{flex:0 0 auto;margin:0;padding:0;border:0}#precareer-dialog .screen-review-information-footer>.screen-review-entry>button{width:auto;min-height:44px;min-width:88px;font-size:17px;padding:8px 14px;border:1px solid #9cdbed;border-radius:8px;background:#092435}#precareer-dialog .screen-review-information-footer>#precareer-rules-open{min-width:0;flex:1;border-top:0}}
