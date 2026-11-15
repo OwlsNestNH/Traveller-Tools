@@ -1,8 +1,13 @@
 import {trainingChoiceView} from './training-information.mjs';
+export function coverCheckInstruction(state){
+ const cover=state?.currentCrossCareerCover;
+ if(state?.stage!=='cross-career-cover'||!cover?.options?.length||!['core.agent','vargr.agent'].includes(cover.originCareerId))return null;
+ return 'Choose a cover and roll Deception 8+. Your actual career stays the same. '+(cover.originCareerId==='core.agent'?'Success gives a cover event and extra training; failure gives a cover mishap.':'Success gives extra training and DM +2 on your next advancement; failure gives a cover mishap.');
+}
 export function crossCareerCoverView(state,{esc,button,sourceLabel,careerName}){
- const current=state.currentCrossCareerCover;
+ const current=state.currentCrossCareerCover,check=coverCheckInstruction(state);
  if(!current?.options?.length)return '<p class="warning">Cover choices are unavailable. Keep the character pending and reload.</p>';
- return '<p class="source">'+esc(sourceLabel(current.source.id,current.source.page))+'</p><p>Choose a cover for this operation. Your career remains '+esc(careerName(current.originCareerId))+'.</p><div class="choice-list">'+current.options.map(c=>button(esc(c.name),'cross-career-cover','choice','data-career="'+esc(c.id)+'"')).join('')+'</div>';
+ return '<p class="source">'+esc(sourceLabel(current.source.id,current.source.page))+'</p>'+(check?'<p class="cover-check-instruction">'+esc(check)+'</p>':'<p>Choose a cover for this operation. Your career remains '+esc(careerName(current.originCareerId))+'.</p>')+'<div class="choice-list">'+current.options.map(c=>button(esc(c.name)+(check?' — Roll Deception 8+':''),'cross-career-cover','choice','data-career="'+esc(c.id)+'"')).join('')+'</div>';
 }
 // Present an engine-projected borrowed training award without sending rule tables.
 export function crossCareerTrainingView(state,{esc,button,sourceLabel,careerName}){
