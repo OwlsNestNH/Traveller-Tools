@@ -9,6 +9,7 @@ export function createCharacterCancel({document,onConfirm,canOpen}) {
   trigger=button;dialog.showModal();document.body.classList.add('cancel-character-open');keep.focus();
  }
  function close(){dialog.close();}
+ function syncPurpose(){const button=document.getElementById('cancel-character');if(!button)return;if(button.closest('#army-career-dialog,#precareer-dialog,#completion-dialog')){button.removeAttribute('aria-haspopup');button.removeAttribute('aria-controls');}else{button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls',dialog.id);}}
  keep.addEventListener('click',close);
  confirm.addEventListener('click',()=>{
   if(!dialog.open||!canOpen())return;
@@ -23,11 +24,11 @@ export function createCharacterCancel({document,onConfirm,canOpen}) {
   if(event.key!=='Tab'||event.altKey||event.ctrlKey||event.metaKey)return;
   event.preventDefault();(document.activeElement===keep?confirm:keep).focus();
  });
- return {placeButton(){
+ return {syncPurpose,placeButton(){
   const workspace=document.getElementById('workspace');
   let actions=workspace.querySelector('#setup-form > .actions')??[...workspace.querySelectorAll(':scope > .actions')].at(-1);
   if(!actions){actions=document.createElement('div');actions.className='actions';workspace.append(actions);}
   const button=document.createElement('button');button.type='button';button.id='cancel-character';button.className='quiet';button.textContent='Cancel';
-  button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls',dialog.id);button.addEventListener('click',()=>open(button));actions.append(button);
+  button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls',dialog.id);button.addEventListener('click',()=>{const panel=button.closest('#army-career-dialog,#precareer-dialog,#completion-dialog');const dismiss=panel?.querySelector('#army-career-close,#precareer-dismiss,#completion-close');if(panel){dismiss?.click();return;}open(button);});actions.append(button);syncPurpose();
  }};
 }

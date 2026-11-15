@@ -52,7 +52,7 @@ try{
      const [a,b]=[lum(rgb(getComputedStyle(n).color)),lum(bg)].sort((a,b)=>b-a);return(a+.05)/(b+.05);
     });assert.ok(ratio>=4.5,'normal text contrast');
    }
-   await page.locator('#cancel-character').click();await page.locator('#cancel-character-dialog[open]').waitFor();await page.keyboard.press('Escape');
+   const cancel=page.locator('#cancel-character'),dismissOnly=await cancel.getAttribute('aria-haspopup')!=='dialog';await cancel.click();if(dismissOnly){assert.equal(await page.locator('#cancel-character-dialog[open]').count(),0,'Cancel dismisses this popup without resetting');assert.equal(await page.locator('#army-career-dialog').isVisible(),false,'Cancel closes the active career popup');const resume=page.locator('#army-career-resume');assert.equal(await resume.isVisible(),true);await resume.click();assert.equal(await page.locator('#army-career-dialog').isVisible(),true,'Resume returns to the same career screen');}else{await page.locator('#cancel-character-dialog[open]').waitFor();await page.keyboard.press('Escape');}
    assert.equal(await saved(page),raw);if(text)assert.equal(await tag.locator('blockquote > p').first().innerText(),text);
    await page.reload();await ready(page);assert.equal(await tag.count(),shown?1:0);if(text)assert.equal(await tag.locator('blockquote > p').first().innerText(),text);assert.equal(await saved(page),raw);
    assert.equal(await restoredAslanTrainingTagline(session,current,async request=>api(request)),text);

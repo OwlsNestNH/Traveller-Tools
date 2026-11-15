@@ -32,7 +32,7 @@ try{
   await page.evaluate(()=>localStorage.setItem('unrelated-saved-record','preserve me'));
   await page.locator('[name=name]').fill('Airlock test Traveller');await page.locator('[name=homeworld]').fill('Test homeworld');
   await page.locator('#notes-connections > summary').click();await page.locator('#character-notes').fill('Unsaved notes survive dismissal');
-  assert.equal(await page.locator('#setup-form > .actions #cancel-character').count(),1);
+  assert.equal(await page.locator('#setup-form > .actions #cancel-character').count(),1);assert.equal(await page.locator('#cancel-character').getAttribute('aria-haspopup'),'dialog');assert.equal(await page.locator('#cancel-character').getAttribute('aria-controls'),'cancel-character-dialog');
   if(width===1440){const primary=await page.locator('#setup-form button[type=submit]').boundingBox(),cancel=await page.locator('#cancel-character').boundingBox();assert.ok(Math.abs(primary.y-cancel.y)<2,'Cancel sits beside the main action');assert.ok(cancel.width<primary.width,'Cancel is visually secondary');}
   const before=await snapshot(page);
   for(const dismiss of ['escape','keep','escape']){
@@ -50,7 +50,7 @@ try{
   await airlock(page);await fresh(page);await toolbarNew(page);const initial=await fresh(page);
   if(transport==='static')await page.screenshot({path:fileURLToPath(new URL('new-character-quiet-'+width+'.png',out)),fullPage:false});
   await page.locator('[name=name]').fill('Rolled Traveller');await page.getByRole('button',{name:'Begin character',exact:true}).click();await ready(page);
-  assert.equal(await page.locator('.statistics-actions #cancel-character').count(),1);
+  assert.equal(await page.locator('.screen-review-footer #cancel-character').count(),1);assert.equal(await page.locator('.screen-review-footer [data-screen-review-back]').count(),1);const backBox=await page.locator('[data-screen-review-back]').boundingBox(),cancelBox=await page.locator('#cancel-character').boundingBox();assert.ok(backBox.x<cancelBox.x&&Math.abs(backBox.y-cancelBox.y)<3,'Back stays left and Cancel right in the shared footer');
   await page.locator('[data-action=roll-statistics]').click();await ready(page);await page.locator('[data-action=accept-statistics]').waitFor();
   const rolled=await stored(page);await show(page);await page.locator('#cancel-character-keep').click();await page.waitForFunction(()=>!document.body.classList.contains('cancel-character-open'));assert.equal(await stored(page),rolled);
   await page.locator('[data-action=accept-statistics]').click();await ready(page);await page.waitForFunction(()=>document.body.dataset.stage!=='statistics');

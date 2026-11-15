@@ -1,0 +1,39 @@
+@media screen {
+ .screen-review-entry{display:flex;justify-content:flex-start;margin:16px 0 0;border-top:1px solid #527d91;padding-top:12px;}
+ .screen-review-entry>button{min-width:96px;min-height:44px;font-size:17px;padding:8px 18px;}
+ #screen-review-dialog{width:min(1500px,calc(100vw - 24px));height:calc(100dvh - 24px);max-width:none;max-height:none;margin:auto;padding:16px;border:2px solid #91d6e8;border-radius:14px;background:#061b29;color:#f1f5f8;overflow:hidden;}
+ #screen-review-dialog[open]{display:flex;flex-direction:column;gap:10px;}
+ #screen-review-dialog::backdrop{background:#00101bd9;}
+ .screen-review-heading h2{font-size:24px;color:#ffdc67;margin:0 0 6px;}
+ .screen-review-heading p,#screen-review-status{font-size:16px;margin:0;line-height:1.4;}
+ #screen-review-frame{flex:1;min-height:0;}
+ #screen-review-frame iframe{display:block;width:100%;height:100%;border:1px solid #527d91;background:#03121e;border-radius:8px;}
+ .screen-review-controls{display:flex;flex-wrap:wrap;gap:10px;flex:none;}
+ .screen-review-controls button{min-height:44px;font-size:17px;background:#ffd052;color:#101b21;border-color:#ffe59a;padding:9px 16px;}
+ .screen-review-controls button.quiet{background:#092435;color:#ffdc67;border-color:#7ba8bc;}
+ body[data-screen-review="read-only"] :is(header,.toolbar,body>footer,#message,#recovery,#legacy-history){display:none!important;}
+ body[data-screen-review="read-only"]{padding:12px!important;}
+ body[data-screen-review="read-only"] .layout{margin:0!important;}
+ body[data-screen-review="read-only"] button:disabled,body[data-screen-review="read-only"] input:disabled,body[data-screen-review="read-only"] select:disabled,body[data-screen-review="read-only"] textarea:disabled{opacity:1;cursor:default;}
+ body[data-screen-review="read-only"] input:disabled,body[data-screen-review="read-only"] select:disabled,body[data-screen-review="read-only"] textarea:disabled{-webkit-text-fill-color:currentColor;}
+}
+@media screen and (max-width:650px){
+ #screen-review-dialog{padding:10px;width:calc(100vw - 12px);height:calc(100dvh - 12px);}
+ .screen-review-heading h2{font-size:21px;}
+ .screen-review-heading p,#screen-review-status{font-size:14px;}
+ .screen-review-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+ .screen-review-controls button{font-size:15px;padding:8px;}
+ .screen-review-controls [data-review-current]{grid-column:1 / -1;}
+}
+@media print{.screen-review-entry,#screen-review-dialog{display:none!important;}}
+
+@media screen{body[data-screen-review="read-only"] .screen-review-recorded-choice{border-left:3px solid #ffd052;padding:8px 12px;color:#ffe19a;background:#092435;font-size:16px;line-height:1.45}body[data-screen-review="read-only"] button[data-recorded-choice="true"]{outline:3px solid #ffd052;outline-offset:2px}}
+
+@media screen{#workspace>.screen-review-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}#workspace>.screen-review-footer>.screen-review-entry{border:0;padding:0;margin:0}#workspace>.screen-review-footer>#cancel-character{margin-left:auto;min-height:44px}}
+
+@media screen{#workspace>.screen-review-footer{flex-wrap:wrap}#workspace>.screen-review-footer>#cancel-character{width:auto;flex:0 0 auto}}
+
+@media screen{#precareer-dialog .screen-review-information-footer{display:flex;align-items:center;gap:12px;border-top:1px solid #9cdbed}#precareer-dialog .screen-review-information-footer>.screen-review-entry{flex:0 0 auto;margin:0;padding:0;border:0}#precareer-dialog .screen-review-information-footer>.screen-review-entry>button{width:auto;min-height:44px;min-width:88px;font-size:17px;padding:8px 14px;border:1px solid #9cdbed;border-radius:8px;background:#092435}#precareer-dialog .screen-review-information-footer>#precareer-rules-open{min-width:0;flex:1;border-top:0}}
+
+@media screen{#species-skill-dialog .species-skill-footer:has(>.screen-review-entry){flex-wrap:wrap}#species-skill-dialog .species-skill-footer>.screen-review-entry{margin:0;padding:0;border:0;flex:0 0 auto}#species-skill-dialog .screen-review-entry>button{min-width:88px;padding:8px 12px}#species-skill-dialog .species-skill-footer:has(>.screen-review-entry)>#background-selected-summary{min-width:0;flex:1}}
+@media screen and (max-width:760px){#species-skill-dialog .species-skill-footer:has(>.screen-review-entry)>#background-selected-summary{flex-basis:100%;order:-1}}

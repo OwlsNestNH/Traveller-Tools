@@ -1,5 +1,7 @@
+import {isEmbeddedScreenReview} from './screen-review.mjs';
 // The GUI consumes this JSON contract; it does not roll dice or calculate outcomes.
 export async function call(request) {
+ if(isEmbeddedScreenReview&&!['catalog','project','import'].includes(request?.operation))throw new Error('Earlier screens are read only. Return to the current screen to continue.');
  const endpoint=new URLSearchParams(location.search).get('api');
  if(endpoint==='local'){
   const response=await fetch('/api/v1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request)});

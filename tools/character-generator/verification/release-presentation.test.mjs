@@ -19,11 +19,11 @@ test('homepage exposes source-assisted beta fourth and Ship Combat before the re
 });
 
 test('beta version, notice, printable disclaimer and notes agree with the released catalogue',()=>{
- assert.equal(version(tool),'0.6.0-beta.1');assert.equal(version(changes),version(tool));
- assert.match(tool,/id="release-version">Beta 0\.6<\/span>/);
+ assert.equal(version(tool),'0.7.0-beta.1');assert.equal(version(changes),version(tool));
+ assert.match(tool,/id="release-version">Beta 0\.7<\/span>/);
  assert.match(tool,/Source-assisted beta/);assert.match(tool,/not a fully automated or independently rules-certified generator/);
- assert.match(read('tools/character-generator/gui/app.mjs'),/Source-assisted Beta 0\.6/);
- assert.match(read('tools/character-generator/README.md'),/0\.6\.0-beta\.1/);
+ assert.match(read('tools/character-generator/gui/app.mjs'),/Source-assisted Beta 0\.7/);
+ assert.match(read('tools/character-generator/README.md'),/0\.7\.0-beta\.1/);
  assert.match(read('tools/character-generator/NOTICE.html'),/Non-commercial source-assisted beta/);
  assert.doesNotMatch(tool+read('tools/character-generator/README.md'),/development preview|Do not publish/);
  const catalog=api({operation:'catalog'});assert.equal(catalog.ok,true);assert.equal(catalog.species.length,4);assert.equal(catalog.careers.length,36);
@@ -83,7 +83,7 @@ test('actual GUI startup reports missing browser UUID instead of rendering a par
  assert.ok(begin>=0&&end>begin,'Inspect the actual startup function, not a rewritten implementation');
  async function run(crypto){
   const calls=[],messages=[];let renders=0;
-  const context={crypto,restoredAslanTrainingTagline,call:async request=>{calls.push(request.operation);return api(JSON.parse(JSON.stringify(request)));},localStorage:{getItem:()=>null},key:'test',projection:undefined,storageWarning:'',setBusy:()=>{},updateRecovery:()=>{},render:()=>renders++,notify:(message,error)=>messages.push({message,error})};
+  const context={crypto,isEmbeddedScreenReview:false,restoredAslanTrainingTagline,call:async request=>{calls.push(request.operation);return api(JSON.parse(JSON.stringify(request)));},localStorage:{getItem:()=>null},key:'test',projection:undefined,storageWarning:'',setBusy:()=>{},updateRecovery:()=>{},render:()=>renders++,notify:(message,error)=>messages.push({message,error})};
   const ready=await vm.runInNewContext(app.slice(begin,end)+'\nstart();',context);return{calls,messages,renders,ready};
  }
  const unavailable=await run({});assert.equal(unavailable.ready,false);assert.equal(unavailable.renders,0);assert.deepEqual(unavailable.calls,['catalog']);assert.equal(unavailable.messages[0].error,true);assert.match(unavailable.messages[0].message,/Unable to start the rules engine: crypto.randomUUID is not a function/);
