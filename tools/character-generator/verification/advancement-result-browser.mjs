@@ -45,6 +45,15 @@ try{
     const raw=await page.evaluate(key=>localStorage.getItem(key),key),saved=importSession(raw);
     assert.equal(saved.events.length,before.revision+1);assert.equal(exportSession(saved),raw);
     assert.equal(project(saved).log.at(-1).summary,after.log.at(-1).summary);
+    if(after.state.stage==='term-end'){
+     assert.doesNotMatch(await page.locator('#last-action-result').innerText(),/Completed terms:|Career terms:|Benefit rolls:/);
+     const recorded=after.log.at(-1).rolls.find(r=>r.label==='Advancement');
+     assert.ok((await page.locator('.army-dice-faces').evaluateAll(ns=>ns.map(n=>n.getAttribute('aria-label')))).includes('Recorded dice: '+recorded.values.join(', ')));
+     const information=page.locator('[data-result-information]');await information.focus();await page.keyboard.press('Enter');await page.locator('#opening-help-dialog[open]').waitFor();
+     assert.match(await page.locator('#opening-help-copy').innerText(),/Completed terms:|Career terms:/);await page.keyboard.press('Escape');
+     assert.equal(await information.evaluate(n=>n===document.activeElement),true);assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
+    }
+
     await page.reload();await page.locator('#last-action-result').waitFor();
     assert.equal(await page.locator('#last-action-result h3').innerText(),displayedTitle);
     await assertResultColor(page,expected.status);
