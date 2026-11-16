@@ -1,0 +1,64 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {execute,project,exportSession,importSession} from '../engine/session.mjs';
+import {educationReady,forceEducation,command} from './education-result-fixtures.mjs';
+const ids=['core.academy-army','core.academy-marine','core.academy-navy'];
+for(const id of ids)for(const values of [[1,1],[6,6]])test(id+' political event '+values.join('+')+' separates check, effects and graduation',()=>{
+ let r=forceEducation(educationReady(id),'education-event',{separateAcademyPoliticalRoll:true},[2,6]);
+ assert.equal(r.state.stage,'education-event-roll');
+ assert.equal(r.educationEventView.eventTotal,8);
+ assert.equal(r.educationEventView.roll.target,8);
+ assert.equal(r.educationEventView.roll.stat,'SOC');
+ assert.equal(r.state.character.relationships.length,0);
+ assert.throws(()=>execute(r.session,{type:'education-graduation'}));
+ r=forceEducation(r,'roll-education-event-step',{pendingId:r.state.pendingEducationEventRoll.id},values);
+ assert.equal(r.state.stage,'education-event-result');
+ assert.equal(r.educationEventView.childRolls.length,1);
+ assert.equal(r.educationEventView.childRolls[0].check.success,values[0]===6);
+ assert.deepEqual(r.state.character.relationships.map(x=>x.role),values[0]===6?['Ally','Enemy']:[]);
+ const changes=r.educationEventView.appliedChanges.flatMap(g=>g.changes).filter(c=>c.path.startsWith('relationships.'));
+ assert.equal(changes.length,values[0]===6?2:0);
+ const raw=exportSession(r.session);assert.equal(exportSession(importSession(raw)),raw);
+ assert.deepEqual(project(r.session).educationEventView,r.educationEventView);
+ assert.throws(()=>execute(r.session,{type:'education-graduation'}));
+ const next=command(r,'acknowledge-education-event',{pendingId:r.state.educationEventResult.id});
+ assert.equal(next.state.stage,'education-graduation');assert.equal(next.state.rng,r.state.rng);assert.deepEqual(next.state.character,r.state.character);
+});
+for(const id of ids)test(id+' old recorded event remains combined internally for exact save replay',()=>{
+ const r=forceEducation(educationReady(id),'education-event',{},[2,6]);
+ assert.equal(r.state.stage,'education-graduation');assert.equal(r.educationEventView,undefined);
+ assert.deepEqual(project(r.session).state,r.state);
+});
+test('relationship names update only awarded records, survive replay and do not duplicate awards',()=>{
+ let r=forceEducation(educationReady(),'education-event',{},[2,6]);
+ assert.throws(()=>command(r,'name-education-relationships',{pendingId:'fake',names:[]}));
+ r=forceEducation(educationReady(ids[0]),'education-event',{separateAcademyPoliticalRoll:true},[2,6]);
+ r=forceEducation(r,'roll-education-event-step',{pendingId:r.state.pendingEducationEventRoll.id},[6,6]);
+ const pendingId=r.state.educationEventResult.id,idsBefore=r.state.character.relationships.map(r=>r.id),rng=r.state.rng;
+ r=command(r,'name-education-relationships',{pendingId,names:idsBefore.map((id,i)=>({id,name:i?'Opponent':'Supporter'}))});
+ assert.deepEqual(r.state.character.relationships.map(r=>r.name),['Supporter','Opponent']);
+ assert.equal(r.state.rng,rng);assert.deepEqual(r.state.character.relationships.map(r=>r.id),idsBefore);
+ assert.deepEqual(project(importSession(exportSession(r.session))).state,r.state);
+ assert.throws(()=>command(r,'name-education-relationships',{pendingId,names:[{id:'not-awarded',name:'Fake'}]}));
+ r=command(r,'name-education-relationships',{pendingId,names:[{id:idsBefore[0],name:''}]});
+ assert.equal(r.state.character.relationships[0].name,'Unnamed ally');
+ assert.equal(r.state.character.relationships.length,2);
+ const namedRevision=r.revision,namedRelationships=structuredClone(r.state.character.relationships);
+ r=command(r,'acknowledge-education-event',{pendingId});
+ r=command(r,'restore',{revision:namedRevision});
+ assert.equal(r.state.stage,'education-event-result');assert.deepEqual(r.state.character.relationships,namedRelationships);
+ assert.equal(r.state.rng,rng);assert.equal(r.state.character.relationships.length,2);
+});
+for(const id of ids)test(id+' legacy review uses recorded effects and never repeats rolls or awards',()=>{
+ let r=forceEducation(educationReady(id),'education-event',{},[2,6]);
+ const view=r.legacyPoliticalEventView;assert.equal(view.row,8);assert.equal(view.eventTotal,8);
+ const rng=r.state.rng,oldEvents=structuredClone(r.session.events),relationships=structuredClone(r.state.character.relationships);
+ assert.equal(view.relationships.length,relationships.length);
+ if(view.relationships.length){r=command(r,'name-legacy-political-relationships',{pendingId:view.pendingId,names:[{id:view.relationships[0].id,name:'Recorded ally'}]});assert.equal(r.state.character.relationships[0].name,'Recorded ally');}
+ const before=structuredClone(r.state.character.relationships);
+ r=command(r,'acknowledge-legacy-political-event',{pendingId:view.pendingId});
+ assert.equal(r.legacyPoliticalEventView,undefined);assert.equal(r.state.stage,'education-graduation');assert.equal(r.state.rng,rng);
+ assert.deepEqual(r.session.events.slice(0,oldEvents.length),oldEvents);assert.deepEqual(r.state.character.relationships,before);
+ assert.deepEqual(project(importSession(exportSession(r.session))).state,r.state);
+ assert.throws(()=>command(r,'acknowledge-legacy-political-event',{pendingId:view.pendingId}));
+});
