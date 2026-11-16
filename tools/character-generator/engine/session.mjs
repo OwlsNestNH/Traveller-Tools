@@ -3107,8 +3107,39 @@ function apply(state,command,rolls) {
  case 'close-equipment-finalization':{
   need(state.stage==='equipment-finalization','No equipment checklist is open.');state.stage=state.equipmentFinalizationReturn;delete state.equipmentFinalizationReturn;return 'Returned to career choices; outstanding equipment awards are preserved.';
  }
+ case 'agent-person-injury-roll': {
+   const p=state.pending,e=p?.effect;
+   need(state.stage==='book-step'&&currentCareer(state).career.id==='core.agent'&&p?.kind==='native-effect'&&e?.kind==='injury'&&e.table==='core.injury'&&e.subject==='chosen-contact-ally-or-family'&&e.rolls===2&&e.take==='lower','No Agent other-person injury is pending.');
+   need(Object.keys(payload).every(k=>['person','relationship','targetId'].includes(k)),'Unexpected injury input.');
+   let person,relationship,targetId;
+   if(payload.targetId!==undefined){
+    need(Object.keys(payload).length===1,'Choose one recorded injury target.');targetId=payload.targetId;
+    if(targetId==='family'){person='Family member';relationship='Family member';}
+    else {const target=state.character.relationships.find(r=>r.id===targetId&&['Contact','Ally'].includes(r.role));need(target,'Choose an existing Contact or Ally, or a family member.');person=target.name;relationship=target.role;}
+   }else {person=text(payload.person??'',120);relationship=payload.relationship;need(person,'Name the person who is injured.');need(['Contact','Ally','Family member'].includes(relationship),'Choose a Contact, Ally or family member.');}
+   const tableRolls=[dice(state,1,rolls,'Injury table 1'),dice(state,1,rolls,'Injury table 2')],tableResult=Math.min(...tableRolls);
+   const severityDie=tableResult<=2?dice(state,1,rolls,'Injury severity'):undefined,outcome=injuryOutcome({roll:tableResult,severityDie});
+   state.character.otherPersonInjuries??=[];
+   const record={id:'other-person-injury-'+(state.character.otherPersonInjuries.length+1),person,relationship,...(targetId?{targetId}:{}),source:{id:'core',pages:[23,49]},careerIndex:state.active,tableRolls,tableResult,take:'lower',...(severityDie!==undefined?{severityDie}:{}),options:copy(outcome.effects[0]?.options??[]),completed:false};
+   if(!record.options.length)record.effects=[];
+   state.character.otherPersonInjuries.push(record);state.pending={kind:'agent-person-injury',recordId:record.id,next:p.next};
+   return person+': Injury rolls '+tableRolls.join(', ')+', lower result '+tableResult+'.'+(severityDie===undefined?'':' Severity '+severityDie+'.');
+ }
+ case 'agent-person-injury-loss': {
+   need(state.stage==='book-step'&&state.pending?.kind==='agent-person-injury','No other-person injury choice is pending.');
+   const r=state.character.otherPersonInjuries.find(r=>r.id===state.pending.recordId);need(r&&!r.completed&&r.effects===undefined,'The injury choice is already recorded.');
+   need(Object.keys(payload).length===1,'Unexpected injury choice input.');const index=integer(payload.index,0,r.options.length-1,'Injury choice');r.effects=copy(r.options[index].effects);r.selectedLossIndex=index;
+   return r.person+': '+r.options[index].label+'. Your Traveller is unchanged.';
+ }
+ case 'agent-person-injury-continue': {
+   need(state.stage==='book-step'&&state.pending?.kind==='agent-person-injury','No other-person injury result is pending.');need(Object.keys(payload).length===0,'Unexpected injury continuation input.');
+   const r=state.character.otherPersonInjuries.find(r=>r.id===state.pending.recordId);need(r&&!r.completed&&r.effects!==undefined,'Choose the injury consequence first.');r.completed=true;
+   state.character.historyNotes??=[];state.character.historyNotes.push(r.relationship+' '+r.person+': Injury rolls '+r.tableRolls.join(', ')+', kept '+r.tableResult+(r.severityDie===undefined?'':', severity '+r.severityDie)+'. '+(r.effects.length?r.effects.map(e=>e.name+' '+e.value).join(', '):'No permanent characteristic loss.')+' Recorded for this person, not the Traveller.');
+   state.pending=null;drainEffects(state,rolls);return 'Recorded injury for '+r.person+'.';
+ }
  case 'resolve-book': {
   need(state.stage==='book-step'&&state.pending,'No source step to resolve.');
+    need(state.pending.kind!=='agent-person-injury','Use the recorded injury choice and continuation.');
   need(payload.confirmed===true,'Confirm you checked the indicated source.');
   const pending=copy(state.pending);
   if(pending.requiredAwardReview){need(text(payload.note??'',500),'Record the referee reason for replacing or omitting the pending skill award.');need(payload.awardReviewConfirmed===true,'Explicitly confirm the referee replacement or omission of the pending skill award.');}
