@@ -15,6 +15,31 @@ function human(seed='native-public',revision){
 }
 function force(r,type,payload,values,index=0){const rolled=run(r,type,payload);return run(rolled,'gm-replay',{revision:rolled.revision,rollIndex:index,values,reason:'Source regression fixture'});}
 const terms={confirmed:true,note:'Referee verified teacher access, funding and elapsed training chronology',psionicApproved:true,psionicCost:0,psionicFunding:'provided',psionicTimingConfirmed:true};
+
+test('explicit training credit preserves prior debt, rolls and save replay',()=>{
+ let r=human('training-credit');
+ r=run(r,'gm-override',{field:'stat.PSI',value:9,reason:'Known potential fixture'});
+ r=run(r,'gm-override',{field:'cash',value:25000,reason:'Funding fixture'});
+ r=run(r,'gm-override',{field:'debt',value:4000,reason:'Prior debt fixture'});
+ r=run(r,'begin-psionic-training');const before=r.state.rng;
+ const payload={...terms,psionicCost:100000,psionicFunding:'finance-training',psionicDebtConfirmed:true};
+ assert.throws(()=>run(r,'resolve-book',{...payload,psionicDebtConfirmed:false}),/Confirm.*debt/);
+ r=run(r,'resolve-book',payload,{id:'finance-course-once'});
+ assert.equal(r.state.character.cash,0);assert.equal(r.state.character.debt,79000);assert.equal(r.state.rng,before);
+ assert.match(r.log.at(-1).summary,/debt added Cr75000/);assert.deepEqual(r.log.at(-1).rolls,[]);
+ assert.equal(r.state.character.psionics.rulings.at(-1).financingPolicy,'campaign-training-credit');
+ const again=run(r,'resolve-book',payload,{id:'finance-course-once'});assert.deepEqual(again.state,r.state);
+ assert.deepEqual(project(importSession(exportSession(r.session))).state,r.state);
+ r=run(r,'learn-talent',{talent:'Telepathy'});r=run(r,'finish-psionic-training');
+ assert.equal(r.state.stage,'precareer');assert.equal(r.state.character.careers.length,0);assert.equal(r.state.character.terms,0);assert.equal(r.state.character.age,18);
+ assert.throws(()=>run(r,'begin-psionic-training'),/already.*completed/);
+});
+
+test('training credit cannot pay an untested legacy course or charge a declined course',()=>{
+ let r=run(human('credit-legacy','character-preview-2026-11-09.23'),'begin-psionic-training');
+ assert.throws(()=>run(r,'resolve-book',{...terms,psionicFunding:'finance-training',psionicCost:100000,psionicDebtConfirmed:true}),/Complete PSI testing/);
+ r=run(r,'resolve-book',{...terms,psionicApproved:false});assert.equal(r.state.character.cash,0);assert.equal(r.state.character.debt,0);assert.equal(r.state.character.stats.PSI,undefined);
+});
 test('human community childhood tests and trains natively, then honours operates on acquired talents',()=>{
  let r=run(human(),'precareer',{id:'companion.psionic'});r=force(r,'companion-entry',{},[4,5]);assert.equal(r.state.stage,'psionic-training');assert.equal(r.state.character.stats.PSI,9);assert.equal(r.state.character.cash,0);assert.equal(r.state.character.debt,0);
  r=run(r,'learn-talent',{talent:'Telepathy'});assert.equal(r.state.character.skills.Telepathy,0);assert.equal(r.state.character.psionics.checksAttempted,0);assert.equal(r.log.at(-1).rolls.length,0);
@@ -117,6 +142,19 @@ test('player-selected human PSI keeps GM mode off without awarding a talent',()=
 });
 test('Core Psion entry cannot silently bypass initial training',()=>{
  const s=fixture('human',null);s.config.gm=true;cmd(s,'career',{id:'core.psion',assignment:'adept'});assert.equal(s.pending.kind,'psionic-training-terms');assert.equal(s.character.careers.length,0);
+});
+
+test('explicit separate-course application rejects before any roll and preserves legacy redirect',()=>{
+ let r=human('separate-course');r=run(r,'gm-override',{field:'stat.PSI',value:9,reason:'Recorded potential'});r=run(r,'skip-precareer');
+ const saved=exportSession(r.session);
+ assert.throws(()=>run(r,'career',{id:'core.psion',assignment:'adept',separatePsionicTraining:true}),/separate psionic training/);
+ assert.equal(exportSession(r.session),saved);
+ const legacy=run(r,'career',{id:'core.psion',assignment:'adept'});assert.equal(legacy.state.pending.kind,'psionic-training-terms');assert.equal(legacy.log.at(-1).rolls.length,0);
+ assert.deepEqual(project(importSession(exportSession(legacy.session))).state,legacy.state);
+ r=run(r,'begin-psionic-training');r=run(r,'resolve-book',terms);r=run(r,'learn-talent',{talent:'Telepathy'});r=run(r,'finish-psionic-training');
+ const applied=run(r,'career',{id:'core.psion',assignment:'adept',separatePsionicTraining:true});
+ assert.notEqual(applied.state.pending?.kind,'psionic-training-terms');assert.ok(applied.log.at(-1).rolls.some(roll=>roll.label==='Qualification'));
+ assert.deepEqual(project(importSession(exportSession(applied.session))).state,applied.state);
 });
 test('mandatory Independence acquisition at the skill cap uses source resolution and resumes',()=>{
  const s=fixture('aslan','aslan.outcast');s.character.gender='male';s.character.stats.INT=2;s.character.stats.EDU=2;s.character.stats.SOC=2;s.character.skills={Admin:4,Advocate:4,Carouse:4};
