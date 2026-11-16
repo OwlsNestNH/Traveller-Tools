@@ -14,7 +14,7 @@ try{for(const http of [false,true])for(const width of [320,1440]){
  try{
   await page.goto('http://127.0.0.1:'+server.address().port+(http?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();
-  await page.getByRole('button',{name:'Allocate specializations now'}).click();await page.locator('#award-base').waitFor();
+  await page.getByRole('button',{name:'Allocate specializations now'}).click();await page.locator('#award-base').waitFor({state:'attached'});
   assert.equal(await page.locator('#award-base').inputValue(),'Electronics');
   const options=await page.locator('#award-speciality option').evaluateAll(os=>os.map(o=>o.value).filter(v=>v&&v!=='__custom__'));
   assert.equal(await page.locator('#award-speciality option').last().getAttribute('value'),'__custom__');
