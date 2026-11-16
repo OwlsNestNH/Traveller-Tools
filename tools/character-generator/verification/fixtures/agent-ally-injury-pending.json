@@ -1,0 +1,619 @@
+{
+  "format": "traveller-character-session",
+  "version": 1,
+  "rulesRevision": "character-preview-2026-11-14.35",
+  "seed": "education-review-core.university-true",
+  "events": [
+    {
+      "id": "action-1",
+      "command": {
+        "type": "setup",
+        "payload": {
+          "species": "human",
+          "name": "Review Traveller"
+        }
+      },
+      "rolls": [],
+      "summary": "Started Review Traveller (Human)."
+    },
+    {
+      "id": "action-2",
+      "command": {
+        "type": "gm-mode",
+        "payload": {
+          "enabled": true
+        }
+      },
+      "rolls": [],
+      "summary": "GM mode false → true."
+    },
+    {
+      "id": "action-3",
+      "command": {
+        "type": "roll-statistics",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "STR",
+          "values": [
+            5,
+            4
+          ],
+          "kept": [
+            5,
+            4
+          ],
+          "total": 9
+        },
+        {
+          "label": "DEX",
+          "values": [
+            3,
+            1
+          ],
+          "kept": [
+            3,
+            1
+          ],
+          "total": 4
+        },
+        {
+          "label": "END",
+          "values": [
+            3,
+            4
+          ],
+          "kept": [
+            3,
+            4
+          ],
+          "total": 7
+        },
+        {
+          "label": "INT",
+          "values": [
+            2,
+            2
+          ],
+          "kept": [
+            2,
+            2
+          ],
+          "total": 4
+        },
+        {
+          "label": "EDU",
+          "values": [
+            3,
+            2
+          ],
+          "kept": [
+            3,
+            2
+          ],
+          "total": 5
+        },
+        {
+          "label": "SOC",
+          "values": [
+            1,
+            3
+          ],
+          "kept": [
+            1,
+            3
+          ],
+          "total": 4
+        }
+      ],
+      "summary": "Rolled statistics. Base total 33. Species modifiers excluded; extra characteristics excluded."
+    },
+    {
+      "id": "action-4",
+      "command": {
+        "type": "accept-statistics",
+        "payload": {}
+      },
+      "rolls": [],
+      "summary": "Accepted statistics and generated selected extra characteristics."
+    },
+    {
+      "id": "action-5",
+      "command": {
+        "type": "gm-override",
+        "payload": {
+          "field": "stat.STR",
+          "value": 7,
+          "reason": "Synthetic education review characteristics"
+        }
+      },
+      "rolls": [],
+      "summary": "GM override stat.STR: 9 → 7. Reason: Synthetic education review characteristics"
+    },
+    {
+      "id": "action-6",
+      "command": {
+        "type": "gm-override",
+        "payload": {
+          "field": "stat.DEX",
+          "value": 7,
+          "reason": "Synthetic education review characteristics"
+        }
+      },
+      "rolls": [],
+      "summary": "GM override stat.DEX: 4 → 7. Reason: Synthetic education review characteristics"
+    },
+    {
+      "id": "action-7",
+      "command": {
+        "type": "gm-override",
+        "payload": {
+          "field": "stat.END",
+          "value": 7,
+          "reason": "Synthetic education review characteristics"
+        }
+      },
+      "rolls": [],
+      "summary": "GM override stat.END: 7 → 7. Reason: Synthetic education review characteristics"
+    },
+    {
+      "id": "action-8",
+      "command": {
+        "type": "gm-override",
+        "payload": {
+          "field": "stat.INT",
+          "value": 7,
+          "reason": "Synthetic education review characteristics"
+        }
+      },
+      "rolls": [],
+      "summary": "GM override stat.INT: 4 → 7. Reason: Synthetic education review characteristics"
+    },
+    {
+      "id": "action-9",
+      "command": {
+        "type": "gm-override",
+        "payload": {
+          "field": "stat.EDU",
+          "value": 7,
+          "reason": "Synthetic education review characteristics"
+        }
+      },
+      "rolls": [],
+      "summary": "GM override stat.EDU: 5 → 7. Reason: Synthetic education review characteristics"
+    },
+    {
+      "id": "action-10",
+      "command": {
+        "type": "gm-override",
+        "payload": {
+          "field": "stat.SOC",
+          "value": 7,
+          "reason": "Synthetic education review characteristics"
+        }
+      },
+      "rolls": [],
+      "summary": "GM override stat.SOC: 4 → 7. Reason: Synthetic education review characteristics"
+    },
+    {
+      "id": "action-11",
+      "command": {
+        "type": "background",
+        "payload": {
+          "skills": [
+            "Admin",
+            "Animals"
+          ]
+        }
+      },
+      "rolls": [],
+      "summary": "Background skills: Admin, Animals."
+    },
+    {
+      "id": "action-12",
+      "command": {
+        "type": "precareer",
+        "payload": {
+          "id": "core.university"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Education entry",
+          "values": [
+            5,
+            3
+          ],
+          "kept": [
+            5,
+            3
+          ],
+          "total": 8
+        }
+      ],
+      "summary": "Entered University: roll 8, modified total 8 against 6."
+    },
+    {
+      "id": "action-13",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 12,
+          "rollIndex": 0,
+          "values": [
+            6,
+            6
+          ],
+          "reason": "Synthetic education result review"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Education entry",
+          "values": [
+            6,
+            6
+          ],
+          "kept": [
+            6,
+            6
+          ],
+          "total": 12
+        }
+      ],
+      "summary": "GM replaced action 12 roll 1 [5, 3] → [6, 6]. Reason: Synthetic education result review. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Entered University: roll 12, modified total 12 against 6."
+    },
+    {
+      "id": "action-14",
+      "command": {
+        "type": "education-skill",
+        "payload": {
+          "name": "Admin"
+        }
+      },
+      "rolls": [],
+      "summary": "Education skill Admin at level 0 recorded."
+    },
+    {
+      "id": "action-15",
+      "command": {
+        "type": "education-skill",
+        "payload": {
+          "name": "Medic"
+        }
+      },
+      "rolls": [],
+      "summary": "Education skill Medic at level 1 recorded."
+    },
+    {
+      "id": "action-16",
+      "command": {
+        "type": "education-event",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "Pre-career event",
+          "values": [
+            3,
+            5
+          ],
+          "kept": [
+            3,
+            5
+          ],
+          "total": 8
+        }
+      ],
+      "summary": "Pre-career event 8."
+    },
+    {
+      "id": "action-17",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 16,
+          "rollIndex": 0,
+          "values": [
+            1,
+            5
+          ],
+          "reason": "Synthetic education result review"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Pre-career event",
+          "values": [
+            1,
+            5
+          ],
+          "kept": [
+            1,
+            5
+          ],
+          "total": 6
+        }
+      ],
+      "summary": "GM replaced action 16 roll 1 [3, 5] → [1, 5]. Reason: Synthetic education result review. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Pre-career event 6."
+    },
+    {
+      "id": "action-18",
+      "command": {
+        "type": "roll-education-event-step",
+        "payload": {
+          "pendingId": "education-0-event-6-roll-1"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Ally count (D3)",
+          "values": [
+            4
+          ],
+          "kept": [
+            2
+          ],
+          "total": 2,
+          "modifier": 0
+        }
+      ],
+      "summary": "Ally count result 2."
+    },
+    {
+      "id": "action-19",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 18,
+          "rollIndex": 0,
+          "values": [
+            3
+          ],
+          "reason": "Synthetic education result review"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Ally count (D3)",
+          "values": [
+            3
+          ],
+          "kept": [
+            2
+          ],
+          "total": 2,
+          "modifier": 0
+        }
+      ],
+      "summary": "GM replaced action 18 roll 1 [4] → [3]. Reason: Synthetic education result review. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Ally count result 2."
+    },
+    {
+      "id": "action-20",
+      "command": {
+        "type": "acknowledge-education-event",
+        "payload": {
+          "pendingId": "education-0-event-6-result"
+        }
+      },
+      "rolls": [],
+      "summary": "Education event acknowledged. No additional dice or awards."
+    },
+    {
+      "id": "action-21",
+      "command": {
+        "type": "education-graduation",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "Graduation",
+          "values": [
+            5,
+            5
+          ],
+          "kept": [
+            5,
+            5
+          ],
+          "total": 10
+        }
+      ],
+      "summary": "Graduation total 10 against 6: honours."
+    },
+    {
+      "id": "action-22",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 21,
+          "rollIndex": 0,
+          "values": [
+            4,
+            4
+          ],
+          "reason": "Synthetic education result review"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Graduation",
+          "values": [
+            4,
+            4
+          ],
+          "kept": [
+            4,
+            4
+          ],
+          "total": 8
+        }
+      ],
+      "summary": "GM replaced action 21 roll 1 [5, 5] → [4, 4]. Reason: Synthetic education result review. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Graduation total 8 against 6: graduated."
+    },
+    {
+      "id": "action-23",
+      "command": {
+        "type": "acknowledge-education-result",
+        "payload": {}
+      },
+      "rolls": [],
+      "summary": "Education result acknowledged. No additional dice or awards."
+    },
+    {
+      "id": "action-24",
+      "command": {
+        "type": "career",
+        "payload": {
+          "id": "core.agent",
+          "assignment": "corporate"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Qualification",
+          "values": [
+            4,
+            3
+          ],
+          "kept": [
+            4,
+            3
+          ],
+          "total": 7
+        }
+      ],
+      "summary": "Entered Agent / Corporate: {\"natural\":7,\"stat\":\"INT\",\"dm\":0,\"modifier\":1,\"total\":8,\"target\":6,\"success\":true}."
+    },
+    {
+      "id": "action-25",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 24,
+          "rollIndex": 0,
+          "values": [
+            6,
+            6
+          ],
+          "reason": "Synthetic education result review"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Qualification",
+          "values": [
+            6,
+            6
+          ],
+          "kept": [
+            6,
+            6
+          ],
+          "total": 12
+        }
+      ],
+      "summary": "GM replaced action 24 roll 1 [4, 3] → [6, 6]. Reason: Synthetic education result review. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Entered Agent / Corporate: {\"natural\":12,\"stat\":\"INT\",\"dm\":0,\"modifier\":1,\"total\":13,\"target\":6,\"success\":true}."
+    },
+    {
+      "id": "action-26",
+      "command": {
+        "type": "survival-check",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "Survival",
+          "values": [
+            6,
+            4
+          ],
+          "kept": [
+            6,
+            4
+          ],
+          "total": 10
+        }
+      ],
+      "summary": "Survival: {\"natural\":10,\"stat\":\"INT\",\"dm\":0,\"modifier\":0,\"total\":10,\"target\":5,\"success\":true}."
+    },
+    {
+      "id": "action-27",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 26,
+          "rollIndex": 0,
+          "values": [
+            1,
+            1
+          ],
+          "reason": "Synthetic education result review"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Survival",
+          "values": [
+            1,
+            1
+          ],
+          "kept": [
+            1,
+            1
+          ],
+          "total": 2
+        }
+      ],
+      "summary": "GM replaced action 26 roll 1 [6, 4] → [1, 1]. Reason: Synthetic education result review. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Survival: {\"natural\":2,\"stat\":\"INT\",\"dm\":0,\"modifier\":0,\"total\":2,\"target\":5,\"success\":false}."
+    },
+    {
+      "id": "action-28",
+      "command": {
+        "type": "career-mishap",
+        "payload": {}
+      },
+      "rolls": [
+        {
+          "label": "Mishap table",
+          "values": [
+            3
+          ],
+          "kept": [
+            3
+          ],
+          "total": 3
+        }
+      ],
+      "summary": "Mishap result 3. Resolve Advocate 8+ and its consequences."
+    },
+    {
+      "id": "action-29",
+      "command": {
+        "type": "gm-replay",
+        "payload": {
+          "revision": 28,
+          "rollIndex": 0,
+          "values": [
+            5
+          ],
+          "reason": "Synthetic education result review"
+        }
+      },
+      "rolls": [
+        {
+          "label": "Mishap table",
+          "values": [
+            5
+          ],
+          "kept": [
+            5
+          ],
+          "total": 5
+        }
+      ],
+      "summary": "GM replaced action 28 roll 1 [3] → [5]. Reason: Synthetic education result review. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Mishap result 5. Resolve injury."
+    }
+  ]
+}
