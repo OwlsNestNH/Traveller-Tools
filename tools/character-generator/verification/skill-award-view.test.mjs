@@ -5,6 +5,12 @@ import {awardBases,awardNames,skillAwardView,syncAwardBase,syncAwardSpeciality,c
 const esc=String,helpers={esc,button:(label,action)=>label+' '+action,sourceLabel:()=>'',skillChoiceProgress:()=>''};
 const catalog={skillSpecialities:{'Gun Combat':['energy','slug'],Electronics:['comms','computers'],Science:null}};
 const state={pendingChoice:{deferSpeciality:true},skillChoiceSuggestions:['Gun Combat','Gun Combat (energy)','Gun Combat (slug)','Electronics (comms)'],character:{}};
+test('level-zero cascade awards retain the base skill without a specialisation prompt',()=>{
+ const s={pendingChoice:{mode:'set',value:0},skillChoiceBases:['Gun Combat'],skillChoiceSuggestions:['Gun Combat'],character:{skills:{}}};
+ const nodes={'#award-base':{value:'Gun Combat'},'#award-skill':{},'#award-skill-options':{},'#award-speciality-controls':{},'#award-custom-field':{}},root={querySelector:id=>nodes[id]??null};
+ assert.match(skillAwardView(s,catalog,helpers),/<select id="award-base"/);
+ syncAwardBase(s,catalog,root,esc);assert.equal(nodes['#award-speciality-controls'].innerHTML,'');assert.equal(nodes['#award-skill'].value,'Gun Combat');
+});
 test('finite primary controls use only engine-projected eligible specialties',()=>{
  assert.deepEqual(awardBases(state),['Gun Combat','Electronics']);
  assert.deepEqual(awardNames(state,'Electronics'),['Electronics (comms)']);
@@ -47,6 +53,7 @@ test('every cascade skill uses only its projected options, Custom last, and clea
   const s={pendingChoice:{},skillChoiceBases:[base],skillChoiceSuggestions:names.slice(0,1),character:{skills:{[base]:0}}};
   const nodes={'#award-base':{value:base},'#award-skill':{},'#award-skill-options':{},'#award-speciality-controls':{},'#award-custom-field':{},'#award-known-status':{},'#award-speciality':{value:''}},root={querySelector:id=>nodes[id]??null};
   const before=JSON.stringify(s);syncAwardBase(s,completeCatalog,root,esc);
+  const view=skillAwardView(s,completeCatalog,helpers);assert.match(view,/<input type="hidden" id="award-base"/,base);assert.doesNotMatch(view,/<select id="award-base"/,base);
   assert.match(nodes['#award-speciality-controls'].innerHTML,/<option value="__custom__">Custom<\/option><\/select>/,base);assert.equal(nodes['#award-custom-field'].hidden,true,base);assert.deepEqual(awardNames(s,base),names.slice(0,1));
   nodes['#award-speciality'].value='__custom__';syncAwardSpeciality(root);assert.equal(nodes['#award-custom-field'].hidden,false);nodes['#award-skill'].value='custom subject';assert.equal(chosenAwardSkill(root),base+' (custom subject)');
   nodes['#award-speciality'].value=names[0];syncAwardSpeciality(root);nodes['#award-skill'].value='stale text';assert.equal(chosenAwardSkill(root),names[0]);assert.equal(nodes['#award-custom-field'].hidden,true);assert.equal(JSON.stringify(s),before);
