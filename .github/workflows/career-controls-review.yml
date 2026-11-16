@@ -25,6 +25,8 @@ jobs:
       - name: Career labels, entry semantics, notes and printing
         run: |
           node tools/character-generator/verification/career-control-clarity-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/betrayal-clarity-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/informational-alignment-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/house-rules-concise-preview.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/toolbar-fit-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/final-benefit-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
@@ -39,6 +41,7 @@ jobs:
           name: career-control-clarity-${{ github.event.pull_request.head.sha }}
           path: |
             tools/character-generator/verification/artifacts/career-control-*.png
+            tools/character-generator/verification/artifacts/army-betrayal-*.png
             tools/character-generator/verification/artifacts/toolbar-fit-*.png
             tools/character-generator/verification/artifacts/house-rules-*.png
             tools/character-generator/verification/artifacts/psi-*.png

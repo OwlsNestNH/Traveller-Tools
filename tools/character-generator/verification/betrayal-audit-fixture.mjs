@@ -1,0 +1,2 @@
+import {assignmentSetup,run,force,settleAssignment} from './assignment-fixtures.mjs';
+let r=settleAssignment(force(run(assignmentSetup('betrayal-audit'),'skip-precareer'),'career',{id:'core.army',assignment:'infantry'},[6,6]));r=force(r,'survival-check',{},[6,6]);r=force(r,'career-event',{},[3,4]);r=force(r,'roll-borrowed-event',{pendingId:r.state.pendingBorrowedRoll.id},[4,4]);export const fixture=r;
