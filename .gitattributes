@@ -2,3 +2,6 @@ tools/ship-combat-alpha/assets/ships/harrier-custom.svg -text
 
 # Immutable byte-for-byte oracle, verified by SHA-256 on every platform.
 tools/nav-calculator/verification/fixtures/pr264.html -text -whitespace
+
+# Recorded session oracle must retain its exported LF bytes on Windows.
+tools/character-generator/verification/fixtures/vargr-34-deployed-replay.json text eol=lf

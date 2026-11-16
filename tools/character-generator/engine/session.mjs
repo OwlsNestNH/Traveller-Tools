@@ -3281,6 +3281,33 @@ if(pending.kind==='psionic-training-terms'){
   state.pending=null;if(riteEffects)queueEffects(state,riteEffects,'background',rolls);else advanceAfterBook(state,pending,payload,rolls);
   return 'Source-assisted '+pending.kind+' confirmed. '+text(payload.note??'',500)+' Effects: '+JSON.stringify(payload.effects??[])+'.';
  }
+ case 'completion-step': {
+  need(state.stage==='finish','Complete character generation first.');
+  need(['connections','group','review'].includes(payload.step),'Unknown completion step.');
+  state.completionStep=payload.step;return 'Completion review: '+payload.step+'.';
+ }
+ case 'gm-skill-award': {
+  need(state.stage==='finish'&&state.config.gm,'Enable GM mode at completion before recording a custom award.');
+  const reason=text(payload.reason??'',300);need(reason,'Record the GM ruling.');
+  const skill=normalizedSkill(state,text(payload.skill,80),{requireSpeciality:true}).name;
+  need(skillNameAllowed(state,skill,{scope:'any'}),'Choose an available skill.');
+  const level=integer(payload.level,1,4,'Award level'),before=state.character.skills[skill]??-1;
+  need(level>before,'The awarded level must exceed the current level.');
+  need(skill!=='Independence','Use the existing Independence acquisition procedure.');
+  gainSkill(state,skill,level,'set');
+  (state.gmSkillAwards??=[]).push({skill,level,before,reason});state.completionStep='group';
+  return 'Custom GM skill award: '+skill+' '+level+'. Reason: '+reason;
+ }
+ case 'group-skill': {
+  need(state.stage==='finish','Group skills are available at completion.');
+  const skill=normalizedSkill(state,text(payload.skill,80),{requireSpeciality:true}).name;
+  need(skillNameAllowed(state,skill,{scope:'any'})&&!PSIONIC_TALENTS.includes(skill)&&skill!=='Jack-of-all-Trades'&&skill!=='Independence','Choose an ordinary group package skill.');
+  need(!(state.groupSkills??[]).some(a=>a.skill===skill),'This group skill has already been recorded.');
+  need((state.character.skills[skill]??-1)<1,'This skill is already at level 1 or above.');
+  gainSkill(state,skill,1,'set');
+  (state.groupSkills??=[]).push({skill,level:1,source:{id:'core',page:50},allocation:'Confirmed by player from the group package'});
+  state.completionStep='group';return 'Group package allocation: '+skill+' 1. Confirmed from the group’s shared package.';
+ }
  case 'connection': {
   need(['career','term-end','retirement','finish'].includes(state.stage),'Add connections between terms or at completion.');
   need(state.connections.length<2,'At most two connections award skills.');

@@ -1,3 +1,4 @@
+import {completionSkillsView,selectedCompletionSkill,syncCompletionSkill} from './completion-skills.mjs';
 import {isPsionicCourse,psionicCourseView,mountPsionicCourse,psionicTrainingTile,showPsionicTrainingAccess} from './psionic-course.mjs';
 import {canChooseDrifterFallback,drifterFallbackChoiceView} from './drifter-fallback-choice.mjs';
 
@@ -507,7 +508,7 @@ function stageView(state,insideEquipmentDialog=false){
  return aslanRestorationNotice(state,{esc})+termExitView(state,{esc,button})+(state.psionicGamesAvailability?.available?'<div class="sheet-section"><h3>Psionic Games opportunity</h3><p>Apply once in your lifetime. A failed application still uses that opportunity. Success replaces your next ordinary term with a Games term in this career.</p>'+button('Apply for the Psionic Games','apply-psionic-games','quiet')+'</div>':'')+assignmentChangeView(state,{esc,button,sourceLabel})+aslanOfficerOffersView(state,{esc,button,sourceLabel});
  }
  case 'benefits':{const cash=cashRollDisplay(state);return aslanRestorationNotice(state,{esc})+aslanOfficerPendingView(state,{esc,button,sourceLabel,careerName:id=>catalog.careers.find(c=>c.id===id)?.name??id,assignmentName:(id,assignment)=>catalog.careers.find(c=>c.id===id)?.assignments.find(a=>a.id===assignment)?.name??assignment})+assignmentPendingView(state,{esc,careerName:id=>catalog.careers.find(c=>c.id===id)?.name??id,assignmentName:(id,assignment)=>catalog.careers.find(c=>c.id===id)?.assignments.find(a=>a.id===assignment)?.name??assignment})+'<p><strong>'+state.character.careers[state.active].benefitRolls+'</strong> benefit rolls remain. '+esc(cash.label)+': '+cash.used+' / '+(state.cashLimit===999?'unlimited':state.cashLimit)+'.</p>'+benefitCreditView(state,{esc})+coreLifeBenefitView(state,{esc})+'<div class="actions benefit-roll-actions">'+button('Material','material-benefit','','aria-label="Roll a material benefit"')+button('Cash','cash-benefit','',(cash.disabled?'disabled ':'')+'aria-label="Roll a cash benefit"')+'</div>';}
- case 'finish':return '<div class="final-sheet-invitation">'+button('Open your character sheet','open-character-sheet','final-sheet-button')+'<p>A compact view of your Traveller, completed terms, injuries, events and decisions.</p></div><p>Save or print your character and review the source-assisted steps with your referee. The complete action log is included.</p><p class="warning">This preview does not certify every source rule. It records which steps were manually resolved.</p>'+sourceAssistedCoverageView(state.coverage,{labels:coverageLabels,esc});
+ case 'finish':return completionSkillsView(state,catalog,{esc,button})+(state.completionStep==='review'&&state.coverage.length?'<details><summary>Source-assisted coverage</summary>'+sourceAssistedCoverageView(state.coverage,{labels:coverageLabels,esc})+'</details>':'');
  default:return '<p>Unsupported stage. Preserve your save and log.</p>';
  }
 }
@@ -533,6 +534,7 @@ function sheetView(state){
 }
 
 function render(){
+ const completionGroupOpen=document.getElementById('group-skills-panel')?.open;
  backgroundDraft=reconcileBackgroundDraft(backgroundDraft,backgroundDraftKey(session,projection.state),projection.state);
  const draftResult=requiredDraftResult(projection,session,currentActionNumbers(session));
  const finalBenefit=projection.finalBenefitView;
@@ -608,6 +610,7 @@ function render(){
  mountAslanClanInformation(document);mountAslanPrideInformation(document);mountAslanBackgroundInformation(document);mountAslanRiteInformation(document,{resultKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id,projection.log.findLast(event=>event.type==='roll-aslan-rite')?.id,state.currentAslanOrigin?.rite?.dice,state.currentAslanOrigin?.rite?.statsBefore,state.currentAslanOrigin?.rite?.modifier,state.currentAslanOrigin?.rite?.additionalRolls])});
  mountEquipmentDialog(document,()=>send('cancel-deferred-equipment'));cancelCharacter.syncPurpose();if(state.uiDrifterFallback)$('#cancel-character')?.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();drifterFallbackKey=null;render();},{capture:true});
  recoveryDrafts.restore($('#workspace'),recoveryKey(),{afterField:node=>{if(node.id==='award-base')syncAwardBase(state,catalog,document,esc);if(node.id==='award-speciality')syncAwardSpeciality(document);}});
+ if(completionGroupOpen!==undefined&&document.getElementById('group-skills-panel'))document.getElementById('group-skills-panel').open=completionGroupOpen;
  syncCareerSpecialty(document,careerTemplateModel(state,catalog,selectedCareer));
  mountRankAwardPopup(document,{readOnly:isEmbeddedScreenReview});
  if(isEmbeddedScreenReview)lockScreenReview(document);else screenReview.refresh();
@@ -727,7 +730,12 @@ document.addEventListener('click',async event=>{
  if(action==='resolve-vargr-draft')return send(action,{mappingId:$('#vargr-draft-mapping')?.value,reason:$('#vargr-draft-reason')?.value,refereeConfirmed:$('#vargr-draft-confirmed')?.checked});
  if(action==='material-benefit'||action==='cash-benefit')return send('benefit',{cash:action==='cash-benefit',lifeBonusIds:[...document.querySelectorAll('[name=life-benefit-bonus]:checked')].map(input=>input.value),creditIds:[...document.querySelectorAll('[name=benefit-credit]:checked')].map(input=>input.value)});
  if(action==='save-notes')return send('notes',{text:$('#character-notes').value});
- if(action==='connection'){if(projection.state.stage!=='finish')return notify('Connections are available at finalization.',true);return send(action,{person:$('#connection-person').value,skill:$('#connection-skill').value,note:$('#connection-note').value});}
+ if(action==='completion-step')return send('completion-step',{step:el.dataset.step});
+ if(action==='add-group-skill'){document.getElementById('group-skill-editor').hidden=false;el.hidden=true;document.getElementById('group-skill').focus();return;}
+ if(action==='cancel-group-skill'){document.getElementById('group-skill-editor').hidden=true;document.querySelector('[data-action="add-group-skill"]').hidden=false;return;}
+ if(action==='record-gm-skill')return send('gm-skill-award',{skill:selectedCompletionSkill(document,'gm-award-skill'),level:Number($('#gm-award-level').value),reason:$('#gm-award-reason').value});
+ if(action==='record-group-skill')return send('group-skill',{skill:selectedCompletionSkill(document,'group-skill')});
+ if(action==='connection'){if(projection.state.stage!=='finish')return notify('Connections are available at finalization.',true);if(!document.getElementById('connection-consent')?.checked)return notify('Confirm that both Travellers agreed this connection.',true);if(!$('#connection-note').value.trim())return notify('Record the shared event.',true);if(projection.state.stage!=='finish')return notify('Connections are available at finalization.',true);return send(action,{person:$('#connection-person').value,skill:selectedCompletionSkill(document,'connection-skill'),note:$('#connection-note').value});}
  if(action==='add-extra')return send(action,{id:$('#extra-stat').value});
  if(action==='resolve-landhold-details')return send(action,{name:$('#landhold-name').value,location:$('#landhold-location').value});
  if(action==='spend-equipment-credit')return send(action,creditPurchasePayload(document));
@@ -900,3 +908,5 @@ document.addEventListener('input',event=>{if(event.target.id==='education-skill'
 mountRequiredActions({document,getState:()=>projection?.state??{},isBusy:()=>busy,backgroundSelection,getRecoveryActions:recoveryActions,studyValid:(state,value)=>educationStudySelectionValid(state,catalog,value)});
 
 document.addEventListener('change',event=>{if(event.target.matches('[data-education-relationship]'))send(event.target.dataset.legacyPolitical==='true'?'name-legacy-political-relationships':'name-education-relationships',{pendingId:event.target.dataset.pendingId,names:[...document.querySelectorAll('[data-education-relationship]')].map(input=>({id:input.dataset.educationRelationship,name:input.value}))});});
+
+document.addEventListener('change',event=>{if(['connection-skill','group-skill','gm-award-skill'].includes(event.target.id))syncCompletionSkill(document,event.target.id);});

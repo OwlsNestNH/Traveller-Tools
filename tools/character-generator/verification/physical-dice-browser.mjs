@@ -1,3 +1,4 @@
+import {advanceCompletionReview} from './completion-review-browser.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -45,7 +46,7 @@ try{
    // Complete a synthetic record through supported engine commands to inspect its real final sheet.
    let session=JSON.parse(await saved(page));let p=project(session);session=execute(session,{type:'background',payload:{skills:p.state.backgroundOptions.slice(0,p.state.backgroundRemaining)}}).session;
    session=execute(session,{type:'skip-precareer'}).session;session=execute(session,{type:'finish'}).session;
-   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(session)});await page.reload();await ready(page);await page.getByRole('button',{name:'Open your character sheet',exact:true}).click();await page.locator('#final-character-sheet[open]').waitFor();
+   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(session)});await page.reload();await ready(page);await advanceCompletionReview(page);await page.getByRole('button',{name:'Open your character sheet',exact:true}).click();await page.locator('#final-character-sheet[open]').waitFor();
    assert.equal(await page.locator('#final-sheet-content .physical-dice-warning').count(),1);assert.equal(await page.locator('#final-sheet-content .physical-dice-warning').textContent(),'Manual dice scores');assert.ok(await page.locator('#final-sheet-content .physical-dice-warning').evaluate(el=>el.getBoundingClientRect().height<48));assert.equal(await page.locator('#final-sheet-content .physical-dice-warning').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(255, 218, 88)');await page.screenshot({path:fileURLToPath(new URL('physical-dice-final-'+label+'.png',out)),fullPage:true});
    await page.emulateMedia({media:'print'});assert.equal(await page.locator('#final-sheet-content .physical-dice-warning').isVisible(),true);await page.emulateMedia({media:'screen'});
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);checks.push(label+' setup/unchanged-rolled-cards/click-to-edit/Escape/Tab/Enter/validation/repeat/swaps/logs/off/reload/final/print');
