@@ -33,10 +33,21 @@ try{
   await page.locator('#workspace').getByText('Medic 1',{exact:true}).waitFor();
   let stored=JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key));const before=project(stored);
   assert.equal(before.state.groupSkills.length,2);
-  await page.locator('[data-action="completion-step"][data-step="connections"]').click();
-  await page.locator('[data-action="completion-step"][data-step="group"]').click();await page.reload();
+  // A click dispatches an async command; wait for its saved result before reloading.
+  for(const step of ['connections','group']){
+   const revision=JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key)).events.length;
+   await page.locator('[data-action="completion-step"][data-step="'+step+'"]').click();
+   await page.waitForFunction(({key,revision,step})=>{
+    const saved=JSON.parse(localStorage.getItem(key)),last=saved.events.at(-1);
+    return saved.events.length===revision+1&&last.command.type==='completion-step'&&last.command.payload.step===step;
+   },{key,revision,step});
+  }
+  const beforeReload=await page.evaluate(key=>localStorage.getItem(key),key);
+  assert.equal(project(JSON.parse(beforeReload)).state.completionStep,'group');
+  await page.reload();
   await page.locator('#workspace').getByText('Science (xenobotany) 1',{exact:true}).waitFor({state:'attached'});
-  stored=JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key));assert.equal(project(stored).state.groupSkills.length,2);
+  assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),beforeReload);
+  stored=JSON.parse(beforeReload);assert.equal(project(stored).state.groupSkills.length,2);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);assert.deepEqual(errors,[]);
   const preserved=await page.evaluate(key=>localStorage.getItem(key),key);
   await page.locator('[data-screen-review-back]').click();await page.locator('#screen-review-dialog').waitFor({state:'visible'});
