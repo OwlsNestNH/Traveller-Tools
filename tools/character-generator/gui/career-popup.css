@@ -355,3 +355,5 @@
 @media screen and (max-width:540px){.rank-award-dialog{padding:16px}.rank-award-identity{font-size:19px}}
 
 @media screen{#army-career-dialog #career-event-review > .education-event-roll{width:100%;font-size:26px;min-height:64px;margin-top:18px}}
+/* Career and course choices share one responsive, equal-size tile grid. */
+@media screen{#army-career-dialog[data-career-template="career-selection"] .choice-list{grid-auto-rows:1fr}#army-career-dialog[data-career-template="career-selection"] .career-choice-row{height:100%;min-width:0}#army-career-dialog[data-career-template="career-selection"] .career-choice-row .choice{height:100%;width:100%;min-width:0}}

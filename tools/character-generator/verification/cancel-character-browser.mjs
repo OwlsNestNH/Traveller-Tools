@@ -33,7 +33,7 @@ try{
   await page.locator('[name=name]').fill('Airlock test Traveller');await page.locator('[name=homeworld]').fill('Test homeworld');
   await page.locator('#notes-connections > summary').click();await page.locator('#character-notes').fill('Unsaved notes survive dismissal');
   assert.equal(await page.locator('#setup-form > .actions #cancel-character').count(),1);assert.equal(await page.locator('#cancel-character').getAttribute('aria-haspopup'),'dialog');assert.equal(await page.locator('#cancel-character').getAttribute('aria-controls'),'cancel-character-dialog');
-  if(width===1440){const primary=await page.locator('#setup-form button[type=submit]').boundingBox(),cancel=await page.locator('#cancel-character').boundingBox();assert.ok(Math.abs(primary.y-cancel.y)<2,'Cancel sits beside the main action');assert.ok(cancel.width<primary.width,'Cancel is visually secondary');}
+  if(width===1440){const primary=await page.locator('#setup-form button[type=submit]').boundingBox(),cancel=await page.locator('#cancel-character').boundingBox();assert.ok(Math.abs(primary.y-cancel.y)<2,'Cancel sits beside the main action');assert.ok(Math.abs(cancel.width-primary.width)<1&&Math.abs(cancel.height-primary.height)<1,'Approved setup controls have equal size');assert.equal(await page.locator('#cancel-character').evaluate(n=>n.classList.contains('quiet')),true,'Cancel retains secondary styling');}
   const before=await snapshot(page);
   for(const dismiss of ['escape','keep','escape']){
    await show(page);const dialog=page.locator('#cancel-character-dialog'),keep=page.locator('#cancel-character-keep'),confirm=page.locator('#cancel-character-confirm');

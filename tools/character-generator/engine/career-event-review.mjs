@@ -1,6 +1,6 @@
 // Presentation-only boundary detection; never rerolls or changes saved commands.
 const roots=new Set(['career-event','career-mishap','survival','survival-check']);
-const followups=new Set(['roll-borrowed-event','choose-effect','choose-skill','resolve-relationship-event','resolve-relationship-event-step','resolve-book']);
+const followups=new Set(['roll-borrowed-event','choose-effect','choose-skill','resolve-relationship-event','resolve-relationship-event-step','resolve-book','agent-person-injury-roll','agent-person-injury-loss','agent-person-injury-continue']);
 const passive=new Set(['notes','gm-mode','name-career-event-relationships','acknowledge-career-event-result']);
 export function pendingCareerEventReview(state,log,events){
  if(!['advancement','term-end','cross-career-training'].includes(state.stage)||state.active===null||state.pending||state.pendingChoice)return null;

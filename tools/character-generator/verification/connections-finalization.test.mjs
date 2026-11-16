@@ -10,9 +10,9 @@ for(const stage of ['identity','statistics','background','precareer','career','t
  test('connection entry is finalization-only at '+stage,()=>{
   const state=structuredClone(fixture.state);state.stage=stage;const before=JSON.stringify(state);
   const html=notesConnectionsView(state,{esc,button},'Draft <note>');
-  assert.equal(html.includes('id="connection-person"'),stage==='finish');
-  assert.equal(html.includes('data-action="connection"'),stage==='finish');
-  assert.equal(html.includes('<summary>Notes & connections</summary>'),stage==='finish');
+  assert.equal(html.includes('id="connection-person"'),false);
+  assert.equal(html.includes('data-action="connection"'),false);
+  assert.equal(html.includes('<summary>Notes & connections</summary>'),false);
   assert.ok(html.includes('id="character-notes"'));assert.ok(html.includes('Draft &lt;note>'));assert.ok(html.includes('Unsaved notes.'));
   assert.equal(JSON.stringify(state),before);
  });
@@ -25,6 +25,6 @@ test('historical pre-finalization connections remain byte-identical and retain t
  assert.deepEqual(project(restored).state.character.skills,r.state.character.skills);
  assert.ok(!notesConnectionsView(r.state,{esc,button}).includes('id="connection-person"'));
  assert.equal(JSON.stringify(r.state),before);
- const final=run(r,'finish');assert.ok(notesConnectionsView(final.state,{esc,button}).includes('id="connection-person"'));
+ const final=run(r,'finish');assert.ok(!notesConnectionsView(final.state,{esc,button}).includes('id="connection-person"'));
  assert.deepEqual(final.state.connections,r.state.connections);
 });

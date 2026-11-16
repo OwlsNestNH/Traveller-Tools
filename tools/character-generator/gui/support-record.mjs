@@ -4,7 +4,7 @@ import {mountRecordBars} from './record-bars.mjs';
 export const isSupportStage=stage=>['companion-admission','companion-skill','psionic-training'].includes(stage);
 export function mountSupportRecord(document,state,{sessionKey=''}={}){
  const sheet=document.getElementById('sheet');if(!sheet)return;
- if(!isSupportStage(state.stage)){delete sheet.dataset.supportSession;delete sheet.dataset.openBar;return;}
+ if(!isSupportStage(state.stage)&&!(state.pending?.kind==='psionic-training-terms'&&!state.pending.testingNeeded)){delete sheet.dataset.supportSession;delete sheet.dataset.openBar;return;}
  if(sheet.dataset.supportSession!==sessionKey){delete sheet.dataset.openBar;sheet.dataset.supportSession=sessionKey;}
  const nodes=[...sheet.children],stats=nodes.find(n=>n.querySelector('.stats')),skills=nodes.find(n=>n.querySelector('h3')?.textContent==='Skills'),notes=nodes.find(n=>n.id==='notes-connections'),origin=nodes.find(n=>n.matches('.aslan-origin-sheet'));
  const headers=nodes.filter(n=>n.matches('.eyebrow,h2,.sheet-meta,.sheet-facts,.physical-dice-warning')),overview=document.createElement('section');overview.className='support-record-overview';overview.append(...headers);

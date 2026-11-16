@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 // Exercise the same real controls on all three completion stages, both transports,
 // desktop and narrow phones. Opening a record never sends a character command.
@@ -15,7 +16,7 @@ export async function verifyCompletionRecordBars(page,{stage,width,http,raw,key,
   assert.equal(await summary.evaluate(n=>n===document.activeElement),true,'Keyboard focus stays on chosen bar');
   assert.ok((await summary.boundingBox()).height>=44,'Record controls retain touch targets');
   assert.equal(await page.locator('#sheet').textContent(),before,'All original record content is retained');
-  if(!http&&width!==320&&['completion-characteristics','completion-skills'].includes(id))await page.screenshot({path:new URL(`imperial-completion-record-bars-${stage}-${id.replace('completion-','')}-${width}.png`,out).pathname,fullPage:true});
+  if(!http&&width!==320&&['completion-characteristics','completion-skills'].includes(id))await page.screenshot({path:fileURLToPath(new URL(`imperial-completion-record-bars-${stage}-${id.replace('completion-','')}-${width}.png`,out)),fullPage:true});
  }
  // Older-browser fallback remains exclusive without native named-details support.
  await bars.evaluateAll(nodes=>nodes.forEach(n=>n.removeAttribute('name')));
