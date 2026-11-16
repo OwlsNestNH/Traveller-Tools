@@ -1,3 +1,4 @@
+import {mountLifeDecisionClarity} from './life-decision-clarity.mjs';
 import {rankAwardPopupView,mountRankAwardPopup} from './rank-award-popup.mjs';
 import {termExitView} from './term-exit-view.mjs';
 import {basicTrainingChoiceModel,mountBasicTrainingGuidance} from './basic-training-presentation.mjs';
@@ -578,6 +579,7 @@ function render(){
  mountBasicTrainingGuidance(document,basicTrainingChoiceModel(state,projection.skillAwardPresentation?.pending,catalog));
  mountPendingAwardInformation(document,projection.skillAwardPresentation,state,catalog,{crowType:careerCrowType(careerModel)});
  mountCrowTaglineAttribution(document,$('#workspace'));
+ mountLifeDecisionClarity(document,projection,currentActionNumbers(session));
  mountSpeciesSkillPopup(document);
  mountAslanFamilyPopup(document,{onRoll:async()=>{if(!await send(aslanRitePopupModel(projection.state)?'roll-aslan-rite':aslanPridePopupModel(projection.state)?'roll-aslan-pride':aslanClanPopupModel(projection.state)?'roll-aslan-clan':aslanBirthPopupModel(projection.state)?'roll-aslan-birth-order':'roll-aslan-family'))throw new Error($('#message').textContent||'The family roll could not be recorded.');},onContinue:async(index)=>{
   const rite=aslanRitePopupModel(projection.state);if(rite){if(!await send(rite.equipment?'record-aslan-rite-equipment':'acknowledge-aslan-rite'))throw new Error($('#message').textContent||'Rite continuation could not be recorded.');return;}
