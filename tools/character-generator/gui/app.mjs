@@ -1,3 +1,4 @@
+import {agentOtherPersonInjury,agentInjuryView,mountAgentInjury} from './agent-injury-view.mjs';
 import {completionSkillsView,selectedCompletionSkill,syncCompletionSkill} from './completion-skills.mjs';
 import {isPsionicCourse,psionicCourseView,mountPsionicCourse,psionicTrainingTile,showPsionicTrainingAccess} from './psionic-course.mjs';
 import {canChooseDrifterFallback,drifterFallbackChoiceView} from './drifter-fallback-choice.mjs';
@@ -429,6 +430,7 @@ function medicalSheet(state){
  return '<div class="sheet-section"><h3>Medical bills</h3><p>Unsettled personal balance: <strong>Cr'+(state.medicalOutstanding??0).toLocaleString()+'</strong></p><ul class="compact-list">'+bills.map(b=>'<li>Cr'+b.totalCost.toLocaleString()+' treatment; employer Cr'+b.coveredCost.toLocaleString()+'; personal Cr'+b.personalCost.toLocaleString()+'. '+(b.settled?'Paid Cr'+b.paid.toLocaleString()+', debt Cr'+b.debt.toLocaleString()+'.':'Settles when creation finishes.')+'</li>').join('')+'</ul></div>';
 }
 function bookView(state){
+ if(agentOtherPersonInjury(state))return agentInjuryView(state,currentResultEvent(projection,session),{esc,button,effectsHtml:effects.map(effectView).join(''),skillsHtml:'<datalist id="skill-names">'+catalog.skills.flatMap(base=>[base,...(catalog.skillSpecialities?.[base]??[]).map(speciality=>base+' ('+speciality+')')]).map(x=>'<option value="'+esc(x)+'"></option>').join('')+'</datalist>'});
  if(isPsionicCourse(state))return psionicCourseView(state);
  if(state.pending?.kind==='vargr-draft')return vargrDraftView(state,{esc,button});
  const aslanEvent=aslanEventOutcomesView(state,{button,esc});if(aslanEvent&&aslanManualReviewKey!==JSON.stringify([projection.revision,state.pending]))return aslanEvent+button('Review exceptional source outcome','aslan-source-review','quiet');
@@ -595,6 +597,7 @@ function render(){
  mountResultInformation(document,lastRollResult,{crowType:careerResultCrowType(displayedEvent,lastRollResult,state),tagline:careerResultTagline(displayedEvent,lastRollResult,state)});
  mountBasicTrainingGuidance(document,basicTrainingChoiceModel(state,projection.skillAwardPresentation?.pending,catalog));
  mountPendingAwardInformation(document,projection.skillAwardPresentation,state,catalog,{crowType:careerCrowType(careerModel)});
+ mountAgentInjury(document,state,currentResultEvent(projection,session));
  mountCrowTaglineAttribution(document,$('#workspace'));
  mountSpeciesSkillPopup(document);
  mountAslanFamilyPopup(document,{onRoll:async()=>{if(!await send(aslanRitePopupModel(projection.state)?'roll-aslan-rite':aslanPridePopupModel(projection.state)?'roll-aslan-pride':aslanClanPopupModel(projection.state)?'roll-aslan-clan':aslanBirthPopupModel(projection.state)?'roll-aslan-birth-order':'roll-aslan-family'))throw new Error($('#message').textContent||'The family roll could not be recorded.');},onContinue:async(index)=>{
@@ -697,6 +700,9 @@ document.addEventListener('click',async event=>{
  if($('#games-stacking-mode'))payload.awardStacking={mode:$('#games-stacking-mode').value,reason:$('#games-stacking-reason').value};
  return send(action,payload);
  }
+  if(action==='agent-person-injury-roll')return send(action,{targetId:$('#injured-person-target')?.value??'family'});
+  if(action==='agent-person-injury-loss')return send(action,{index:Number(el.dataset.index)});
+  if(action==='agent-person-injury-continue')return send(action);
   if(action==='injury-loss')return send(action,{index:Number(el.dataset.index)});
   if(action==='injury-treatment')return send(action,{restore:Object.fromEntries([...document.querySelectorAll('[data-injury-restore]')].map(input=>[input.dataset.injuryRestore,Number(input.value)])),inService:$('#injury-in-service').checked});
   if(action==='choose-effect'){if((educationPotentialModel(projection.state)||educationCheckpointModel(projection))&&(event.detail>1||el.disabled))return;return send(action,{index:Number(el.dataset.index)});}
