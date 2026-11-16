@@ -1,3 +1,4 @@
+import {acknowledgeFinalBenefit} from './acknowledge-final-benefit-browser.mjs';
 import {recordedResultDetails} from './recorded-result-details-browser.mjs';
 import {dismissTechnicalError} from './technical-error-browser-assertions.mjs';
 import assert from 'node:assert/strict';
@@ -17,7 +18,7 @@ const fixtures={career:laterCareerFixture(),treatment:treatmentFixture(),equipme
 try{
  for(const width of [1440,320])for(const transport of ['static','http']){
   const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage(),name=transport+'-'+width,engineRequests=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',request=>{if(request.url().includes('/engine/'))engineRequests.push(request.url());});
-  const load=async r=>{const raw=exportSession(r.session);await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.reload();await page.waitForFunction(revision=>Number(document.querySelector('#workspace')?.dataset.revision)===revision,r.revision);return raw;};
+  const load=async r=>{const raw=exportSession(r.session);await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.reload();await page.waitForFunction(revision=>Number(document.querySelector('#workspace')?.dataset.revision)===revision,r.revision);assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw,'Imported fixture bytes are preserved before acknowledgement');await acknowledgeFinalBenefit(page);return page.evaluate(key=>localStorage.getItem(key),key);};
   try{
    await page.goto(origin+(transport==='http'?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller',exact:true}).waitFor();
    const initial=await load(fixtures.career.before),logBefore=await downloadedActionLog(page);

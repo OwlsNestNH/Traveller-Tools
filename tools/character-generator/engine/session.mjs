@@ -1,3 +1,7 @@
+import {finalBenefitResult} from './final-benefit-result.mjs';
+import {psionicTrainingFinance} from './psionic-financing.mjs';
+import {separateTrainingPermission} from './psionic-training-access.mjs';
+import {legacyPoliticalEvidence} from './legacy-political-event.mjs';
 import {CORE_ACADEMIES,legacyEducationWarDraftEvidence} from './education-war-draft-projection.mjs';
 import {copyWithAwardProvenance,markAwardEffects,inheritAwardOrigin,awardOrigin,beginAwardAction,recordSkillAward,appliedSkillAwards} from './award-provenance.mjs';
 import {AEZORGH_CULTURES} from '../shared/aezorgh-culture.mjs';
@@ -1407,11 +1411,12 @@ function queueEffects(state,effects,next,rolls) {
 // education/career consumers retain their historical effect-draining behavior.
 function educationEventContext(state){
  const context=state.educationEventContext,record=state.character.educations?.[state.education];
- return context&&context.educationIndex===state.education&&(record?.id==='core.university'||record&&context.educationId===record.id&&CORE_ACADEMIES.includes(record.id)&&context.row===11)&&record.event===context.row&&!record.completed?context:null;
+ return context&&context.educationIndex===state.education&&(record?.id==='core.university'||record&&context.educationId===record.id&&CORE_ACADEMIES.includes(record.id)&&[8,11].includes(context.row))&&record.event===context.row&&!record.completed?context:null;
 }
 function finishEducationEventCheckpoint(state,rolls,context=educationEventContext(state),nextStage='education-graduation'){
  if(!context)return false;
  state.educationEventResult={id:context.id+'-result',educationIndex:context.educationIndex,...(context.educationId?{educationId:context.educationId}:{}),row:context.row,eventRoll:copy(context.eventRoll),rolls:copy([...(context.rolls??[]),...rolls]),nextStage,pending:copy(state.pending??null),source:{id:'core',page:17},status:'resolved'};
+ if(context.relationshipIdsBefore)state.educationEventResult.relationshipIds=state.character.relationships.filter(r=>!context.relationshipIdsBefore.includes(r.id)).map(r=>r.id);
  delete state.educationEventContext;state.stage='education-event-result';return true;
 }
 function educationEventCheckpointView(state){
@@ -1921,7 +1926,7 @@ function apply(state,command,rolls) {
  if(state.stage==='equipment-finalization')need(['choose-deferred-equipment','close-equipment-finalization','finish','notes','gm-mode'].includes(command.type),'Complete or close the equipment checklist before continuing.');
  if(state.pending?.kind==='prisoner-lawyer')need(['resolve-prisoner-lawyer','notes','gm-mode'].includes(command.type),'Resolve the pending lawyer choice before changing its context. Use restore or replay to revise it.');
  if(state.stage==='education-event-roll')need(['roll-education-event-step','notes','gm-mode'].includes(command.type),'Roll the pending education step before changing its context.');
- if(state.stage==='education-event-result')need(['acknowledge-education-event','notes','gm-mode'].includes(command.type),'Acknowledge the education event before changing its context.');
+ if(state.stage==='education-event-result')need(['acknowledge-education-event','name-education-relationships','notes','gm-mode'].includes(command.type),'Acknowledge the education event before changing its context.');
  if(state.stage==='education-result')need(['acknowledge-education-result','notes','gm-mode','gm-override','gm-psi-mode'].includes(command.type),'Continue from the recorded education result before changing its context.');
  if(state.character.aslanOrigin?.status==='pending')need(['acknowledge-aslan-rite','acknowledge-aslan-pride','acknowledge-aslan-family','acknowledge-aslan-birth-order','acknowledge-aslan-clan','roll-aslan-gender','roll-aslan-family','roll-aslan-birth-order','resolve-aslan-estate','roll-aslan-clan','choose-aslan-clan','name-aslan-clan','roll-aslan-pride','roll-aslan-rite','record-aslan-rite-equipment','resolve-aslan-origin-source','background','choose-effect','choose-skill','skill-award-source','retry-skill-choice','resolve-book','notes','gm-mode'].includes(command.type),'Finish the recorded Aslan origin before changing its context. Restore or replay explicitly to revise it.');
  if(state.pending?.kind==='aslan-origin-source')need(['resolve-aslan-origin-source','notes','gm-mode'].includes(command.type),'Resolve this origin question with its typed source fields.');
@@ -2533,6 +2538,7 @@ function apply(state,command,rolls) {
   return 'Accepted statistics and generated selected extra characteristics.'+(imperialCharismaGenerated?' House rule: optional Imperial Vargr CHA uses 1D6 + 2.':'')+(flatLuckGenerated?' House rule: Luck starts at 6; no Luck dice were rolled.':'')+((state.optionalPsiRequiresTesting||state.psiActivationRequiresTesting)&&state.config.extras.includes('PSI')&&!Object.hasOwn(state.character.stats,'PSI')?' Selected PSI remains untested until a valid test or GM entry.':'');
  }
  case 'begin-psionic-training':{
+   if(payload.separateCourse===true){need(separateTrainingPermission(state).allowed,'A qualifying event or the GM house option is required for separate psionic training.');need((state.character.stats.PSI??0)>0,'Test psionic strength before arranging separate training.');}
    need(!(state.optionalPsiRequiresTesting||state.psiActivationRequiresTesting)||Object.hasOwn(state.character.stats,'PSI'),'Test psionic strength before arranging separate training.');
    need(!accessMandatory(state),'Resolve the accepted expedition before training.');need(['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation,'Begin institute training only between careers, before retirement.');
    need(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0,'PSI zero has no training potential.');
@@ -2632,9 +2638,17 @@ function apply(state,command,rolls) {
   if(educationEventContext(state))state.educationEventContext.rolls=[...(context.rolls??[]),...copy(rolls)];
   return pending.label+' result '+rolls[0].total+'.';
  }
+ case 'name-education-relationships':{
+  const result=state.educationEventResult;
+  need(state.stage==='education-event-result'&&result?.row===8&&Array.isArray(result.relationshipIds),'No education relationships are being named.');
+  need(Object.keys(payload).length===2&&payload.pendingId===result.id&&Array.isArray(payload.names)&&payload.names.length<=result.relationshipIds.length,'Name the current event relationships.');
+  const seen=new Set();
+  for(const item of payload.names){need(plain(item)&&Object.keys(item).length===2&&result.relationshipIds.includes(item.id)&&!seen.has(item.id),'Choose an awarded relationship once.');seen.add(item.id);const relationship=state.character.relationships.find(r=>r.id===item.id);need(relationship,'The awarded relationship is no longer present.');relationship.name=text(item.name,120)||('Unnamed '+relationship.role.toLowerCase());}
+  return 'Education relationship names updated. No new relationships or dice.';
+ }
  case 'acknowledge-education-event':{
   const result=state.educationEventResult,record=state.character.educations?.[result?.educationIndex];
-  need((state.educationEventCheckpoints||result?.educationId)&&state.stage==='education-event-result'&&result&&(record?.id==='core.university'||record&&result.educationId===record.id&&CORE_ACADEMIES.includes(record.id)&&result.row===11)&&record.event===result.row&&(result.educationIndex===state.education||record.completed&&state.education===null),'No education event result awaits acknowledgement.');
+  need((state.educationEventCheckpoints||result?.educationId)&&state.stage==='education-event-result'&&result&&(record?.id==='core.university'||record&&result.educationId===record.id&&CORE_ACADEMIES.includes(record.id)&&[8,11].includes(result.row))&&record.event===result.row&&(result.educationIndex===state.education||record.completed&&state.education===null),'No education event result awaits acknowledgement.');
   need(Object.keys(payload).length===1&&payload.pendingId===result.id,'Acknowledge the current education event result.');
   need((result.nextStage==='education-graduation'&&record.graduationAllowed||['career','book-step'].includes(result.nextStage)&&record.completed||result.nextStage==='deceased'&&state.character.deceased)&&JSON.stringify(state.pending??null)===JSON.stringify(result.pending),'The education event continuation has changed.');
   delete state.educationEventResult;state.stage=result.nextStage;return 'Education event acknowledged. No additional dice or awards.';
@@ -2646,10 +2660,12 @@ function apply(state,command,rolls) {
  case 'education-event':{
   need(state.stage==='education-event','No education event is due.');
   if(Object.hasOwn(payload,'separateAcademyWarRolls'))need(payload.separateAcademyWarRolls===true&&CORE_ACADEMIES.includes(educationRecord(state).id)&&educationRecord(state).entry?.success===true&&!educationRecord(state).entry?.manual,'Separate academy event rolls require an admitted Core academy.');
+  if(Object.hasOwn(payload,'separateAcademyPoliticalRoll'))need(payload.separateAcademyPoliticalRoll===true&&CORE_ACADEMIES.includes(educationRecord(state).id)&&educationRecord(state).entry?.success===true&&!educationRecord(state).entry?.manual,'Separate political event roll requires an admitted Core academy.');
   const total=dice(state,2,rolls,'Pre-career event');educationRecord(state).event=total;
   const record=educationRecord(state),effects=isCompanionEducation(record.id)?companionEvent({id:record.id,entered:true,roll:total}).effects:PRECAREER_EVENTS[total];
   if(state.educationEventCheckpoints&&record.id==='core.university'&&([2,4,5,6,8,10,11,12].includes(total)||EDUCATION_LIFE_CHECKPOINTS&&total===7||EDUCATION_FINAL_ROWS&&[3,9].includes(total))&&record.graduationAllowed&&!record.entry?.manual)state.educationEventContext={id:'education-'+state.education+'-event-'+total,educationIndex:state.education,row:total,eventRoll:copy(rolls.at(-1))};
   if(payload.separateAcademyWarRolls===true&&total===11&&record.graduationAllowed)state.educationEventContext={id:'education-'+state.education+'-event-'+total,educationId:record.id,educationIndex:state.education,row:total,eventRoll:copy(rolls.at(-1))};
+  if(payload.separateAcademyPoliticalRoll===true&&total===8&&record.graduationAllowed)state.educationEventContext={id:'education-'+state.education+'-event-'+total,educationId:record.id,educationIndex:state.education,row:total,eventRoll:copy(rolls.at(-1)),relationshipIdsBefore:state.character.relationships.map(r=>r.id)};
   queueEffects(state,sourcedEffects(effects,{id:'core',page:17}),'education-graduation',rolls);return 'Pre-career event '+total+'.';
  }
  case 'education-graduation':{
@@ -2702,6 +2718,7 @@ function apply(state,command,rolls) {
  }
  case 'career': {
   need(state.stage==='career'&&state.active===null&&!state.failedQualification,'Choose a career at the start of a term.');
+  if(payload.separatePsionicTraining===true&&payload.id==='core.psion')need(state.character.psionics?.training.some(t=>t.completed),'Complete separate psionic training before applying to the Psion career.');
   const entryPlan=reentryPlan(state,payload.id,payload.assignment,!!state.pendingDraft||state.forcedCareer===payload.id&&state.forcedCareerDraft);need(entryPlan.allowed,entryPlan.reason);
   const career=availableCareers(state).find(c=>c.id===payload.id);need(career&&!career.disabled,career?.reason??'This career is not available.');
   const assignment=career.assignments.find(a=>a.id===payload.assignment);need(assignment,'Choose an assignment.');need(!assignment.disabled,assignment.reason??'This assignment is unavailable.');
@@ -2759,6 +2776,10 @@ function apply(state,command,rolls) {
  }
  case 'fallback': {
   need(state.stage==='failed-entry','No failed qualification to resolve.');
+  if(payload.assignment!==undefined){
+   need(!payload.draft&&!forcedDraftPending(state)&&fallbackOptions(state).normal.careerId==='core.drifter','This fallback does not permit a Drifter specialty selection.');
+   need(findCareer('core.drifter').assignments.some(a=>a.id===payload.assignment),'Choose a valid Drifter specialty.');
+  }
   if(forcedDraftPending(state)){
    need(state.active===null&&payload.draft===true,'Roll the required draft after collecting this career’s benefits.');
    const id=['core.navy','core.army','core.marine','core.merchant','core.scout','core.agent'][dice(state,1,rolls,'Forced Core draft')-1],career=findCareer(id),assignment=id==='core.merchant'?'marine':id==='core.agent'?'law':career.assignments[0].id;
@@ -2781,7 +2802,7 @@ function apply(state,command,rolls) {
   if(species==='zhodani'){sourceStep(state,'draft','aliens',255,'Resolve the Zhodani draft; select the resulting career with GM correction.','career');state.failedQualification=false;return 'Zhodani draft requires source resolution.';}
   const outwardFailure=nativeAslan(state)&&state.failedQualificationContext?.group==='core'&&!!accessContext(state),outwardDrifter=nativeAslan(state)&&state.failedQualificationContext?.group==='aslan'&&accessForAttempt(state,'core.drifter')?.route==='outside-failed-entry';
   let id=outwardFailure||outwardDrifter?'core.drifter':species==='aslan'&&state.character.culture==='native'?'aslan.outcast':species==='vargr'&&state.character.culture==='native'?'vargr.loner':'core.drifter';
-  let assignment;
+  let assignment=payload.assignment;
   if(payload.draft){
    need(!state.draftUsed,'The ordinary draft has already been used.');need(outwardFailure&&!accessContext(state).careerIds||!['aslan','vargr'].includes(species)||state.character.culture==='imperial','Use the culture-specific fallback; departure does not grant a second qualification or a new draft outside the recorded career scope.');
    id=['core.navy','core.army','core.marine','core.merchant','core.scout','core.agent'][dice(state,1,rolls,'Draft')-1];state.draftUsed=true;state.pendingDraft=true;
@@ -3160,13 +3181,15 @@ if(pending.kind==='psionic-training-terms'){
     const active=state.psionicTraining;need(active,'No training request is pending.');
     if(!payload.psionicApproved){psionicHistory(state).rulings.push({kind:pending.kind,approved:false,note});returnFromPsionics(state,rolls,false);return 'Psionic training declined. '+note;}
     need(payload.psionicTimingConfirmed===true,'Confirm how the testing and training time fits the source chronology.');
-    const cost=integer(payload.psionicCost,0,10000000,'Psionic testing and training cost');need(['cash','provided'].includes(payload.psionicFunding),'Choose cash payment or source-provided training.');
+    const cost=integer(payload.psionicCost,0,10000000,'Psionic testing and training cost');need(['cash','provided','finance-training'].includes(payload.psionicFunding),'Choose cash, training credit or source-provided training.');
+    const financing=payload.psionicFunding==='finance-training'?psionicTrainingFinance({cash:state.character.cash,cost,testingNeeded:pending.testingNeeded,psi:state.character.stats.PSI,confirmed:payload.psionicDebtConfirmed}):null;
     if(payload.psionicFunding==='cash'){need(cost>=pending.minimumCost&&(pending.testingNeeded||cost===100000),'Cash cost must meet the published minimum of Cr'+pending.minimumCost+'; tested training costs exactly Cr100000.');need(state.character.cash>=cost,'Available cash does not cover the psionic charges; no automatic debt is allowed.');}
-    else need(cost===0,'Provided testing/training has zero personal cost; document who provides it in the source ruling.');
+    else if(!financing)need(cost===0,'Provided testing/training has zero personal cost; document who provides it in the source ruling.');
     const ruling={kind:pending.kind,approved:true,note,quotedCost:cost,cost,funding:payload.psionicFunding,timingConfirmed:true};psionicHistory(state).rulings.push(ruling);active.termsResolved=true;
     if(!Object.hasOwn(state.character.stats,'PSI')){const history=psionicHistory(state);history.historyKnown=!acquiredTalents(state).length;recordPsionicTest(state,active.context,dice(state,2,rolls,'Psionic potential'),completedCareerTerms(state));}
     if(payload.psionicFunding==='cash'){ruling.cost=(state.character.stats.PSI??0)>0?cost:pending.testingNeeded?cost-100000:0;state.character.cash-=ruling.cost;}
-    state.pending=null;activatePsionicTraining(state,rolls);return 'Psionic access and timing approved; personal cost Cr'+ruling.cost+' ('+payload.psionicFunding+'). '+note;
+    if(financing){state.character.cash=financing.remainingCash;state.character.debt+=financing.debt;Object.assign(ruling,{paid:financing.paid,debt:financing.debt,financingPolicy:financing.policy});}
+    state.pending=null;activatePsionicTraining(state,rolls);return financing?'Psionic training: Cr'+ruling.cost+'; cash paid Cr'+financing.paid+'; debt added Cr'+financing.debt+'. Campaign financing policy. '+note:'Psionic access and timing approved; personal cost Cr'+ruling.cost+' ('+payload.psionicFunding+'). '+note;
    }
    if(pending.kind==='psionic-history'){
     const note=text(payload.note??'',500);need(note,'Record the source of the prior psionic check history.');need(!(payload.effects??[]).length,'History confirmation cannot grant skills or change characteristics.');
@@ -3257,6 +3280,33 @@ if(pending.kind==='psionic-training-terms'){
   }
   state.pending=null;if(riteEffects)queueEffects(state,riteEffects,'background',rolls);else advanceAfterBook(state,pending,payload,rolls);
   return 'Source-assisted '+pending.kind+' confirmed. '+text(payload.note??'',500)+' Effects: '+JSON.stringify(payload.effects??[])+'.';
+ }
+ case 'completion-step': {
+  need(state.stage==='finish','Complete character generation first.');
+  need(['connections','group','review'].includes(payload.step),'Unknown completion step.');
+  state.completionStep=payload.step;return 'Completion review: '+payload.step+'.';
+ }
+ case 'gm-skill-award': {
+  need(state.stage==='finish'&&state.config.gm,'Enable GM mode at completion before recording a custom award.');
+  const reason=text(payload.reason??'',300);need(reason,'Record the GM ruling.');
+  const skill=normalizedSkill(state,text(payload.skill,80),{requireSpeciality:true}).name;
+  need(skillNameAllowed(state,skill,{scope:'any'}),'Choose an available skill.');
+  const level=integer(payload.level,1,4,'Award level'),before=state.character.skills[skill]??-1;
+  need(level>before,'The awarded level must exceed the current level.');
+  need(skill!=='Independence','Use the existing Independence acquisition procedure.');
+  gainSkill(state,skill,level,'set');
+  (state.gmSkillAwards??=[]).push({skill,level,before,reason});state.completionStep='group';
+  return 'Custom GM skill award: '+skill+' '+level+'. Reason: '+reason;
+ }
+ case 'group-skill': {
+  need(state.stage==='finish','Group skills are available at completion.');
+  const skill=normalizedSkill(state,text(payload.skill,80),{requireSpeciality:true}).name;
+  need(skillNameAllowed(state,skill,{scope:'any'})&&!PSIONIC_TALENTS.includes(skill)&&skill!=='Jack-of-all-Trades'&&skill!=='Independence','Choose an ordinary group package skill.');
+  need(!(state.groupSkills??[]).some(a=>a.skill===skill),'This group skill has already been recorded.');
+  need((state.character.skills[skill]??-1)<1,'This skill is already at level 1 or above.');
+  gainSkill(state,skill,1,'set');
+  (state.groupSkills??=[]).push({skill,level:1,source:{id:'core',page:50},allocation:'Confirmed by player from the group package'});
+  state.completionStep='group';return 'Group package allocation: '+skill+' 1. Confirmed from the group’s shared package.';
  }
  case 'connection': {
   need(['career','term-end','retirement','finish'].includes(state.stage),'Add connections between terms or at completion.');
@@ -3358,6 +3408,16 @@ export function project(session) {
    const target=integer(event.command.payload?.revision,0,i-1,'Restore point');
    const rng=state.rng,gm=state.config.gm;state=copy(snapshots[target]);state.rng=rng;state.config.gm=gm;
    beginAwardAction(state);summary='Restored character state to action '+target+'. Prior rolls and actions remain in this log; randomness was not rewound.';
+  }else if(event.command?.type==='acknowledge-final-benefit'){
+   const review=finalBenefitResult({state,log,snapshots,events:session.events.slice(0,i)});
+   need(review&&event.command.payload?.pendingId===review.id,'Choose the current final benefit result.');
+   need(Object.keys(event.command.payload).every(k=>k==='pendingId'),'Only acknowledge the recorded result.');
+   state.acknowledgedFinalBenefit=review.id;summary='Final benefit reviewed. Continue to the next step.';
+  }else if(['acknowledge-legacy-political-event','name-legacy-political-relationships'].includes(event.command.type)){
+   const evidence=legacyPoliticalEvidence({state,log,snapshots,events:session.events.slice(0,i)},characteristicDM),payload=event.command.payload;
+   need(evidence&&payload?.pendingId===evidence.pendingId,'No matching recorded political event awaits review.');
+   if(event.command.type==='acknowledge-legacy-political-event'){need(Object.keys(payload).length===1,'Continue takes only the current result.');state.character.educations[state.education].politicalEventReviewed=true;summary='Recorded political event reviewed. Graduation remains unrolled.';}
+   else {need(Object.keys(payload).length===2&&Array.isArray(payload.names)&&payload.names.length<=evidence.relationships.length,'Name only the recorded event relationships.');const seen=new Set();for(const item of payload.names){need(plain(item)&&Object.keys(item).length===2&&!seen.has(item.id)&&evidence.relationships.some(r=>r.id===item.id),'Choose a recorded relationship once.');seen.add(item.id);const r=state.character.relationships.find(r=>r.id===item.id);r.name=text(item.name,120)||('Unnamed '+r.role.toLowerCase());}summary='Recorded political relationship names updated. No new relationships or dice.';}
   }else summary=apply(state,event.command,rolls);
   if(educationEventContext(state)&&state.stage==='deceased'&&state.character.deceased)finishEducationEventCheckpoint(state,rolls,educationEventContext(state),'deceased');
   const prior=event.command.type==='gm-replay'?snapshots[event.command.payload.revision-1]:snapshots[i];if(event.command.type!=='restore'&&!state.psionicTraining&&state.character.species==='zhodani'&&state.active!==null&&(state.character.stats.PSI??0)>(prior.character.stats.PSI??0)&&(state.character.stats.SOC??0)<10)reviewZhodaniStatus(state,'command:'+event.command.type,rolls,state.stage);
@@ -3407,7 +3467,7 @@ export function project(session) {
  state.medicalOutstanding=(state.character.medicalBills??[]).filter(b=>!b.settled).reduce((sum,b)=>sum+b.personalCost,0);
  state.psionicOptions=state.stage==='psionic-training'?psionicOptions(state):[];
   state.psionicCanFinish=state.stage==='psionic-training'&&state.psionicTraining?.mode==='initial';
-  state.canStartPsionicTraining=(!(state.optionalPsiRequiresTesting||state.psiActivationRequiresTesting)||Object.hasOwn(state.character.stats,'PSI'))&&!accessMandatory(state)&&!state.character.psionicLoss&&['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0)&&!state.character.psionics?.training.some(t=>t.completed);
+  state.canStartPsionicTraining=separateTrainingPermission(state).allowed&&(state.character.stats.PSI??0)>0&&(!(state.optionalPsiRequiresTesting||state.psiActivationRequiresTesting)||Object.hasOwn(state.character.stats,'PSI'))&&!accessMandatory(state)&&!state.character.psionicLoss&&['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0)&&!state.character.psionics?.training.some(t=>t.completed);
  if(state.deferredSpecializations&&state.character.species==='aslan'&&Array.isArray(state.pendingChoice?.options))state.pendingChoice.options=state.pendingChoice.options.map(culturalAwardLabel);
  state.skillChoiceSuggestions=skillChoiceSuggestions(state);if(state.deferredSpecializations){state.specializationOptions=specializationOptions(state);state.skillChoiceBases=skillChoiceBases(state);}
  const aslanEventKind=aslanEventPending(state);if(aslanEventKind)state.aslanEventOutcome={kind:aslanEventKind,holdings:aslanOwnedLand(state)};
@@ -3439,29 +3499,34 @@ export function project(session) {
  decorateEventResults({log,snapshots,events:session.events});
  const educationResultView=educationResultProjection({state,log,snapshots,events:session.events});
  const educationGraduationPreview=educationGraduationPreviewProjection(state);
+ const legacyPoliticalEventView=legacyPoliticalEvidence({state,log,snapshots,events:session.events},characteristicDM);
  const educationEventView=educationEventEvidence(educationEventCheckpointView(state),{state,log,snapshots,events:session.events,skillModifier:skillCheckDM});
  const activeEducation=state.character.educations?.[state.education];
  const educationStory=activeEducation&&!activeEducation.completed?educationEventText(activeEducation.event):null;
  const warDraft=legacyEducationWarDraftEvidence({state,log,snapshots,events:session.events},characteristicDM);
- return withSheetTiming({state,log,revision:session.events.length,...(educationStory?{educationEventContext:educationStory}:{}),...(educationEventView?{educationEventView}:{}),...(state.stage==='precareer'?{educationAdmissionPreviews}:{}),...(educationResultView?{educationResultView}:{}),...(educationGraduationPreview?{educationGraduationPreview}:{})},sheetTiming,{pending:copy(awardOrigin(state.pendingChoice??state.pending?.effect??state.psionicTraining?.award)),deferred:(state.character.deferredSkillAwards??[]).filter(a=>a.status==='pending').map(a=>({id:a.id,origin:copy(awardOrigin(a))})),byAction:skillAwards},warDraft);
+ const finalBenefitView=finalBenefitResult({state,log,snapshots,events:session.events});
+ const projected=withSheetTiming({state,log,revision:session.events.length,...(educationStory?{educationEventContext:educationStory}:{}),...(educationEventView?{educationEventView}:{}),...(legacyPoliticalEventView?{legacyPoliticalEventView}:{}),...(state.stage==='precareer'?{educationAdmissionPreviews}:{}),...(educationResultView?{educationResultView}:{}),...(educationGraduationPreview?{educationGraduationPreview}:{})},sheetTiming,{pending:copy(awardOrigin(state.pendingChoice??state.pending?.effect??state.psionicTraining?.award)),deferred:(state.character.deferredSkillAwards??[]).filter(a=>a.status==='pending').map(a=>({id:a.id,origin:copy(awardOrigin(a))})),byAction:skillAwards},warDraft);
+ if(finalBenefitView)Object.defineProperty(projected,'finalBenefitView',{value:finalBenefitView,enumerable:false});
+ return projected;
 }
 // Presentation metadata is deliberately outside the enumerable historical projection.
-function withSheetTiming(result,timing,awards,warDraft){
+function withSheetTiming(result,timing,awards,warDraft,finalBenefitView){
+ if(finalBenefitView)Object.defineProperty(result,'finalBenefitView',{value:finalBenefitView,enumerable:false});
  if(warDraft)Object.defineProperty(result,'educationWarDraftView',{value:warDraft,enumerable:false});
  Object.defineProperty(result,'characterSheetTiming',{value:timing,enumerable:false});Object.defineProperty(result,'skillAwardPresentation',{value:awards,enumerable:false});return result;
 }
-function apiProjection(result){return {...result,characterSheetTiming:result.characterSheetTiming,skillAwardPresentation:result.skillAwardPresentation,...(result.educationWarDraftView?{educationWarDraftView:result.educationWarDraftView}:{})};}
+function apiProjection(result){return {...result,...(result.finalBenefitView?{finalBenefitView:result.finalBenefitView}:{}),characterSheetTiming:result.characterSheetTiming,skillAwardPresentation:result.skillAwardPresentation,...(result.educationWarDraftView?{educationWarDraftView:result.educationWarDraftView}:{})};}
 export function execute(session,command,{id,expectedRevision}={}) {
  const before=project(session);
  const actionId=id??'action-'+(before.revision+1);need(typeof actionId==='string'&&actionId.length<=120,'Invalid action ID.');
  const existing=session.events.find(e=>e.id===actionId);
- if(existing){need(JSON.stringify(existing.command)===JSON.stringify(command),'Action ID was already used for a different command.');return withSheetTiming({session:copy(session),...before},before.characterSheetTiming,before.skillAwardPresentation,before.educationWarDraftView);}
+ if(existing){need(JSON.stringify(existing.command)===JSON.stringify(command),'Action ID was already used for a different command.');return withSheetTiming({session:copy(session),...before},before.characterSheetTiming,before.skillAwardPresentation,before.educationWarDraftView,before.finalBenefitView);}
  if(expectedRevision!==undefined)need(expectedRevision===before.revision,'This character changed. Reload before applying the command.');
  need(session.events.length<LIMIT,'Action-log limit reached. Export this character before continuing.');
  const next=copy(session);next.events.push({id:actionId,command:copy(command)});
  const result=project(next);const last=result.log.at(-1);next.events.at(-1).rolls=last.rolls;next.events.at(-1).summary=last.summary;
  need(saveSize(next)<=MAX_SAVE_BYTES,'Save size limit reached. The action was not accepted. Export your current character before continuing.');
- return withSheetTiming({session:next,...result},result.characterSheetTiming,result.skillAwardPresentation,result.educationWarDraftView);
+ return withSheetTiming({session:next,...result},result.characterSheetTiming,result.skillAwardPresentation,result.educationWarDraftView,result.finalBenefitView);
 }
 export function importSession(raw) {
  need(typeof raw==='string'&&new TextEncoder().encode(raw).byteLength<=MAX_SAVE_BYTES,'Save is too large.');const session=JSON.parse(raw);project(session);return session;

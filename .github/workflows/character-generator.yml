@@ -32,6 +32,11 @@ jobs:
           node tools/character-generator/verification/clan-share-contrast-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/current-sheet-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/final-sheet-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+      - name: Verify completion awards and capture approved screens
+        run: |
+          node --test tools/character-generator/verification/completion-skills.test.mjs
+          node tools/character-generator/verification/completion-skills-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/gm-award-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - name: Upload sheet review
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -41,6 +46,8 @@ jobs:
             tools/character-generator/verification/artifacts/clan-share-contrast-*
             tools/character-generator/verification/artifacts/current-sheet-*
             tools/character-generator/verification/artifacts/final-sheet-*
+            tools/character-generator/verification/artifacts/completion-preview/**
+            tools/character-generator/verification/artifacts/gm-award-preview/**
           if-no-files-found: warn
   statistics-taglines:
     runs-on: ubuntu-24.04

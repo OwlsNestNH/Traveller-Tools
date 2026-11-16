@@ -1,0 +1,33 @@
+import {createRequire} from 'node:module';
+const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
+import {createServer} from '../server.mjs';
+import {createSession,execute,exportSession,project,importSession} from '../engine/session.mjs';
+import {fileURLToPath} from 'node:url';
+import assert from 'node:assert/strict';
+const run=(r,type,payload={})=>execute(r.session??r,{type,payload}),key='traveller-character-generator.v1';
+let r=run(createSession('psi-course-preview'),'setup',{name:'Training example',species:'human'});
+r=run(r,'roll-statistics');r=run(r,'accept-statistics');r=run(r,'gm-mode',{enabled:true});r=run(r,'gm-psi-testing',{enabled:true});
+r=run(r,'gm-override',{field:'stat.PSI',value:9,reason:'Synthetic potential'});r=run(r,'gm-override',{field:'cash',value:25000,reason:'Synthetic funding'});
+r=run(r,'background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)});r=run(r,'skip-precareer');r=run(r,'gm-mode',{enabled:false});
+const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const browser=await chromium.launch({headless:true}),errors=[],checks=[];
+try{for(const width of [1440,390,320])for(const api of [false,true]){
+ const c=await browser.newContext({viewport:{width,height:1000}});await c.addInitScript(({key,raw})=>{if(!localStorage.getItem(key))localStorage.setItem(key,raw)},{key,raw:exportSession(r.session)});const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));
+ await p.goto('http://127.0.0.1:'+server.address().port+(api?'/?api=local':'/'));
+ await p.getByRole('button',{name:'Psi Training',exact:true}).click();await p.locator('#psionic-course-dialog[open]').waitFor();
+ assert.equal(await p.locator('#psionic-course-accept').isDisabled(),true);
+ await p.locator('#psionic-course-funding').selectOption('finance-training');assert.match(await p.locator('#psionic-course-quote').innerText(),/Cr25,000.*Cr75,000/);
+ const saved=await p.evaluate(k=>localStorage.getItem(k),key);await p.locator('#psionic-course-accept').click();assert.equal(await p.evaluate(k=>localStorage.getItem(k),key),saved);if(await p.locator('#crow-error-dialog[open]').count())throw new Error(await p.locator('#crow-error-dialog').innerText());
+ await p.locator('#psionic-course-access').check();await p.locator('#psionic-course-note').fill('Local institute; four months before the next career');await p.locator('#psionic-course-debt').check();
+ await p.locator('#psionic-course-funding').selectOption('provided');assert.equal(await p.locator('#psionic-course-credit').isVisible(),false);assert.match(await p.locator('#psionic-course-quote').innerText(),/No cash spent. No debt added/);
+ await p.locator('#psionic-course-funding').selectOption('finance-training');assert.equal(await p.locator('#psionic-course-debt').isChecked(),false);
+ await p.locator('#psionic-course-accept').click();assert.match(await p.locator('#psionic-course-feedback').innerText(),/Accept.*debt/);assert.equal(await p.locator('#psionic-course-note').inputValue(),'Local institute; four months before the next career');assert.equal(await p.evaluate(k=>localStorage.getItem(k),key),saved);
+ await p.locator('#psionic-course-debt').check();assert.equal(await p.locator('#psionic-course-feedback').isVisible(),false);
+ await p.locator('#psionic-course-close').click();assert.equal(await p.evaluate(k=>localStorage.getItem(k),key),saved);await p.locator('#psionic-course-reopen').click();assert.equal(await p.locator('#psionic-course-note').inputValue(),'Local institute; four months before the next career');
+ await p.locator('#psionic-course-dialog').evaluate(el=>el.scrollTop=0);
+ if(!api)await p.screenshot({path:fileURLToPath(new URL('./artifacts/psi-course-'+width+'.png',import.meta.url))});
+ assert.ok(await p.locator('#psionic-course-dialog').evaluate(el=>el.scrollWidth<=el.clientWidth+1));
+ await p.locator('#psionic-course-accept').click();await p.waitForFunction(()=>document.body.dataset.stage==='psionic-training');
+ const after=project(importSession(await p.evaluate(k=>localStorage.getItem(k),key)));assert.equal(after.state.character.debt,75000);assert.equal(after.state.character.cash,0);assert.equal(after.state.character.careers.length,0);
+ await p.reload();await p.waitForFunction(()=>document.body.dataset.stage==='psionic-training');assert.equal(project(importSession(await p.evaluate(k=>localStorage.getItem(k),key))).state.character.debt,75000);
+ checks.push({width,api,financing:true,reload:true});await c.close();
+}assert.deepEqual(errors,[]);console.log(JSON.stringify({checks,errors}));}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

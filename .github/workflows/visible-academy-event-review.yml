@@ -24,11 +24,16 @@ jobs:
           node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install chromium
       - name: Accepted academy event and next-term chronology
         run: |
-          node --test tools/character-generator/verification/visible-education-event.test.mjs
+          node --test tools/character-generator/verification/visible-education-event.test.mjs tools/character-generator/verification/academy-political-checkpoint.test.mjs
           node tools/character-generator/verification/visible-education-event-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+      - name: Political event result and separate graduation
+        run: node tools/character-generator/verification/academy-political-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
           name: visible-academy-event-${{ github.event.pull_request.head.sha }}
-          path: tools/character-generator/verification/artifacts/visible-academy-*.png
+          path: |
+            tools/character-generator/verification/artifacts/visible-academy-*.png
+            tools/character-generator/verification/artifacts/army-political-readable-*.png
+            tools/character-generator/verification/artifacts/army-graduation-separated-*.png
           if-no-files-found: error

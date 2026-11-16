@@ -1,0 +1,26 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {catalog} from '../engine/session.mjs';import {finalBenefitResult} from '../engine/final-benefit-result.mjs';import {characterChanges} from '../engine/audit.mjs';
+const url=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\.?\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,url).href));source+='\nexport const audit={initial,apply};';const {audit}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+await mkdir(new URL('./artifacts/',import.meta.url),{recursive:true});
+const coverage=[];
+for(const career of catalog().careers.filter(c=>!c.id.startsWith('zhodani.')))for(const species of [career.id.startsWith('aslan.')?'aslan':career.id.startsWith('vargr.')?'vargr':'human',...(!career.id.startsWith('aslan.')&&!career.id.startsWith('vargr.')?['aezorgh']:[])])for(const gender of species==='aslan'?['male','female']:['male'])for(const cash of [false,true])for(let die=1;die<=6;die++)test(career.id+' '+species+' '+gender+' '+(cash?'cash':'material')+' '+die,()=>{
+ const state=audit.initial('final-benefit-matrix');state.stage='benefits';state.character.species=species;state.character.culture=['human','aezorgh'].includes(state.character.species)?'imperial':'native';state.character.gender=gender;state.character.stats={STR:8,DEX:8,END:8,INT:8,EDU:8,SOC:8,CHA:8,TER:0,WLT:0,PSI:9,FOL:0};state.character.careers=[{id:career.id,assignment:career.assignments[0].id,terms:1,rank:0,benefitRolls:1,totalBenefits:0,successfulTerms:1}];state.active=0;
+ const before=structuredClone(state),command={type:'benefit',payload:{cash}},rolls=[];state._override={index:0,values:[die]};let summary;
+ try{summary=audit.apply(state,command,rolls);}catch(e){assert.equal(e.message,'The species cash-roll limit has been reached.');assert.equal(cash,true);assert.equal(state.character.species,'aslan');assert.equal(gender,'male');coverage.push({career:career.id,species,gender,cash,die,status:'source-or-eligibility',reason:e.message});return;}delete state._override;
+ const original=JSON.stringify(state),event={id:'benefit-matrix',command},log=[{id:event.id,type:'benefit',summary,rolls,changes:characterChanges(before.character,state.character)}];const view=finalBenefitResult({state,events:[event],log,snapshots:[before,state]});
+ if(state.active===null&&(state.character.benefitRollHistory??[]).length){assert.ok(view,'completed award needs result screen');assert.equal(view.record.careerId,career.id);assert.equal(view.record.natural,die);assert.equal(view.record.table,cash?'cash':'material');coverage.push({career:career.id,species,gender,cash,die,status:'completed-result'});}else{assert.equal(view,null);const initialStage=state.stage,initialKind=state.pending?.kind,snapshots=[before,structuredClone(state)],events=[event];let end=view;
+ for(let step=0;step<12&&!end;step++){
+  let follow;const p=state.pending;
+  if(state.stage==='effect-choice')follow={type:'choose-effect',payload:{index:state.pendingChoice.options.findIndex(o=>o.available!==false)}};
+  else if(state.stage==='skill-choice'){let name=state.pendingChoice.allowed?.[0]??'Admin';const choices=catalog().skillSpecialities[name];if(choices?.length)name+=' ('+choices[0]+')';follow={type:'choose-skill',payload:{name}};}
+  else if(p?.kind==='benefit-equipment')follow={type:'resolve-book',payload:{confirmed:true,note:'Synthetic source-confirmed item; tests typed completion only.',benefitItemName:'Synthetic '+p.category,benefitItemCost:Math.min(1000,p.maximumCost??1000),benefitItemTL:Math.min(10,p.maximumTL??10),...(p.weaponSkillRequired?{benefitWeaponSkill:p.weaponSkillOptions[0]}:{})}};
+  else if(p?.kind==='benefit-ship')follow={type:'resolve-book',payload:{confirmed:true,note:'Synthetic source-confirmed ship.',benefitShipVariant:p.variants[0],benefitShipHistory:'Synthetic history supplied by referee for typed completion test.'}};
+  else if(p?.kind==='native-effect')follow={type:'resolve-book',payload:{confirmed:true,note:'Synthetic referee-resolved native effect; testing continuation only.',effects:[]}};
+  else if(p?.kind==='benefit-source')follow={type:'resolve-book',payload:{confirmed:true,note:'Synthetic referee declines unsupported asset.',benefitResolution:'none'}};
+  else break;
+  const prior=structuredClone(state),nextRolls=[],summary=audit.apply(state,follow,nextRolls),id='follow-'+step;events.push({id,command:follow});log.push({id,type:follow.type,summary,rolls:nextRolls,changes:characterChanges(prior.character,state.character)});snapshots.push(structuredClone(state));end=finalBenefitResult({state,log,snapshots,events});
+ }
+ assert.ok(end,career.id+' pending award did not reach a result: '+state.stage+'/'+state.pending?.kind);assert.equal(end.record.careerId,career.id);assert.equal(end.record.natural,die);coverage.push({career:career.id,species,gender,cash,die,status:'completed-after-choice',initialStage,initialKind});}
+ if(view)assert.equal(JSON.stringify(state),original);
+});
+test.after(async()=>{await writeFile(new URL('./artifacts/final-benefit-matrix.json',import.meta.url),JSON.stringify(coverage,null,2));console.log('Coverage',coverage.reduce((a,c)=>(a[c.status]=(a[c.status]??0)+1,a),{}));});

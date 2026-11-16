@@ -32,9 +32,9 @@ export function mountSupportInformation(document,state,{event=null,sourceLabel=n
  // The explicit approved terms remain visible; the referee's full note stays
  // verbatim in information. Other results and every recorded roll stay intact.
  const ruling=event?.type==='resolve-book'&&!event.rolls?.length?(event.changes??[]).find(c=>/^psionics\.rulings\.\d+$/.test(c.path)&&c.after?.kind==='psionic-training-terms'&&c.after.approved===true)?.after:null;
- if(state.stage==='psionic-training'&&ruling&&Number.isFinite(ruling.cost)&&['cash','provided'].includes(ruling.funding)&&result?.querySelector('h3')){
+ if(state.stage==='psionic-training'&&ruling&&Number.isFinite(ruling.cost)&&['cash','provided','finance-training'].includes(ruling.funding)&&result?.querySelector('h3')){
   result.querySelector('h3').textContent='Psionic training approved.';
-  const cost=document.createElement('p');cost.textContent='Personal cost: Cr'+ruling.cost.toLocaleString('en-US')+' ('+ruling.funding+').';result.append(cost);
+  const cost=document.createElement('p');cost.textContent=ruling.funding==='finance-training'?'Cash paid: Cr'+ruling.paid.toLocaleString('en-US')+' · Debt added: Cr'+ruling.debt.toLocaleString('en-US')+'.':'Personal cost: Cr'+ruling.cost.toLocaleString('en-US')+' ('+ruling.funding+').';result.append(cost);
  }
  const holder=document.createElement('div');holder.innerHTML=crowSpeakingPanel({message:supportInstruction(state),type:'skills',className:'support-guidance'});const panel=holder.firstElementChild,trigger=document.createElement('button');trigger.type='button';trigger.className='opening-info-trigger';trigger.dataset.supportInformation='';trigger.textContent='i';trigger.setAttribute('aria-label','About this '+(state.stage==='psionic-training'?'psionic training':'education step'));trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-controls','opening-help-dialog');panel.querySelector('blockquote').prepend(trigger);
  if(instruction){instruction.before(panel);instruction.remove();}else root.querySelector('#step-title').after(panel);

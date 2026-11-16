@@ -1,3 +1,4 @@
+import {educationPoliticalView} from './education-political-result.mjs';
 import {aslanFamilyDie} from './aslan-family-popup.mjs';
 const validFaces=values=>Array.isArray(values)&&values.length>0&&values.every(n=>Number.isInteger(n)&&n>=1&&n<=6);
 export function educationEventStoryView(context,{esc,heading=true}){
@@ -5,9 +6,10 @@ export function educationEventStoryView(context,{esc,heading=true}){
  return '<section class="education-event-story">'+(heading?'<h4>'+esc(context.name)+'</h4>':'')+'<p>'+esc(context.description)+'</p><p class="education-event-possible"><strong>Event rules:</strong> '+esc(context.summary)+'</p></section>';
 }
 export function educationCheckpointModel(projection){
+ if(projection?.legacyPoliticalEventView)return projection.legacyPoliticalEventView;
  const view=projection?.educationEventView,state=projection?.state;
  if(!view||!state||!validFaces(view.eventDice)||view.eventDice.length!==2||view.eventDice.reduce((a,b)=>a+b,0)!==view.eventTotal)return null;
- const base={...view,kind:'checkpoint',name:'University',eventName:view.name,forcedCareer:view.forcedCareer??state.forcedCareer??null};
+ const base={...view,relationships:(view.relationshipIds??[]).map(id=>state.character.relationships.find(r=>r.id===id)).filter(Boolean),kind:'checkpoint',name:'University',eventName:view.name,forcedCareer:view.forcedCareer??state.forcedCareer??null};
  if(state.stage==='education-event-roll'&&view.status==='pending'&&view.roll?.id===state.pendingEducationEventRoll?.id&&['1D','2D','D3'].includes(view.roll.dice))return {...base,mode:'roll',pendingId:view.roll.id};
  if(state.stage==='education-event-result'&&view.status==='resolved'&&view.id===state.educationEventResult?.id)return {...base,mode:'result',pendingId:view.id};
  if(view.status==='pending'&&((view.row===2&&state.stage==='effect-choice')||(view.row===10&&state.stage==='education-check')))return {...base,mode:'existing-choice'};
@@ -52,6 +54,7 @@ export function educationAppliedLines(groups,stateGroups=[]){
  return lines;
 }
 export function educationCheckpointView(model,{esc,sourceLabel,choiceHtml='',careerLabel=id=>id}){
+ if(model.educationId?.startsWith('core.academy-')&&model.row===8&&['roll','result'].includes(model.mode))return educationPoliticalView(model,{esc});
  const initial='<section class="education-checkpoint-record"><h4>Recorded education event</h4><div class="education-recorded-dice" role="img" aria-label="'+esc(model.eventDice.join(' + ')+' = '+model.eventTotal)+'">'+faces(model.eventDice,esc)+'<strong>= '+esc(model.eventTotal)+'</strong></div></section>';
  const children=(model.childRolls??[]).map(roll=>'<section class="education-checkpoint-child"><h4>'+esc(roll.label.replace('core.life-events','Life event').replace('core.unusual-events','Unusual event'))+'</h4>'+(validFaces(roll.values)?'<div class="education-recorded-dice" role="img" aria-label="Recorded dice '+esc(roll.values.join(', '))+'">'+faces(roll.values,esc)+'</div>':'')+'<p>Dice total: '+esc(roll.total)+(JSON.stringify(roll.kept)!==JSON.stringify(roll.values)?' · Kept/converted: '+esc((roll.kept??[]).join(', ')):'')+'</p>'+(roll.check?'<p class="education-checkpoint-check">'+esc(checkSummary(roll.check))+'</p>':'')+(roll.eventDescription?'<p class="education-child-story">'+esc(roll.eventDescription)+'</p>':'')+(roll.eventSummary?'<p class="education-child-story"><strong>Event rules:</strong> '+esc(roll.eventSummary)+'</p>':'')+(roll.source?'<small>'+esc(sourceLabel(roll.source.id,roll.source.page))+'</small>':'')+'</section>');
  const changes=educationAppliedLines(model.appliedChanges,model.appliedStateChanges),applied=changes.length?'<section class="education-checkpoint-applied"><h4>Applied results</h4><ul>'+changes.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul></section>':model.mode==='result'?'<p class="education-checkpoint-neutral">'+(model.row===8&&model.childRolls?.at(-1)?.check?.success===false?'Your SOC check failed. You gain neither an Ally nor an Enemy from this event.':model.row===10&&model.childRolls?.at(-1)?.check?.success===false?'Your study challenge failed. Your skill is unchanged and you gain no Rival.':model.row===11&&model.childRolls?.at(-1)?.check?.success===true?'Your SOC check succeeded. You avoid the draft and may still attempt graduation.':'No character changes were recorded by this event.')+'</p>':'';
