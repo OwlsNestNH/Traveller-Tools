@@ -353,3 +353,5 @@
 .rank-award-dialog .skill-award-origin .eyebrow{font-size:14px;overflow-wrap:anywhere}
 .rank-award-dialog button{min-height:44px;max-width:100%;white-space:normal}
 @media screen and (max-width:540px){.rank-award-dialog{padding:16px}.rank-award-identity{font-size:19px}}
+
+@media screen{#army-career-dialog #career-event-review > .education-event-roll{width:100%;font-size:26px;min-height:64px;margin-top:18px}}

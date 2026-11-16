@@ -1,3 +1,4 @@
+import {pendingCareerEventReview} from './career-event-review.mjs';
 import {CORE_ACADEMIES,legacyEducationWarDraftEvidence} from './education-war-draft-projection.mjs';
 import {copyWithAwardProvenance,markAwardEffects,inheritAwardOrigin,awardOrigin,beginAwardAction,recordSkillAward,appliedSkillAwards} from './award-provenance.mjs';
 import {AEZORGH_CULTURES} from '../shared/aezorgh-culture.mjs';
@@ -3358,6 +3359,16 @@ export function project(session) {
    const target=integer(event.command.payload?.revision,0,i-1,'Restore point');
    const rng=state.rng,gm=state.config.gm;state=copy(snapshots[target]);state.rng=rng;state.config.gm=gm;
    beginAwardAction(state);summary='Restored character state to action '+target+'. Prior rolls and actions remain in this log; randomness was not rewound.';
+  }else if(event.command.type==='name-career-event-relationships'){
+   const review=pendingCareerEventReview(state,log,session.events.slice(0,i)),payload=event.command.payload;
+   need(review&&plain(payload)&&Object.keys(payload).length===2&&payload.pendingId===review.id&&Array.isArray(payload.names),'Name the current event relationships.');
+   const index=review.number-1,start=review.startNumber-1,origin=session.events[start].command,priorIndex=origin.type==='gm-replay'?origin.payload.revision-1:start,before=snapshots[priorIndex].character.relationships??[],after=snapshots[index+1].character.relationships??[],allowed=after.filter(r=>!before.some(p=>p.id===r.id)).map(r=>r.id),seen=new Set();
+   need(payload.names.length<=allowed.length,'Only name relationships awarded by this event.');
+   for(const item of payload.names){need(plain(item)&&Object.keys(item).length===2&&allowed.includes(item.id)&&!seen.has(item.id),'Choose an awarded relationship once.');seen.add(item.id);const relationship=state.character.relationships.find(r=>r.id===item.id);need(relationship,'The awarded relationship is no longer present.');relationship.name=text(item.name,120)||('Unnamed '+relationship.role.toLowerCase());}
+   summary='Event relationship names updated. No new relationships or dice.';
+  }else if(event.command.type==='acknowledge-career-event-result'){
+   const review=pendingCareerEventReview(state,log,session.events.slice(0,i)),payload=event.command.payload;
+   need(review&&payload&&Object.keys(payload).length===1&&payload.pendingId===review.id,'Review the current career event.');state.acknowledgedCareerEventResult=review.id;summary=state.stage==='advancement'?'Career event result reviewed. Advancement remains unrolled.':'Career event result reviewed. Continue to the next step.';
   }else summary=apply(state,event.command,rolls);
   if(educationEventContext(state)&&state.stage==='deceased'&&state.character.deceased)finishEducationEventCheckpoint(state,rolls,educationEventContext(state),'deceased');
   const prior=event.command.type==='gm-replay'?snapshots[event.command.payload.revision-1]:snapshots[i];if(event.command.type!=='restore'&&!state.psionicTraining&&state.character.species==='zhodani'&&state.active!==null&&(state.character.stats.PSI??0)>(prior.character.stats.PSI??0)&&(state.character.stats.SOC??0)<10)reviewZhodaniStatus(state,'command:'+event.command.type,rolls,state.stage);
@@ -3443,25 +3454,28 @@ export function project(session) {
  const activeEducation=state.character.educations?.[state.education];
  const educationStory=activeEducation&&!activeEducation.completed?educationEventText(activeEducation.event):null;
  const warDraft=legacyEducationWarDraftEvidence({state,log,snapshots,events:session.events},characteristicDM);
- return withSheetTiming({state,log,revision:session.events.length,...(educationStory?{educationEventContext:educationStory}:{}),...(educationEventView?{educationEventView}:{}),...(state.stage==='precareer'?{educationAdmissionPreviews}:{}),...(educationResultView?{educationResultView}:{}),...(educationGraduationPreview?{educationGraduationPreview}:{})},sheetTiming,{pending:copy(awardOrigin(state.pendingChoice??state.pending?.effect??state.psionicTraining?.award)),deferred:(state.character.deferredSkillAwards??[]).filter(a=>a.status==='pending').map(a=>({id:a.id,origin:copy(awardOrigin(a))})),byAction:skillAwards},warDraft);
+ const eventReview=pendingCareerEventReview(state,log,session.events);
+ if(eventReview){const index=eventReview.number-1,start=eventReview.startNumber-1,command=session.events[start].command,priorIndex=command.type==='gm-replay'?command.payload.revision-1:start,before=snapshots[priorIndex],after=snapshots[index+1];eventReview.effectEvent={...log[index],relationshipChanges:{before:copy(before.character.relationships??[]),after:copy(after.character.relationships??[])},eventResults:eventReview.actionNumbers.flatMap(n=>log[n-1].eventResults??[]),rolls:eventReview.actionNumbers.flatMap(n=>log[n-1].rolls??[]),changes:characterChanges(before.character,after.character),modifierChanges:{before:copy(before.modifiers??[]),after:copy(after.modifiers??[])},pendingEffectChanges:{before:pendingEffects(before),after:pendingEffects(after)}};}
+ return withSheetTiming({state,log,revision:session.events.length,...(educationStory?{educationEventContext:educationStory}:{}),...(educationEventView?{educationEventView}:{}),...(state.stage==='precareer'?{educationAdmissionPreviews}:{}),...(educationResultView?{educationResultView}:{}),...(educationGraduationPreview?{educationGraduationPreview}:{})},sheetTiming,{pending:copy(awardOrigin(state.pendingChoice??state.pending?.effect??state.psionicTraining?.award)),deferred:(state.character.deferredSkillAwards??[]).filter(a=>a.status==='pending').map(a=>({id:a.id,origin:copy(awardOrigin(a))})),byAction:skillAwards},warDraft,eventReview);
 }
 // Presentation metadata is deliberately outside the enumerable historical projection.
-function withSheetTiming(result,timing,awards,warDraft){
+function withSheetTiming(result,timing,awards,warDraft,eventReview){
+ if(eventReview)Object.defineProperty(result,'careerEventReview',{value:eventReview,enumerable:false});
  if(warDraft)Object.defineProperty(result,'educationWarDraftView',{value:warDraft,enumerable:false});
  Object.defineProperty(result,'characterSheetTiming',{value:timing,enumerable:false});Object.defineProperty(result,'skillAwardPresentation',{value:awards,enumerable:false});return result;
 }
-function apiProjection(result){return {...result,characterSheetTiming:result.characterSheetTiming,skillAwardPresentation:result.skillAwardPresentation,...(result.educationWarDraftView?{educationWarDraftView:result.educationWarDraftView}:{})};}
+function apiProjection(result){return {...result,...(result.careerEventReview?{careerEventReview:result.careerEventReview}:{}),characterSheetTiming:result.characterSheetTiming,skillAwardPresentation:result.skillAwardPresentation,...(result.educationWarDraftView?{educationWarDraftView:result.educationWarDraftView}:{})};}
 export function execute(session,command,{id,expectedRevision}={}) {
  const before=project(session);
  const actionId=id??'action-'+(before.revision+1);need(typeof actionId==='string'&&actionId.length<=120,'Invalid action ID.');
  const existing=session.events.find(e=>e.id===actionId);
- if(existing){need(JSON.stringify(existing.command)===JSON.stringify(command),'Action ID was already used for a different command.');return withSheetTiming({session:copy(session),...before},before.characterSheetTiming,before.skillAwardPresentation,before.educationWarDraftView);}
+ if(existing){need(JSON.stringify(existing.command)===JSON.stringify(command),'Action ID was already used for a different command.');return withSheetTiming({session:copy(session),...before},before.characterSheetTiming,before.skillAwardPresentation,before.educationWarDraftView,before.careerEventReview);}
  if(expectedRevision!==undefined)need(expectedRevision===before.revision,'This character changed. Reload before applying the command.');
  need(session.events.length<LIMIT,'Action-log limit reached. Export this character before continuing.');
  const next=copy(session);next.events.push({id:actionId,command:copy(command)});
  const result=project(next);const last=result.log.at(-1);next.events.at(-1).rolls=last.rolls;next.events.at(-1).summary=last.summary;
  need(saveSize(next)<=MAX_SAVE_BYTES,'Save size limit reached. The action was not accepted. Export your current character before continuing.');
- return withSheetTiming({session:next,...result},result.characterSheetTiming,result.skillAwardPresentation,result.educationWarDraftView);
+ return withSheetTiming({session:next,...result},result.characterSheetTiming,result.skillAwardPresentation,result.educationWarDraftView,result.careerEventReview);
 }
 export function importSession(raw) {
  need(typeof raw==='string'&&new TextEncoder().encode(raw).byteLength<=MAX_SAVE_BYTES,'Save is too large.');const session=JSON.parse(raw);project(session);return session;
