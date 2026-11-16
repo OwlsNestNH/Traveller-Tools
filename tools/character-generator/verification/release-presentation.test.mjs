@@ -19,11 +19,11 @@ test('homepage exposes source-assisted beta fourth and Ship Combat before the re
 });
 
 test('beta version, notice, printable disclaimer and notes agree with the released catalogue',()=>{
- assert.equal(version(tool),'0.13.0-beta.1');assert.equal(version(changes),version(tool));
- assert.match(tool,/id="release-version">Beta 0\.13<\/span>/);
+ assert.equal(version(tool),'0.14.0-beta.1');assert.equal(version(changes),version(tool));
+ assert.match(tool,/id="release-version">Beta 0\.14<\/span>/);
  assert.match(tool,/Source-assisted beta/);assert.match(tool,/not a fully automated or independently rules-certified generator/);
- assert.match(read('tools/character-generator/gui/app.mjs'),/Source-assisted Beta 0\.13/);
- assert.match(read('tools/character-generator/README.md'),/0\.13\.0-beta\.1/);
+ assert.match(read('tools/character-generator/gui/app.mjs'),/Source-assisted Beta 0\.14/);
+ assert.match(read('tools/character-generator/README.md'),/0\.14\.0-beta\.1/);
  assert.match(read('tools/character-generator/NOTICE.html'),/Non-commercial source-assisted beta/);
  assert.doesNotMatch(tool+read('tools/character-generator/README.md'),/development preview|Do not publish/);
  const catalog=api({operation:'catalog'});assert.equal(catalog.ok,true);assert.equal(catalog.species.length,4);assert.equal(catalog.careers.length,36);
