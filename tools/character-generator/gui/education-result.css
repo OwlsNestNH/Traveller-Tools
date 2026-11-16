@@ -124,3 +124,9 @@
 
 /* Match the recorded gold Rite dice without changing the recorded faces. */
 .education-result .education-result-die{color:#ffd34b}
+
+.education-political-result .education-recorded-dice{color:#ffd34b}
+
+.education-relationship-name{display:block;font-size:20px;font-weight:700;margin:12px 0}.education-relationship-name input{display:block;width:100%;min-height:46px;margin-top:6px}
+.education-relationship-name input{background:#102c3d;color:#f5f8fa;border:1px solid #a7dbe8;padding:10px}.education-relationship-name input::placeholder{color:#b5c8d1}
+#precareer-dialog .education-relationship-name input{background:#102c3d;color:#f5f8fa;border-color:#a7dbe8}
