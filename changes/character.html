@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="application-version" content="0.14.0-beta.1">
-<meta name="description" content="Character Generator Beta 0.14 release notes, source-assisted coverage and limitations.">
+<meta name="application-version" content="0.16.0-beta.1">
+<meta name="description" content="Character Generator Beta 0.16 release notes, source-assisted coverage and limitations.">
 <title>Character Generator - Beta - Changelog</title>
 <link rel="icon" href="data:,">
 <style>*{box-sizing:border-box}body{margin:0;background:#0b0e14;color:#e6e6e6;font:16px/1.6 system-ui,-apple-system,Segoe UI,sans-serif}header,main,footer{width:min(100%,850px);margin:auto;padding:24px}header{padding-bottom:8px}h1{font-size:clamp(1.6rem,5vw,2.2rem);line-height:1.2;margin:20px 0 8px}h2{font-size:1.3rem;margin:0 0 12px}h3{font-size:1rem;margin:0 0 8px}a{color:#b9c7ff;text-underline-offset:3px}a:focus-visible{outline:3px solid #fff;outline-offset:4px}nav{display:flex;flex-wrap:wrap;gap:12px 24px}nav a{display:inline-flex;align-items:center;min-height:44px}.feedback{border:1px solid #425270;background:#141a2a;border-radius:10px;padding:20px;margin-bottom:28px}.feedback p{margin:0 0 10px}.feedback a{font-size:1.05rem;overflow-wrap:anywhere}section+section{margin-top:32px}li{margin:10px 0}ul{padding-left:22px}.muted,footer{color:#aab6c9;font-size:.9rem}footer{border-top:1px solid #293448}@media(max-width:400px){header,main,footer{padding:16px}.feedback{padding:16px}}
@@ -14,11 +14,10 @@
 <header>
 <nav aria-label="Page navigation"><a href="../">Traveller Tools</a><a href="../tools/character-generator/">Open Character Generator</a></nav>
 <h1>Character Generator changelog</h1>
-<p class="muted">Updated <time datetime="2026-11-15">November 15, 2026</time> &middot; Dates shown in UTC.</p>
+<p class="muted">Updated <time datetime="2026-11-16">November 16, 2026</time> &middot; Dates shown in UTC.</p>
 </header>
-<main>
-<section><h2>Unreleased — academy event separation</h2><p>New Army, Marine and Navy Academy Political movement events pause for the player’s SOC check and show its recorded Ally/Enemy outcome before a separate graduation screen. Optional Ally/Enemy names persist in the live record. Older saved outcomes receive a separate review without rerolling or duplicating awards. Existing dice and replay remain unchanged. Full event-screen audit and review are in progress.</p></section>
-<section><h2>Beta 0.14 — Combined cascade skill selector</h2><p>Fixed-base cascade awards combine the base skill and specialisation fields into one selector. Existing popup styling, known-skill information and Custom-only input are retained. Multiple-base awards keep their base choice.</p></section>
+<main><section><h2>Beta 0.16 - Academy event separation</h2><p>New Army, Marine and Navy Academy Political movement events pause for the player’s SOC check and show its recorded Ally/Enemy outcome before a separate graduation screen. Optional Ally/Enemy names persist in the live record. Older saved outcomes receive a separate review without rerolling or duplicating awards. Existing dice and replay remain unchanged. Full event-screen audit and review are in progress.</p></section><section><h2>Beta 0.15 - Drifter fallback choice</h2><p>After failed qualification, choose Barbarian, Wanderer or Scavenger explicitly. Cancel preserves the failed roll; previous saved histories and species-specific fallbacks remain unchanged. </p></section><section><h2>Beta 0.14 — Combined cascade skill selector</h2><p>Fixed-base cascade awards combine the base skill and specialisation fields into one selector. Existing popup styling, known-skill information and Custom-only input are retained. Multiple-base awards keep their base choice.</p></section>
+
 <section><h2>Beta 0.13 — Clear, separate rank awards</h2><p>Pending rank skills open in a focused Rank Award window, with the career, rank number and title above the skill choice. Academy service awards keep their separate source. Close or Escape preserves the pending award and provides a clear way to reopen it. Existing skills, fixed-level rules, recorded rolls, RNG, saves and history are unchanged.</p></section>
 <section><h2>Beta 0.12 — Clear commission decisions</h2><p>Crow distinguishes accepting an education commission from applying for a commission. The current player decision leads, while earlier entry context is quieter. Training, rank rewards, automatic-success rules and saved results are unchanged.</p></section>
 <section><h2>Education commission guidance</h2><p class="muted">Released in <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/319">PR #319</a>.</p><p>Crow distinguishes automatic commission acceptance from an optional application roll. An automatic entry summary remains secondary to the current decision; academy service awards and rank rewards continue through their existing separate choices. No commission, training, rank, RNG or saved-history mechanics change.</p></section>
