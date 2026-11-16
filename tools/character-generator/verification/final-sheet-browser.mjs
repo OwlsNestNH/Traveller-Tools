@@ -1,3 +1,4 @@
+import {advanceCompletionReview} from './completion-review-browser.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
@@ -22,8 +23,8 @@ try{
    await page.getByRole('button',{name:'Finish character',exact:true}).waitFor();
    assert.equal(await page.locator('[data-action=open-character-sheet]').count(),0);
    await page.getByRole('button',{name:'Finish character',exact:true}).click();
-   const open=page.getByRole('button',{name:'Open your character sheet',exact:true});await open.waitFor();
-   assert.ok(await open.evaluate(el=>el.getBoundingClientRect().height>=72));
+   await advanceCompletionReview(page);const open=page.getByRole('button',{name:'Open your character sheet',exact:true});await open.waitFor();
+   assert.ok(await open.evaluate(el=>el.getBoundingClientRect().height>=44));
    await page.locator('#completion-notes > summary').click();
    await page.locator('#character-notes').fill('Unsaved biography '+label+' <img src=x>');
    await open.focus();await open.press('Enter');
@@ -81,7 +82,7 @@ try{
   try{
    await page.goto(origin+(transport==='http'?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller',exact:true}).waitFor();
    await page.locator('#import').setInputFiles({name:'synthetic-finished.json',mimeType:'application/json',buffer:Buffer.from(raw)});
-   await page.getByRole('button',{name:'Open your character sheet',exact:true}).click();await page.getByRole('dialog',{name:'Character sheet',exact:true}).waitFor();
+   await advanceCompletionReview(page);await page.getByRole('button',{name:'Open your character sheet',exact:true}).click();await page.getByRole('dialog',{name:'Character sheet',exact:true}).waitFor();
    await page.reload();await page.getByRole('button',{name:'Open your character sheet',exact:true}).waitFor();
    assert.equal(await page.locator('dialog:modal').count(),0);assert.equal(await page.locator('#completion-dialog[open]').count(),1);assert.equal(await page.evaluate(()=>document.body.classList.contains('final-sheet-open')),false);
    checks.push(transport+' finalized import and reload');

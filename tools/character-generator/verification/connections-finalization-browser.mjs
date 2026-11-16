@@ -17,9 +17,9 @@ const stored=page=>page.evaluate(key=>localStorage.getItem(key),key);
 const ready=page=>page.waitForFunction(()=>!document.querySelector('#export').disabled);
 async function changed(page,n){await page.waitForFunction(({key,n})=>JSON.parse(localStorage.getItem(key)).events.length>n&&!document.querySelector('#export').disabled,{key,n});}
 async function assertGate(page,finalizing){
- assert.equal(await page.locator('#connection-person').count(),Number(finalizing));
- assert.equal(await page.locator('[data-action="connection"]').count(),Number(finalizing));
- assert.equal(await page.locator('#notes-connections > summary').textContent(),finalizing?'Notes & connections':'Background notes');
+ assert.equal(await page.locator('#connection-person').count(),Number(finalizing && project(JSON.parse(await stored(page))).state.connections.length<2));
+ assert.equal(await page.locator('[data-action="connection"]').count(),Number(finalizing && project(JSON.parse(await stored(page))).state.connections.length<2));
+ assert.equal(await page.locator('#notes-connections > summary').textContent(),'Background notes');
  assert.equal(await page.locator('#character-notes').count(),1);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
 }
@@ -48,16 +48,16 @@ try{
    assert.deepEqual(project(JSON.parse(await stored(page))).state.connections,career.state.connections);
    assert.ok((await page.locator('.print-only').textContent()).includes('Synthetic earlier Traveller'));
    await page.emulateMedia({media:'print'});assert.equal(await page.locator('.print-only').isVisible(),true);await page.emulateMedia({media:'screen'});
-   await page.getByRole('button',{name:'Finish character',exact:true}).click();await page.locator('[data-action="open-character-sheet"]').waitFor();await ready(page);await assertGate(page,true);
-   if(!await page.locator('#notes-connections').evaluate(details=>details.open))await page.locator('#completion-notes > summary, #notes-connections > summary:visible').first().click();await page.locator('#connection-person').fill('Synthetic final Traveller');await page.locator('#connection-skill').fill('Admin');await page.locator('#connection-note').fill('Recorded only at finalization.');
-   const before=JSON.parse(await stored(page)),skillBefore=project(before).state.character.skills.Admin;
+   await page.getByRole('button',{name:'Finish character',exact:true}).click();await page.locator('#completion-dialog').waitFor();await ready(page);await assertGate(page,true);
+   if(!await page.locator('#notes-connections').evaluate(details=>details.open))await page.locator('#completion-notes > summary, #notes-connections > summary:visible').first().click();await page.locator('#connection-person').fill('Synthetic final Traveller');await page.locator('#connection-skill').selectOption('Admin');await page.locator('#connection-note').fill('Recorded only at finalization.');
+   await page.locator('#connection-consent').check();const before=JSON.parse(await stored(page)),skillBefore=project(before).state.character.skills.Admin;
    await page.locator('[data-action="connection"]').evaluate(button=>{button.click();button.click();});await changed(page,before.events.length);
    const after=JSON.parse(await stored(page)),state=project(after).state;
    assert.equal(after.events.length,before.events.length+1);assert.deepEqual(after.events.slice(0,before.events.length),before.events);
    assert.equal(state.connections.length,2);assert.equal(state.character.skills.Admin,skillBefore+1);assert.deepEqual(state.connections[0],career.state.connections[0]);await assertGate(page,true);
    await page.screenshot({path:fileURLToPath(new URL('connections-'+label+'-final.png',out)),fullPage:true});
    const raw=await stored(page),downloaded=page.waitForEvent('download');await page.locator('#export').click();assert.equal(await readFile(await (await downloaded).path(),'utf8'),raw);
-   await page.reload();await page.locator('[data-action="open-character-sheet"]').waitFor();await ready(page);await assertGate(page,true);assert.equal(await stored(page),raw);
+   await page.reload();await page.locator('#completion-dialog').waitFor();await ready(page);await assertGate(page,true);assert.equal(await stored(page),raw);
    // Opening and closing the disclosure must not generate new records.
    await page.locator('#completion-notes > summary, #notes-connections > summary:visible').first().focus();await page.keyboard.press('Enter');await page.keyboard.press('Enter');assert.equal(await stored(page),raw);
    checks.push(label+' early gate, notes, legacy import/print, final entry, repeated click, export and reload');
