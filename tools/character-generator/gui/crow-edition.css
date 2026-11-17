@@ -66,6 +66,6 @@ body .pilot-skill-list{font-size:14px;min-height:36px;padding:5px 10px;}
  body #precareer-dialog .education-result-heading .precareer-art{width:57px;height:57px;}
  body #precareer-dialog .precareer-information-rows button{font-size:15px;padding:8px;}
 }
-body #workspace .education-result-equation-tail{min-width:3.6em;text-align:left;font-variant-numeric:tabular-nums;}
+body #workspace .education-result-equation-tail{flex:0 0 4em;width:4em;min-width:0;text-align:left;font-variant-numeric:tabular-nums;}
 body #precareer-admission-roll .education-pending-dice{color:inherit;}
 @media(max-width:650px){body #precareer-dialog .education-result{padding-top:52px;}}
