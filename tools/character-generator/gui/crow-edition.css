@@ -1,12 +1,64 @@
 /* Isolated pilot controls; original styling remains unchanged. */
-#pilot-navigation{display:flex;justify-content:space-between;gap:1rem;width:min(1440px,calc(100% - 48px));margin:1rem auto;}
-#pilot-navigation button{max-width:48%;}
 .pilot-psi-controls{display:flex;flex-wrap:wrap;gap:1rem;align-items:start;border-top:1px solid #897635;padding-top:1rem;}
 .pilot-psi-controls>*{flex:1 1 260px;min-width:0;}
 .screen-review-entry{display:none;}
-@media(max-width:760px){#pilot-navigation{width:calc(100% - 28px);}}
 
-#pilot-notice{margin:1rem auto;}
 body[data-stage="identity"] .layout{align-items:stretch;}
 body[data-stage="identity"] #sheet{align-self:start;}
-@media print{#pilot-navigation{display:none;}}
+/* Screen navigation shares the existing central file toolbar. */
+body #pilot-toolbar{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));align-items:stretch;gap:10px;grid-auto-rows:auto;}
+body #pilot-toolbar>:is(#pilot-back,#pilot-forward){width:100%;height:auto;min-width:0;white-space:normal;}
+.pilot-message-pages{display:grid;min-width:0;}
+.pilot-message-page{grid-area:1/1;min-width:0;}
+.pilot-message-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;}
+.pilot-message-controls button{flex:0 0 44px;min-width:44px;padding:6px;min-height:44px;}
+.pilot-message-controls span{font-size:14px;text-align:center;}
+body #precareer-dialog .precareer-information-rows{display:flex;gap:12px;align-items:stretch;}
+body #precareer-dialog .precareer-information-rows button{flex:1 1 0;min-width:0;justify-content:center;align-items:center;text-align:center;border:1px solid var(--line);border-radius:8px;font-size:18px;min-height:54px;padding:12px;}
+#precareer-context{justify-content:flex-end;}
+.precareer-step-card{display:contents;}
+.precareer-step-card>:not(#precareer-resume){display:none;}
+body #precareer-information{position:fixed;inset:0;margin:auto;width:min(680px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:20px;}
+body #precareer-information-title{font-size:24px;color:#ffd34b;}
+body #precareer-information :is(p,li){font-size:16px;}
+#precareer-information .crow-speaking-panel{grid-template-columns:88px minmax(0,1fr);gap:16px;}
+#precareer-information .crow-speaking-panel>img{width:88px;}
+body #precareer-dialog .admission-numbers{display:block;}
+body #precareer-dialog .admission-roll-details{display:grid;grid-template-columns:112px minmax(0,1fr);gap:18px;}
+body #precareer-dialog .admission-roll-details>img{width:112px;height:auto;}
+body #precareer-dialog .admission-roll-details :is(h4,.admission-formula){font-size:clamp(24px,2.5vw,34px);line-height:1.3;}
+body #precareer-dialog .admission-roll-details p{font-size:20px;line-height:1.5;}
+body #precareer-admission-roll{display:flex;flex-direction:column;align-items:center;gap:12px;}
+body #precareer-admission-roll .education-pending-dice{margin:0;pointer-events:none;}
+.pilot-admission-boundary{padding:16px;border:1px solid #ffd34b;border-radius:8px;}
+
+@media(max-width:650px){body #pilot-toolbar{grid-template-columns:repeat(2,minmax(0,1fr));}#pilot-back{order:-2;}#pilot-forward{order:-1;}body #precareer-dialog .admission-roll-details{grid-template-columns:64px minmax(0,1fr);gap:10px;}body #precareer-dialog .admission-roll-details>img{width:64px;}body #precareer-dialog .admission-roll-details p{font-size:18px;}body #precareer-dialog .precareer-information-rows button{font-size:15px;padding:8px;}#precareer-information .crow-speaking-panel{grid-template-columns:52px minmax(0,1fr);}#precareer-information .crow-speaking-panel>img{width:52px;}}
+
+body .precareer-layout:has(>#precareer-dialog:not(:modal)) .precareer-step-card:has(#precareer-resume[hidden]){display:none;}
+body #precareer-dialog .precareer-information-rows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
+body #precareer-dialog .precareer-information-rows button{width:100%;}
+body #precareer-dialog #precareer-admission-roll,body #precareer-dialog #precareer-admission-roll:hover{background:#061b29;color:#ffd34b;border:2px solid #ffd34b;}
+@media(max-width:650px){body #precareer-dialog .admission-roll-details{grid-template-columns:minmax(0,1fr);padding:14px;}body #precareer-dialog .admission-roll-details>img{width:72px;justify-self:center;}body #precareer-dialog .admission-roll-details blockquote{padding:14px;}body #precareer-dialog .admission-roll-details .pilot-message-controls span{font-size:13px;}}
+
+/* Reuse the existing Crow panel and palette with one speech-bubble shape. */
+body #workspace .crow-speaking-panel{--crow-bubble:#ffd34b;}
+body #workspace .crow-speaking-panel[data-tone="success"]{--crow-bubble:#73dfa1;}
+body #workspace .crow-speaking-panel[data-tone="failure"],body #workspace .crow-speaking-panel[data-tone="warning"]{--crow-bubble:#ff6475;}
+body #workspace .crow-speaking-panel>blockquote{position:relative;border:2px solid var(--crow-bubble);border-radius:24px;padding:18px;background:#061b29;}
+body #workspace .crow-speaking-panel>blockquote::before{content:"";position:absolute;left:-10px;top:40px;width:16px;height:16px;background:#061b29;border-left:2px solid var(--crow-bubble);border-bottom:2px solid var(--crow-bubble);transform:rotate(45deg);}
+body #workspace .crow-speaking-panel>blockquote>strong{color:var(--crow-bubble);}
+.pilot-study-guidance{margin-bottom:22px;}
+.pilot-study-guidance h4{font-size:30px;color:#ffd34b;}
+.pilot-study-guidance p{font-size:20px;}
+.pilot-dice-rolling svg{animation:pilot-dice-tumble .22s ease-in-out infinite alternate;}
+@keyframes pilot-dice-tumble{from{transform:translateY(-7px) rotate(-14deg)}to{transform:translateY(7px) rotate(14deg)}}
+body #precareer-admission-roll:disabled{opacity:1;}
+body #precareer-admission-roll .education-result-die{width:110px;height:110px;color:#ffd34b;}
+@media(prefers-reduced-motion:reduce){.pilot-dice-rolling svg{animation:none;}}
+@media(max-width:650px){body #workspace .crow-speaking-panel>blockquote::before{display:none;}.pilot-study-guidance h4{font-size:25px;}.pilot-study-guidance p{font-size:18px;}}
+body #precareer-dialog:has(.pilot-study-guidance) .education-result{padding-top:64px;}
+body .pilot-study-guidance .pilot-message-pages{height:320px;}
+body .pilot-study-guidance .pilot-message-page{overflow:auto;}
+body .pilot-study-guidance h4{margin:8px 0 14px;line-height:1.25;}
+body .pilot-study-guidance .education-result-tagline{display:none;}
+@media(max-width:650px){body .pilot-study-guidance .pilot-message-pages{height:350px;}}
