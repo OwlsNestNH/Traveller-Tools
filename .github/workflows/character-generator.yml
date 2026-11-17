@@ -240,6 +240,7 @@ jobs:
           node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install --with-deps chromium
       - name: Capture focused Crow desktop and phone review
         run: |
+          node tools/character-generator/verification/crow-edition-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/crow-mockup-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/technical-error-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/crow-recovery-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"

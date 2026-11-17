@@ -35,3 +35,37 @@ test('Crow permits physical scores before acceptance without allowing regenerati
  assert.equal((await send('enter-physical-statistic',{code:'STR',value:12})).ok,false);
  assert.equal(r.session.events.flatMap(e=>e.rolls??[]).length,0);
 });
+
+test('Crow background and University admission preserve the one-attempt rule on success and failure',async()=>{
+ const outcomes=new Set();
+ for(let seed=0;seed<30&&outcomes.size<2;seed++){
+  let r=await call({operation:'create',seed:'crow-admission-'+seed}),id=0;
+  const send=async(type,payload={})=>{const result=await call({operation:'command',session:r.session,id:'admit-'+(++id),expectedRevision:r.revision,command:{type,payload}});if(result.ok)r=result;return result;};
+  for(const [type,payload] of [['setup',{species:'human',name:'Admission',gender:'male'}],['roll-statistics',{}],['accept-statistics',{}]])assert.equal((await send(type,payload)).ok,true);
+  assert.equal((await send('background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)})).ok,true);
+  assert.equal(r.state.stage,'precareer');
+  for(const type of ['swap-statistics','roll-statistics','background'])assert.equal((await send(type,{a:0,b:1,skills:[]})).ok,false);
+  assert.equal((await send('precareer',{id:'core.academy-army'})).ok,false);
+  assert.equal((await send('precareer',{id:'core.university'})).ok,true);
+  outcomes.add(r.educationResultView.outcome==='failure'?'failure':'success');
+  const accepted=structuredClone(r.session),dice=r.session.events.find(e=>e.command.type==='precareer').rolls;assert.equal(dice.length,1);
+  for(const type of ['precareer','open-precareer','skip-precareer','acknowledge-education-result','restore'])assert.equal((await send(type,{id:'core.university',name:'Admin'})).ok,false,type);
+  assert.deepEqual(r.session,accepted);
+  const replay=await call({operation:'project',session:r.session});assert.equal(replay.ok,true);assert.deepEqual(replay.state,r.state);
+  if(r.state.stage==='education-skill'){
+   assert.equal(r.state.pendingChoice.value,0);
+   assert.equal((await send('education-skill',{name:'Animals (riding)'})).ok,false);
+   assert.equal((await send('education-skill',{name:'Science (xenobotany)'})).ok,true);
+   assert.equal(r.state.character.skills.Science,0);
+   assert.equal(r.state.pendingChoice.value,1);
+   assert.equal((await send('education-skill',{name:'Science (physics)'})).ok,false);
+   assert.equal((await send('education-skill',{name:'Animals (training)'})).ok,true);
+   assert.equal(r.state.character.skills['Animals (training)'],1);
+   assert.deepEqual(r.session.events.find(e=>e.command.type==='precareer').rolls,dice);
+   for(const type of ['education-skill','education-event','acknowledge-education-result'])assert.equal((await send(type,{name:'Admin'})).ok,false);
+   assert.equal((await call({operation:'project',session:r.session})).ok,true);
+  }else assert.equal((await send('education-skill',{name:'Admin'})).ok,false);
+
+ }
+ assert.deepEqual([...outcomes].sort(),['failure','success']);
+});

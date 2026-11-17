@@ -1,3 +1,4 @@
+import {animateCrowAdmission,mountCrowEditionPresentation} from './crow-edition-presentation.mjs';
 // Isolated Beta 0.1 snapshot of the current GUI. Shared helpers and rules remain unchanged.
 import {mountLifeDecisionClarity} from './life-decision-clarity.mjs';
 import {agentOtherPersonInjury,agentInjuryView,mountAgentInjury} from './agent-injury-view.mjs';
@@ -241,7 +242,7 @@ async function send(type,payload={},recoveryOptions={}){
   if(token!==operationGeneration)return false;
   if(!result.ok)throw new Error(result.error.message);
   if(type!=='notes')trainingTagline=aslanTrainingTagline(result.log.at(-1),result.state,{previousState,command:{type,payload}});
-  session=result.session;projection=result;committed=true;window.CrowStartupRecovery?.lock();if(recoveryOptions.discardDrafts){notesDraft=null;backgroundDraft=null;effects=[];selectedCareer='';recoveryDrafts.clear();}aslanManualReviewKey=null;if(type==='notes'&&notesDraft===payload.text)notesDraft=null;effects=[];persist();render();focusAfterAction(previousStage,focused);notify(storageWarning||actionNotice(type,result),!!storageWarning,rollResult(result.log.at(-1),result.state,catalog)?.status??'info',!storageWarning);return true;
+  session=result.session;projection=result;committed=true;window.CrowStartupRecovery?.lock();if(recoveryOptions.discardDrafts){notesDraft=null;backgroundDraft=null;effects=[];selectedCareer='';recoveryDrafts.clear();}aslanManualReviewKey=null;if(type==='notes'&&notesDraft===payload.text)notesDraft=null;effects=[];persist();if(type==='precareer'){await animateCrowAdmission(document,educationResultModel(result,catalog));if(token!==operationGeneration)return true;}render();focusAfterAction(previousStage,focused);notify(storageWarning||actionNotice(type,result),!!storageWarning,rollResult(result.log.at(-1),result.state,catalog)?.status??'info',!storageWarning);return true;
  }catch(error){if(token===operationGeneration)notify(error.message,true,'info',false,{kind:committed?'presentation':'action',...(committed?{guidance:'The action was accepted. Show current step redraws its stored result without repeating a roll, purchase or action. Save accepted character keeps a backup; unsaved form fields stay on this page.',actions:[{id:'show-current-step',kind:'navigate',label:'Show current step',available:()=>!busy,run:()=>{render();return true;}}]}:{})});return false;}
  finally{if(token===operationGeneration)setBusy(false);}
 }
@@ -478,13 +479,14 @@ function stageView(state,insideEquipmentDialog=false){
  case 'injury-treatment':return injuryTreatmentView(state);
  case 'aslan-family':case 'aslan-birth-order':case 'aslan-estate':case 'aslan-clan':case 'aslan-pride':case 'aslan-rite':return aslanOriginView(state,{esc,button,sourceLabel});
  case 'statistics':return editingOpeningSettings?setupView():statisticsView(state);
- case 'background':return '<section class="notice"><h3>Characteristics accepted · pilot boundary</h3><p>Your accepted characteristics and recorded rolls are read-only. Back reviews earlier screens without changing them. GM corrections remain explicitly logged exceptions. Background, University and careers are not included yet.</p></section>';
+ case 'background':return backgroundView(state);
  case 'precareer':return preCareerView(state);
  case 'companion-admission':return companionAdmissionView(state);
  case 'companion-skill':return companionSkillView(state);
  case 'career':return aslanHistoricalOptionsView(state,{esc,button})+aslanRestorationNotice(state,{esc})+aslanOfficerOffersView(state,{esc,button,sourceLabel})+careerView(state);
  case 'retirement':return '<p>Your early retirement choice ends further career and education entry. Benefits are resolved; you can now finish this Traveller.</p>'+button('Finish character','finish');
- case 'education-event':if(educationEventModel(state,projection))return educationEventView(educationEventModel(state,projection));return '<p>Your initial education awards are recorded. Roll one pre-career event before graduation.</p>'+button('Roll education event','education-event');
+ case 'education-event':return '<p class="pilot-skills-boundary">University subjects recorded. This pilot stops before education events and graduation. Your accepted choices and admission dice are retained.</p>';
+
  case 'education-graduation':if(educationEventModel(state,projection))return educationGraduationView(educationEventModel(state,projection),{esc});return '<p>Roll your graduation check. Your initial skills are retained even if you do not graduate.</p>'+button('Roll graduation','education-graduation');
  case 'education-skill':if(educationNestedChoiceModel(state))return standaloneEventStory+educationNestedChoiceView(educationNestedChoiceModel(state),state,{esc});return educationSkillView(state,catalog,esc,button);
  case 'education-service':return '<p>Choose '+(state.pendingChoice.count-state.pendingChoice.picked.length)+' more distinct service skill'+(state.pendingChoice.count-state.pendingChoice.picked.length===1?'':'s')+' to gain at level 1.</p><div class="choice-list">'+state.pendingChoice.options.filter(n=>!state.pendingChoice.picked.includes(n)).map(n=>button(esc(n),'education-service','choice','data-name="'+esc(n)+'"')).join('')+'</div>';
@@ -561,7 +563,7 @@ function render(){
  const landOpen=$('#land-claim-panel')?.open;
  const shareDraft={open:$('#clan-share-panel')?.open,kind:$('#clan-share-kind')?.value,lot:$('#clan-share-lot')?.value};
  const supplementalShell=isSupportStage(projection.state.stage)||isPsionicCourse(projection.state);document.body.dataset.supportShell=String(supplementalShell);
- const state=finalBenefit?{...projection.state,stage:'benefits',active:finalBenefit.careerIndex}:drifterFallbackActive()?{...projection.state,uiDrifterFallback:true}:projection.state,educationModel=educationResultModel(projection,catalog),eventModel=educationEventModel(state,projection);document.body.dataset.requiredDraft=String(!!requiredDraftPresentation(state));document.body.dataset.educationPopup=String(!!(educationModel||eventModel));document.body.dataset.stage=state.stage;document.body.dataset.completionShell=String(['finish','retirement','deceased'].includes(state.stage));document.body.dataset.familyPopup=String(!!(aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state)));$('header h1').textContent=(['identity','statistics','background','precareer'].includes(state.stage)||supplementalShell||educationModel||eventModel||aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state))?'CHARACTER BUILDER':'A life among the stars';$('header .lead').textContent=(['identity','statistics','background','precareer'].includes(state.stage)||supplementalShell||educationModel||eventModel||aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state))?'TRAVELLER RPG':'Build your Traveller one decision at a time.';const detailKey=d=>d.id||d.querySelector(':scope > summary')?.textContent;const previousDetails=new Map([...document.querySelectorAll('#sheet details, #statistics-gm-controls details')].map(d=>[detailKey(d),d.open]));
+ const state=finalBenefit?{...projection.state,stage:'benefits',active:finalBenefit.careerIndex}:drifterFallbackActive()?{...projection.state,uiDrifterFallback:true}:projection.state,educationModel=educationResultModel(projection,catalog),eventModel=state.stage==='education-event'?null:educationEventModel(state,projection);document.body.dataset.requiredDraft=String(!!requiredDraftPresentation(state));document.body.dataset.educationPopup=String(!!(educationModel||eventModel));document.body.dataset.stage=state.stage;document.body.dataset.completionShell=String(['finish','retirement','deceased'].includes(state.stage));document.body.dataset.familyPopup=String(!!(aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state)));$('header h1').textContent=(['identity','statistics','background','precareer'].includes(state.stage)||supplementalShell||educationModel||eventModel||aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state))?'CHARACTER BUILDER':'A life among the stars';$('header .lead').textContent=(['identity','statistics','background','precareer'].includes(state.stage)||supplementalShell||educationModel||eventModel||aslanFamilyPopupModel(state)||aslanBirthPopupModel(state)||aslanEstatePopupModel(state)||aslanClanPopupModel(state)||aslanPridePopupModel(state)||hasAslanBackgroundPopup(state)||aslanRitePopupModel(state))?'TRAVELLER RPG':'Build your Traveller one decision at a time.';const detailKey=d=>d.id||d.querySelector(':scope > summary')?.textContent;const previousDetails=new Map([...document.querySelectorAll('#sheet details, #statistics-gm-controls details')].map(d=>[detailKey(d),d.open]));
 
  $('header h1').textContent='Character Generator: Crow Edition';
  const careerModel=careerTemplateModel(state,catalog,selectedCareer),recordedCareerResult=!selectedCareer&&careerResultTagline(displayedEvent,lastRollResult,state);document.body.dataset.careerTemplate=careerModel?.template.id??(recordedCareerResult?'recorded-career-result':'');document.body.dataset.careerShell=careerModel||recordedCareerResult?'imperial':'';
@@ -920,7 +922,7 @@ document.addEventListener('change',event=>{if(event.target.id==='benefit-item-id
 
 document.addEventListener('change',event=>{if(['credit-category','credit-item'].includes(event.target.id))syncCreditSelection(projection.state.pending,document,event.target.id==='credit-category');});
 
-document.addEventListener('input',event=>{if(event.target.id==='education-skill')syncEducationStudyContinue(projection.state,catalog,document);});
+document.addEventListener('input',event=>{if(event.target.id==='education-skill')syncPilotControls();});
 
 mountRequiredActions({document,getState:()=>projection?.state??{},isBusy:()=>busy,backgroundSelection,getRecoveryActions:recoveryActions,studyValid:(state,value)=>educationStudySelectionValid(state,catalog,value)});
 
@@ -933,7 +935,7 @@ document.addEventListener('click',event=>{
  const trigger=event.target.closest('[data-opening-help="species"]');
  if(!trigger)return;
  event.preventDefault();event.stopImmediatePropagation();
- document.dispatchEvent(new CustomEvent('character-information',{detail:{trigger,info:{title:'Species and society',paragraphs:['Human is the available species in Crow Edition Beta 0.1. More species can be added in later reviewed screens.','Species determines characteristic dice, modifiers and available paths. This pilot includes opening setup and characteristic rolls, and stops after accepting characteristics.'],source:'Human generation: Core Rulebook Update 2022 p. 9.'}}}));
+ document.dispatchEvent(new CustomEvent('character-information',{detail:{trigger,info:{title:'Species and society',paragraphs:['Human is the available species in Crow Edition Beta 0.1. More species can be added in later reviewed screens.','Species determines characteristic dice, modifiers and available paths. This pilot includes opening setup, characteristics, background skills and University admission and its two initial subject choices. Education events, graduation and careers are not included.'],source:'Human generation: Core Rulebook Update 2022 p. 9.'}}}));
 },true);
 
 // Pilot presentation only. All accepted changes still pass through the existing API.
@@ -965,11 +967,18 @@ const rerollHelp=document.querySelector('.statistics-summary .help');if(rerollHe
  for(const option of document.querySelectorAll('#gm-task option'))if(option.value!=='value')option.disabled=true;
  for(const id of ['gm-iron-man','additional-characteristics']){const el=document.getElementById(id);if(el)(el.closest('label')??el).hidden=true;}
  if(state.stage==='statistics'&&state.pool.length){const physical=document.getElementById('gm-physical-dice');if(physical&&session.events.some(e=>e.command.type==='roll-statistics'))physical.disabled=true;}
- const nav=document.getElementById('pilot-navigation');if(!nav)return;
+ mountCrowEditionPresentation(document,{state,projection,catalog,readOnly:isEmbeddedScreenReview,onPanelChange:syncPilotControls});
+ const nav=document.getElementById('pilot-toolbar');if(!nav)return;
  nav.hidden=isEmbeddedScreenReview;
  const back=document.getElementById('pilot-back'),forward=document.getElementById('pilot-forward');
  back.disabled=busy||!screenReview.available();back.onclick=()=>screenReview.open(back);
  const accept=state.stage==='statistics'&&!form&&state.pool.length>0&&state.statisticsComplete!==false;
- forward.disabled=busy||(!form&&!accept);forward.textContent=form?(state.stage==='identity'?'Forward · Begin':'Forward · Save settings'):accept?'Forward · Keep characteristics':'Forward';
- forward.onclick=()=>{if(busy)return;if(form)form.requestSubmit();else if(accept)send('accept-statistics');};
+ const study=document.querySelector('.education-study-continue');if(study)study.disabled=busy||isEmbeddedScreenReview||!study.closest('dialog')?.open||!educationStudySelectionValid(state,catalog,document.getElementById('education-skill')?.value);
+ const background=document.getElementById('background-form'),backgroundReady=background&&!background.querySelector('[type=submit]').disabled;
+ const admissionDialog=document.getElementById('precareer-dialog');
+ const admission=state.stage==='precareer'&&admissionDialog?.open&&admissionDialog.dataset.panel==='admission'?document.getElementById('precareer-admission-roll'):null;
+ forward.disabled=busy||isEmbeddedScreenReview||(!form&&!accept&&!backgroundReady&&!admission&&!(study&&!study.disabled));forward.textContent=form?(state.stage==='identity'?'Forward · Begin':'Forward · Save settings'):accept?'Forward · Keep':background?'Forward · Accept skills':admission?'Forward · Roll':study?'Forward · Record skill':'Forward';
+ forward.onclick=()=>{if(busy)return;if(form)form.requestSubmit();else if(accept)send('accept-statistics');else if(backgroundReady)background.requestSubmit();else if(study&&!study.disabled&&study.closest('dialog')?.open)study.click();else if(admission&&admissionDialog.open&&admissionDialog.dataset.panel==='admission')admission.click();};
 }
+// Keep global Forward in sync with the existing background selection validation.
+document.addEventListener('change',event=>{if(event.target.closest('#background-form'))syncPilotControls();});
