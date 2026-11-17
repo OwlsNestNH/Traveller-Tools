@@ -15,11 +15,24 @@ for(const mode of ['', '?api=local'])for(const width of [1440,390,320]){
   const {call}=await import('./gui/crow-edition-client.mjs');
   for(let i=0;i<30;i++){let r=await call({operation:'create',seed:'skills-browser-'+i}),n=0;
    const send=async(type,payload={})=>{r=await call({operation:'command',session:r.session,id:'fixture-'+(++n),expectedRevision:r.revision,command:{type,payload}});if(!r.ok)throw Error(r.error.message);};
-   await send('setup',{species:'human',name:'University review',gender:'male'});await send('roll-statistics');await send('accept-statistics');await send('background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)});
-   const before=r.session;await send('precareer',{id:'core.university'});if((r.state.stage==='education-skill')===success)return {before,after:r.session,dice:r.educationResultView.dice};
+   await send('setup',{species:'human',name:'University review',gender:'male'});await send('roll-statistics');const statistics=r.session;await send('accept-statistics');const background=r.session;await send('background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)});
+   const before=r.session;await send('precareer',{id:'core.university'});if((r.state.stage==='education-skill')===success)return {before,after:r.session,statistics,background,dice:r.educationResultView.dice};
   }throw Error('No admission fixture');
  },success);
  const fixture=await makeFixture(true);
+ const early=await b.newPage({viewport:{width,height:1000}});await early.goto(base+'crow-edition.html'+mode);await early.locator('#setup-form').waitFor();
+ const aligned=async page=>{if(width===1440){const left=await page.locator('#workspace').boundingBox(),right=await page.locator(await page.locator('#background-rail').count()?'#background-rail':'#sheet').boundingBox();assert.ok(Math.abs(left.height-right.height)<1,'Record column matches workspace: '+await page.locator('body').getAttribute('data-stage')+' '+JSON.stringify({left,right}));}};await aligned(early);
+ for(const stage of ['statistics','background']){
+  await early.evaluate(({key,session})=>localStorage.setItem(key,JSON.stringify(session)),{key,session:fixture[stage]});await early.reload();await early.locator('#workspace>.crow-speaking-panel').waitFor();await aligned(early);
+  const readable=await early.locator('#workspace>.crow-speaking-panel blockquote').first().evaluate(e=>{
+   const lum=rgb=>rgb.map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;}).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
+   const surfaces=[[13,48,66],[7,30,45]].map(rgb=>rgb.map((v,i)=>v*.92+[255,211,75][i]*.08));
+   return [...e.querySelectorAll('p,strong')].every(el=>{const rgb=getComputedStyle(el).color.match(/[\d.]+/g).slice(0,3).map(Number);return surfaces.every(bg=>(Math.max(lum(rgb),lum(bg))+.05)/(Math.min(lum(rgb),lum(bg))+.05)>=4.5);});
+  });assert.equal(readable,true,'Neutral dialogue contrast meets 4.5:1');
+  assert.equal(await early.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+  if(!mode)await early.screenshot({path:out+'patina-'+stage+'-'+width+'.png',fullPage:true});
+ }
+ await early.close();
  if(width===1440&&!mode){
   const failure=await makeFixture(false),failed=await b.newPage();await failed.goto(base+'crow-edition.html');
   await failed.evaluate(({key,failure})=>localStorage.setItem(key,JSON.stringify(failure.before)),{key,failure});await failed.reload();
@@ -61,7 +74,8 @@ for(const mode of ['', '?api=local'])for(const width of [1440,390,320]){
  }
  await p.evaluate(({key,fixture})=>{localStorage.setItem(key,JSON.stringify(fixture.before));localStorage.setItem('traveller-character-generator.v1','ORIGINAL');},{key,fixture});await p.reload();await p.locator('[data-action=precareer][data-id="core.university"]').waitFor();
  assert.equal(await p.locator('#precareer-standard .precareer-intro').textContent(),'Option to attempt a Pre-Career?');
- assert.equal(await p.locator('#precareer-standard .pilot-message-region blockquote').first().evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(255, 240, 189)');
+ const neutral=await p.locator('#precareer-standard .pilot-message-region blockquote').first().evaluate(e=>({fill:getComputedStyle(e).backgroundImage,radius:getComputedStyle(e).borderRadius,tail:getComputedStyle(e,'::before').content}));assert.match(neutral.fill,/rgba\(255, 211, 75, 0.08\)/);assert.match(neutral.fill,/rgb\(13, 48, 66\), rgb\(7, 30, 45\)/);assert.equal(neutral.radius,'12px');assert.equal(neutral.tail,'none');
+ if(width===1440){const left=await p.locator('#precareer-dialog').boundingBox(),right=await p.locator('#precareer-rail').boundingBox();assert.ok(Math.abs(left.height-right.height)<1,'Pre-career columns align');}
  if(!mode)await p.screenshot({path:out+'precareer-'+width+'.png',fullPage:true});
  await p.locator('[data-action=precareer][data-id="core.university"]').click();
  assert.equal(await p.locator('.pilot-admission-boundary').count(),0);
@@ -99,7 +113,10 @@ for(const mode of ['', '?api=local'])for(const width of [1440,390,320]){
  assert.equal(await p.locator('.education-study-continue').textContent(),'Confirm both subjects');
  await p.locator('.education-study-continue').evaluate(e=>{e.click();e.click()});
  await p.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).events.filter(e=>e.command.type==='education-skill').length===2,key);
- saved=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);await p.reload();await p.waitForTimeout(300);
+ saved=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);await p.reload();await p.locator('.pilot-skills-boundary').waitFor();
+ assert.equal(await p.locator('body').getAttribute('data-support-shell'),'true');assert.equal(await p.locator('body').evaluate(e=>getComputedStyle(e).colorScheme),'dark');
+ if(width===1440){const left=await p.locator('#workspace').boundingBox(),right=await p.locator('#sheet').boundingBox();assert.ok(Math.abs(left.height-right.height)<1,'Stop-screen columns align');}
+ if(!mode)await p.screenshot({path:out+'stop-'+width+'.png',fullPage:true});
  assert.deepEqual(await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key),saved);
  assert.equal(await p.locator('[data-action=education-event]:visible').count(),0);
  await p.locator('#pilot-back').click();await p.locator('[data-review-current]').click();
