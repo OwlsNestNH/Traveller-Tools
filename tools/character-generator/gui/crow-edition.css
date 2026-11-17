@@ -1,0 +1,7 @@
+/* Isolated pilot controls; original styling remains unchanged. */
+#pilot-navigation{display:flex;justify-content:space-between;gap:1rem;margin:1rem 24px;}
+#pilot-navigation button{max-width:48%;}
+.pilot-psi-controls{display:flex;flex-wrap:wrap;gap:1rem;align-items:start;border-top:1px solid #897635;padding-top:1rem;}
+.pilot-psi-controls>*{flex:1 1 260px;min-width:0;}
+.screen-review-entry{display:none;}
+@media(max-width:480px){#pilot-navigation{margin:1rem 14px;}}
