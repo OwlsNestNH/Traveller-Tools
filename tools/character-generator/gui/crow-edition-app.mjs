@@ -98,7 +98,7 @@ import {advisoryView,advisorySheet} from './advisory-view.mjs';
 import {crossCareerCoverView,crossCareerTrainingView,crossCareerRouteSheet} from './cross-career-view.mjs';
 import {relationshipLossView,relationshipLossSheet} from './relationship-loss-view.mjs';
 import {merchantFineView,merchantFineSheet} from './merchant-fine-view.mjs';
-import { call } from './crow-edition-client.mjs';
+import {call,recordUniversitySubjects} from './crow-edition-client.mjs';
 import {inspectRecordedHistory,recordedHistoryText} from './legacy-history.mjs';
 import {choiceLabel,skillChoiceProgress} from './choice-labels.mjs';
 import {reeducationView,readReeducationDecisions,reeducationSheet,formatCharacterAge} from './reeducation-view.mjs';
@@ -238,7 +238,8 @@ async function send(type,payload={},recoveryOptions={}){
  const focused={id:document.activeElement?.id,action:document.activeElement?.dataset.action};
  setBusy(true);
  try{
-  const result=await call({operation:'command',session,command:{type,payload},id:crypto.randomUUID(),expectedRevision:projection.revision});
+  const request={operation:'command',session,command:{type,payload},id:crypto.randomUUID(),expectedRevision:projection.revision};
+  const result=type==='education-skill'&&payload.names?await recordUniversitySubjects(request,payload.names):await call(request);
   if(token!==operationGeneration)return false;
   if(!result.ok)throw new Error(result.error.message);
   if(type!=='notes')trainingTagline=aslanTrainingTagline(result.log.at(-1),result.state,{previousState,command:{type,payload}});
@@ -556,7 +557,7 @@ function render(){
  const lastResult=drifterFallbackActive()||displayedEvent?.type==='acknowledge-final-benefit'||educationWarDraftModel(projection)||projection.state.stage==='background'||projection.state.stage==='career'&&selectedCareer?'':statisticsRollFeedbackView(displayedEvent,projection.state,{esc})??latestResultView(lastRollResult,{esc,crowType:careerResultCrowType(displayedEvent,lastRollResult,projection.state),tagline:trainingTagline??careerResultTagline(displayedEvent,lastRollResult,projection.state)});
 
  const nestedDraft=$('.education-nested-label select')?{kind:$('.education-nested-prompt').dataset.educationChoice,key:$('#workspace').dataset.educationStudyKey,value:$('.education-nested-label select').value}:null;
- const studyDraft=$('.education-result #education-subject')?{key:$('#workspace').dataset.educationStudyKey,subject:$('#education-subject').value,skill:$('#education-skill').value}:null;
+ const studyDraft=$('.education-result #education-subject')?{key:$('#workspace').dataset.educationStudyKey,subject:$('#education-subject').value,skill:$('#education-skill').value,second:$('#pilot-university-second')?.value}:null;
  const lawyerPanel=$('#prisoner-lawyer'),lawyerDraft=lawyerPanel?{id:lawyerPanel.dataset.lawyerId,fields:[...lawyerPanel.querySelectorAll('input,select,textarea')].map(input=>({id:input.id,value:input.value,checked:input.checked}))}:null;
  const lifePanel=$('#core-life-decision'),lifeDraft=lifePanel?{id:lifePanel.dataset.lifeEventId,fields:[...lifePanel.querySelectorAll('input,select,textarea')].map(input=>({id:input.id,value:input.value,checked:input.checked}))}:null;
  const accessOpen=$('#aslan-access-panel')?.open;
@@ -593,7 +594,7 @@ function render(){
  const activePrecareerDialog=document.getElementById('precareer-dialog');if(activePrecareerDialog&&!activePrecareerDialog.querySelector('.popup-character-sheet-button')){const access=document.createElement('button');access.type='button';access.className='popup-character-sheet-button';access.dataset.action='open-current-character-sheet-popup';access.textContent='Character sheet';access.setAttribute('aria-haspopup','dialog');access.setAttribute('aria-controls','final-character-sheet');activePrecareerDialog.prepend(access);}
  const studyKey=JSON.stringify([operationGeneration,session.seed,state.education,state.pendingChoice?.selectionId]);$('#workspace').dataset.educationStudyKey=studyKey;
  if(nestedDraft?.key===studyKey&&nestedDraft.kind===eventModel?.kind){const select=$('.education-nested-label select');if(select&&[...select.options].some(o=>o.value===nestedDraft.value)){select.value=nestedDraft.value;$('.education-nested-prompt [data-action]').disabled=false;}}
- if(educationModel?.study&&studyDraft?.key===studyKey&&[...$('#education-subject').options].some(o=>o.value===studyDraft.subject)){$('#education-subject').value=studyDraft.subject;syncEducationSubject(state,catalog,document,esc);$('#education-skill').value=studyDraft.skill;syncEducationStudyContinue(state,catalog,document);}
+ if(educationModel?.study&&studyDraft?.key===studyKey&&[...$('#education-subject').options].some(o=>o.value===studyDraft.subject)){$('#education-subject').value=studyDraft.subject;syncEducationSubject(state,catalog,document,esc);$('#education-skill').value=studyDraft.skill;$('#education-skill').dataset.secondDraft=studyDraft.second??'';syncEducationStudyContinue(state,catalog,document);}
  $('#workspace').dataset.revision=projection.revision;
  if(state.stage==='identity')mountCrowIntroduction(document);
  mountCareerTemplate(document,careerTemplateModel(state,catalog,selectedCareer),{esc,event:state.uiDrifterFallback?null:displayedEvent,resultStatus:state.uiDrifterFallback?null:lastRollResult?.status,showDice:!state.uiDrifterFallback&&(state.stage==='deceased'&&!!state.character.ironManDeath||!!careerResultTagline(displayedEvent,lastRollResult,state)||state.stage==='retirement'&&displayedEvent?.type==='benefit'),state,sessionKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id])});
@@ -722,7 +723,7 @@ document.addEventListener('click',async event=>{
  if(['roll-education-event-step','acknowledge-education-event','acknowledge-legacy-political-event'].includes(action)){if(event.detail>1||el.disabled)return;return send(action,{pendingId:el.dataset.pendingId});}
  if(['education-event','education-graduation'].includes(action)){if(event.detail>1||el.disabled)return;if(action==='education-event'){const education=projection.state.character.educations?.[projection.state.education];if(['core.academy-army','core.academy-marine','core.academy-navy'].includes(education?.id)&&education.entry?.success===true&&!education.entry.manual&&!education.completed)return send(action,{separateAcademyWarRolls:true,separateAcademyPoliticalRoll:true});}return send(action);}
  if(action==='acknowledge-education-result'){if(event.detail>1||el.disabled)return;return send(action);}
- if(action==='education-skill'){if((educationNestedChoiceModel(projection.state)||educationResultModel(projection,catalog)?.study)&&(event.detail>1||el.disabled))return;return send(action,{name:$('#education-hobby-skill')?.value??$('#education-skill').value});}
+ if(action==='education-skill'){if((educationNestedChoiceModel(projection.state)||educationResultModel(projection,catalog)?.study)&&(event.detail>1||el.disabled))return;const second=document.getElementById('pilot-university-second');return send(action,second?{names:[$('#education-skill').value,second.value]}:{name:$('#education-hobby-skill')?.value??$('#education-skill').value});}
  if(action==='education-service')return send(action,{name:el.dataset.name});
  if(action==='education-check'){if((educationNestedChoiceModel(projection.state)||educationResultModel(projection,catalog)?.study)&&(event.detail>1||el.disabled))return;return send(action,{name:$('#education-check-skill').value});}
  if(action==='education-commission'||action==='skip-education-commission')return send('preterm-commission',{attempt:action==='education-commission'});
@@ -973,11 +974,11 @@ const rerollHelp=document.querySelector('.statistics-summary .help');if(rerollHe
  const back=document.getElementById('pilot-back'),forward=document.getElementById('pilot-forward');
  back.disabled=busy||!screenReview.available();back.onclick=()=>screenReview.open(back);
  const accept=state.stage==='statistics'&&!form&&state.pool.length>0&&state.statisticsComplete!==false;
- const study=document.querySelector('.education-study-continue');if(study)study.disabled=busy||isEmbeddedScreenReview||!study.closest('dialog')?.open||!educationStudySelectionValid(state,catalog,document.getElementById('education-skill')?.value);
+ const study=document.querySelector('.education-study-continue');if(study){const first=document.getElementById('education-skill')?.value,second=document.getElementById('pilot-university-second');study.disabled=busy||isEmbeddedScreenReview||!study.closest('dialog')?.open||!educationStudySelectionValid(state,catalog,first)||!!second&&(!educationStudySelectionValid(state,catalog,second.value)||first.split(' (')[0]===second.value.split(' (')[0]);}
  const background=document.getElementById('background-form'),backgroundReady=background&&!background.querySelector('[type=submit]').disabled;
  const admissionDialog=document.getElementById('precareer-dialog');
  const admission=state.stage==='precareer'&&admissionDialog?.open&&admissionDialog.dataset.panel==='admission'?document.getElementById('precareer-admission-roll'):null;
- forward.disabled=busy||isEmbeddedScreenReview||(!form&&!accept&&!backgroundReady&&!admission&&!(study&&!study.disabled));forward.textContent=form?(state.stage==='identity'?'Forward · Begin':'Forward · Save settings'):accept?'Forward · Keep':background?'Forward · Accept skills':admission?'Forward · Roll':study?'Forward · Record skill':'Forward';
+ forward.disabled=busy||isEmbeddedScreenReview||(!form&&!accept&&!backgroundReady&&!admission&&!(study&&!study.disabled));forward.textContent=form?(state.stage==='identity'?'Forward · Begin':'Forward · Save settings'):accept?'Forward · Keep':background?'Forward · Accept skills':admission?'Forward · Roll':study?(document.getElementById('pilot-university-second')?'Forward · Confirm subjects':'Forward · Record skill'):'Forward';
  forward.onclick=()=>{if(busy)return;if(form)form.requestSubmit();else if(accept)send('accept-statistics');else if(backgroundReady)background.requestSubmit();else if(study&&!study.disabled&&study.closest('dialog')?.open)study.click();else if(admission&&admissionDialog.open&&admissionDialog.dataset.panel==='admission')admission.click();};
 }
 // Keep global Forward in sync with the existing background selection validation.

@@ -24,3 +24,22 @@ export async function call(request){
  }
  return result;
 }
+
+// Atomic UI publication over two existing stateless engine commands. The caller
+// keeps its original session until this helper returns the complete pair.
+export async function recordUniversitySubjects(request,names,invoke=call){
+ if(!Array.isArray(names)||names.length!==2||names.some(name=>typeof name!=='string'))return unsupported('Choose two University subjects.');
+ let current=await invoke({operation:'project',session:request.session});
+ if(!current.ok)return current;
+ if(request.expectedRevision!==undefined&&request.expectedRevision!==current.revision)return unsupported('This character changed. Reload before applying the command.');
+ current.session=request.session;
+ if(current.state.character.species!=='human'||current.state.character.educations?.[current.state.education]?.id!=='core.university'||current.state.pendingChoice?.selectionId!=='university-0')return unsupported('Both University subjects must be unrecorded before confirming this pair.');
+ for(let index=0;index<2;index++){
+  const result=await invoke({...request,operation:'command',session:current.session,expectedRevision:current.revision,id:request.id+':subject-'+index,command:{type:'education-skill',payload:{name:names[index]}}});
+  if(!result.ok)return result;
+  const ready=index===0?result.state.stage==='education-skill'&&result.state.pendingChoice?.selectionId==='university-1':result.state.stage==='education-event';
+  if(!ready)return unsupported('These subjects require source adjudication outside this pilot. Neither subject choice was saved.');
+  current=result;
+ }
+ return current;
+}
