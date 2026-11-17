@@ -3,8 +3,15 @@
 .pilot-psi-controls>*{flex:1 1 260px;min-width:0;}
 .screen-review-entry{display:none;}
 
-body[data-stage="identity"] .layout{align-items:stretch;}
-body[data-stage="identity"] #sheet{align-self:start;}
+/* Match the two existing columns; stacked/mobile records keep natural height. */
+@media screen and (min-width:1101px){
+ body[data-stage] .layout{align-items:stretch;}
+ body .layout>#sheet{align-self:stretch;position:static;}
+ body .precareer-layout:has(>#precareer-dialog:not(:modal)) #precareer-rail{grid-row:1;align-self:stretch;display:flex;flex-direction:column;}
+ body .precareer-layout #precareer-overview{flex:1;}
+ body #background-rail{align-self:stretch;display:flex;flex-direction:column;}
+ body #background-selection{flex:1;}
+}
 /* Screen navigation shares the existing central file toolbar. */
 body #pilot-toolbar{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));align-items:stretch;gap:10px;grid-auto-rows:auto;}
 body #pilot-toolbar>:is(#pilot-back,#pilot-forward){width:100%;height:auto;min-width:0;white-space:normal;}
@@ -27,14 +34,13 @@ body #precareer-information :is(p,li){font-size:16px;}
 .pilot-message-stack{min-width:0;width:100%;}
 .pilot-message-region{display:grid;align-items:start;min-height:104px;}
 .pilot-message-region>blockquote{grid-area:1/1;align-self:start;min-width:0;}
-body #workspace .crow-speaking-panel{display:grid;grid-template-columns:128px minmax(0,1fr);align-items:start;gap:14px;--crow-border:#d4ad45;--crow-fill:#fff0bd;--crow-text:#241e0f;}
+body #workspace .crow-speaking-panel{display:grid;grid-template-columns:128px minmax(0,1fr);align-items:start;gap:14px;--crow-border:#609db3;--crow-fill:linear-gradient(rgb(255 211 75 / .08),rgb(255 211 75 / .08)),linear-gradient(135deg,#0d3042,#071e2d);--crow-text:#f5f7fa;}
 body #workspace .crow-speaking-panel[data-tone="success"]{--crow-border:#73dfa1;--crow-fill:#07321f;--crow-text:#f5f7fa;}
 body #workspace .crow-speaking-panel:is([data-tone="failure"],[data-tone="warning"]){--crow-border:#ff6475;--crow-fill:#300a12;--crow-text:#fff1f3;}
-body #workspace .crow-speaking-panel :is(.pilot-message-region>blockquote,:scope>blockquote){position:relative;margin:0;padding:10px 14px;border:2px solid var(--crow-border);border-radius:18px;background:var(--crow-fill);color:var(--crow-text);height:auto;overflow:visible;}
-body #workspace .crow-speaking-panel blockquote::before{content:"";position:absolute;left:-9px;top:26px;width:14px;height:14px;background:var(--crow-fill);border-left:2px solid var(--crow-border);border-bottom:2px solid var(--crow-border);transform:rotate(45deg);}
+body #workspace .crow-speaking-panel :is(.pilot-message-region>blockquote,:scope>blockquote){position:relative;margin:0;padding:18px 22px;border:1px solid var(--crow-border);border-radius:12px;background:var(--crow-fill);color:var(--crow-text);height:auto;overflow:visible;}
 body #workspace .crow-speaking-panel blockquote :is(h4,p,strong,a,li){color:inherit;}
-body #workspace .crow-speaking-panel blockquote>strong{font-size:12px;}
-body #workspace .crow-speaking-panel .pilot-message-region p{font-size:17px;line-height:1.35;margin:6px 0;}
+body #workspace .crow-speaking-panel blockquote>strong{font-size:13px;color:#ffd34b;}
+body #workspace .crow-speaking-panel .pilot-message-region p{font-size:18px;line-height:1.5;margin:8px 0 0;}
 body #workspace .crow-speaking-panel .pilot-message-region h4{font-size:22px;line-height:1.2;margin:4px 0;}
 body #workspace .pilot-study-guidance{text-align:left;font-style:normal;}
 body #workspace .pilot-study-guidance .pilot-message-region>blockquote>p:first-of-type{font-style:italic;}
@@ -69,3 +75,8 @@ body .pilot-skill-list{font-size:14px;min-height:36px;padding:5px 10px;}
 body #workspace .education-result-equation-tail{flex:0 0 4em;width:4em;min-width:0;text-align:left;font-variant-numeric:tabular-nums;}
 body #precareer-admission-roll .education-pending-dice{color:inherit;}
 @media(max-width:650px){body #precareer-dialog .education-result{padding-top:52px;}}
+
+/* Reuse original compact outcome treatment and keep instruction text readable. */
+body #workspace .crow-speaking-panel:is([data-tone="success"],[data-tone="failure"]) .pilot-message-region>blockquote{border-radius:10px;padding:10px 14px;}
+@media screen and (min-width:1101px){body[data-stage="background"] #workspace>.crow-speaking-panel blockquote{padding:14px 18px;}}
+@media screen and (max-width:650px){body #workspace .crow-speaking-panel .pilot-message-region>blockquote{padding:14px;}}
