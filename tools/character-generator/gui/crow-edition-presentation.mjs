@@ -66,23 +66,34 @@ export function mountCrowEditionPresentation(document,{state,projection,catalog,
    const words=guide.querySelector('blockquote'),heading=study.querySelector('h4');heading.textContent='Choose your university skills';words.prepend(heading);words.append(study.querySelector(':scope > p'));
    const detailNodes=[...result.querySelectorAll(':scope > .education-result-details,:scope > .education-result-source')];
    messages(document,guide,detailNodes);
-   // Reuse validation and the original command input; a normal select combines
-   // subjects and specialties. Open custom subjects replace it in the same slot.
-   const input=study.querySelector('#education-skill'),subject=study.querySelector('#education-subject');
+   // Both choices stay local drafts until one confirmation. The unchanged
+   // engine validates their level-0/level-1 order on a provisional session.
+   const first=study.querySelector('#education-skill'),subject=study.querySelector('#education-subject'),pair=state.pendingChoice.selectionId==='university-0';
    const subjects=educationSubjects(state),choices=subjects.flatMap(o=>Object.hasOwn(catalog.skillSpecialities??{},o.name)?educationSpecialities(state,catalog,o.name):[o.name]);
-   const select=document.createElement('select');select.id='pilot-education-choice';select.setAttribute('aria-label','Skill and specialisation');
-   const add=(value,text)=>{const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);};
-   add('','Choose a skill');choices.forEach(name=>add(name,name));
-   for(const o of subjects)if(Object.hasOwn(catalog.skillSpecialities??{},o.name)&&!Array.isArray(o.specialities))add('__custom:'+o.name,o.name+' (custom specialisation…)');
-   const label=study.querySelector('#education-speciality-label');label.hidden=false;label.firstChild.textContent='';const selector=document.createElement('span');selector.className='education-study-selector';const icon=subject.closest('.education-study-selector')?.querySelector('svg');if(icon)selector.append(icon);selector.append(select);label.prepend(selector);subject.closest('label').hidden=true;
-   study.querySelector('#education-speciality-help').hidden=true;
-   const back=document.createElement('button');back.type='button';back.className='pilot-skill-list';back.textContent='Return to skill list';label.after(back);
-   const showCustom=custom=>{select.hidden=custom;input.hidden=!custom;back.hidden=!custom;};
-   const sync=()=>{subject.value=input.value.split(' (')[0];study.querySelector('[data-action="education-skill"]').disabled=!educationStudySelectionValid(state,catalog,input.value);};
-   select.addEventListener('change',()=>{if(select.value.startsWith('__custom:')){input.value=select.value.slice(9)+' (';showCustom(true);input.focus();}else input.value=select.value;sync();onPanelChange();});
-   back.onclick=()=>{input.value='';select.value='';showCustom(false);sync();onPanelChange();select.focus();};
-   input.addEventListener('input',()=>{sync();onPanelChange();});
-   if(choices.includes(input.value))select.value=input.value;showCustom(!!input.value&&!choices.includes(input.value));sync();
+   const firstLabel=study.querySelector('#education-speciality-label');firstLabel.hidden=false;firstLabel.firstChild.textContent='';
+   const firstIcon=subject.closest('.education-study-selector')?.querySelector('svg');
+   subject.closest('label').hidden=true;study.querySelector('#education-speciality-help').hidden=true;
+   const fields=[{input:first,label:firstLabel,icon:firstIcon,id:'pilot-education-choice'}];
+   if(pair){
+    const box=study.querySelector('[data-study-box="2"]'),icon=box.querySelector('svg');
+    for(const child of [...box.children])if(child.tagName!=='H5')child.remove();
+    const label=document.createElement('label'),input=document.createElement('input');input.id='pilot-university-second';input.value=first.dataset.secondDraft??'';input.maxLength=80;input.autocomplete='off';label.append(input);box.append(label);fields.push({input,label,icon,id:'pilot-education-choice-2'});
+   }
+   for(const {input,label,icon,id} of fields){
+    const select=document.createElement('select');select.id=id;select.setAttribute('aria-label',id.endsWith('-2')?'Level 1 skill and specialisation':'Level '+state.pendingChoice.value+' skill and specialisation');
+    const add=(value,text)=>{const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);};
+    add('','Choose a skill');choices.forEach(name=>add(name,name));
+    for(const o of subjects)if(Object.hasOwn(catalog.skillSpecialities??{},o.name)&&!Array.isArray(o.specialities))add('__custom:'+o.name,o.name+' (custom specialisation…)');
+    const selector=document.createElement('span');selector.className='education-study-selector';if(icon)selector.append(icon);selector.append(select);label.prepend(selector);
+    const back=document.createElement('button');back.type='button';back.className='pilot-skill-list';back.textContent='Return to skill list';label.after(back);
+    const showCustom=custom=>{selector.hidden=custom;input.hidden=!custom;back.hidden=!custom;};
+    const sync=()=>{subject.value=first.value.split(' (')[0];onPanelChange();};
+    select.addEventListener('change',()=>{if(select.value.startsWith('__custom:')){input.value=select.value.slice(9)+' (';showCustom(true);input.focus();}else input.value=select.value;sync();});
+    back.onclick=()=>{input.value='';select.value='';showCustom(false);sync();select.focus();};
+    input.addEventListener('input',sync);
+    if(choices.includes(input.value))select.value=input.value;showCustom(!!input.value&&!choices.includes(input.value));
+   }
+   study.querySelector('[data-action="education-skill"]').textContent=pair?'Confirm both subjects':'Record remaining subject';
    workspace.querySelector('.precareer-information-rows')?.remove();
    const title=document.getElementById('step-title');if(title)title.hidden=true;
   }else if(!result.querySelector('.pilot-admission-boundary')){

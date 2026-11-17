@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {call} from '../gui/crow-edition-client.mjs';
+import {call,recordUniversitySubjects} from '../gui/crow-edition-client.mjs';
 globalThis.location={search:''};
 
 test('Crow characteristics preserve recorded dice, lock acceptance, and retain logged GM exceptions',async()=>{
@@ -54,6 +54,23 @@ test('Crow background and University admission preserve the one-attempt rule on 
   const replay=await call({operation:'project',session:r.session});assert.equal(replay.ok,true);assert.deepEqual(replay.state,r.state);
   if(r.state.stage==='education-skill'){
    assert.equal(r.state.pendingChoice.value,0);
+   const original=structuredClone(r.session),request={session:r.session,id:'pair',expectedRevision:r.revision};
+   assert.equal((await recordUniversitySubjects({...request,expectedRevision:r.revision-1},['Science (physics)','Animals (training)'])).ok,false);
+   assert.equal((await recordUniversitySubjects(request,['Science (physics)','Animals (riding)'])).ok,false);
+   assert.equal((await recordUniversitySubjects(request,['Science (physics)','Science (biology)'])).ok,false);
+   let commands=0;
+   const interrupted=await recordUniversitySubjects(request,['Science (xenobotany)','Animals (training)'],async q=>{if(q.operation==='command'&&++commands===2)return {ok:false,error:{message:'Simulated second-command failure'}};return call(q);});
+   assert.equal(interrupted.ok,false);assert.deepEqual(r.session,original);
+   let attempted=0;
+   const diverted=await recordUniversitySubjects(request,['Science (xenobotany)','Animals (training)'],async q=>{const result=await call(q);if(q.operation==='command'){attempted++;result.state.stage='book-step';}return result;});
+   assert.equal(diverted.ok,false);assert.equal(attempted,1);assert.deepEqual(r.session,original);
+   const pair=await recordUniversitySubjects(request,['Science (xenobotany)','Animals (training)']);
+   assert.equal(pair.ok,true);assert.equal(pair.session.events.length,original.events.length+2);
+   assert.deepEqual(pair.session.events.slice(0,-2),original.events);
+   assert.deepEqual(pair.session.events.slice(-2).map(e=>e.command.payload.name),['Science (xenobotany)','Animals (training)']);
+   assert.equal(pair.state.character.skills.Science,0);assert.equal(pair.state.character.skills['Animals (training)'],1);
+   assert.deepEqual(r.session,original);
+
    assert.equal((await send('education-skill',{name:'Animals (riding)'})).ok,false);
    assert.equal((await send('education-skill',{name:'Science (xenobotany)'})).ok,true);
    assert.equal(r.state.character.skills.Science,0);

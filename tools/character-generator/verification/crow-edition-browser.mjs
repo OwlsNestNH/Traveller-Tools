@@ -44,6 +44,21 @@ for(const mode of ['', '?api=local'])for(const width of [1440,390,320]){
   const reduced=await b.newPage({reducedMotion:'reduce'});await reduced.goto(base+'crow-edition.html'+mode);await reduced.evaluate(({key,fixture})=>localStorage.setItem(key,JSON.stringify(fixture.before)),{key,fixture});await reduced.reload();
   await reduced.locator('[data-action=precareer][data-id="core.university"]').click();await reduced.locator('#precareer-admission-roll').click();await reduced.locator('[data-phase=accepted]').waitFor({state:'attached'});assert.equal(await reduced.locator('[data-recorded-dice]').getAttribute('data-recorded-dice'),fixture.dice.join(','));await reduced.locator('.pilot-study-guidance').waitFor();await reduced.close();
  }
+ if(width===1440&&mode){
+  const pairPage=await b.newPage();await pairPage.goto(base+'crow-edition.html'+mode);
+  await pairPage.evaluate(({key,fixture})=>localStorage.setItem(key,JSON.stringify(fixture.after)),{key,fixture});await pairPage.reload();
+  const draft=await pairPage.evaluate(k=>localStorage.getItem(k),key);
+  const fillPair=async()=>{await pairPage.locator('#pilot-education-choice-2').selectOption('Animals (training)');await pairPage.locator('#pilot-education-choice').selectOption('__custom:Science');await pairPage.locator('#education-skill').fill('Science (physics)');};await fillPair();
+  let requests=0;
+  await pairPage.route('**/api/v1',async route=>{const q=route.request().postDataJSON();if(q.operation==='command'&&q.command?.type==='education-skill'&&++requests===2)return route.fulfill({json:{ok:false,error:{message:'Simulated second subject interruption'}}});return route.continue();});
+  await pairPage.locator('.education-study-continue').click();await pairPage.locator('#crow-error-detail').waitFor();assert.equal(await pairPage.locator('#crow-error-detail').textContent(),'Simulated second subject interruption');await pairPage.locator('#crow-error-close').click();
+  assert.equal(await pairPage.evaluate(k=>localStorage.getItem(k),key),draft);assert.equal(await pairPage.locator('#pilot-education-choice-2').inputValue(),'Animals (training)');
+  await pairPage.unrouteAll();let release;const held=new Promise(resolve=>{release=resolve;});let reached;const secondReached=new Promise(resolve=>{reached=resolve;});requests=0;
+  await pairPage.route('**/api/v1',async route=>{const q=route.request().postDataJSON();if(q.operation==='command'&&q.command?.type==='education-skill'&&++requests===2){reached();await held;return route.abort().catch(()=>{});}return route.continue();});
+  await pairPage.locator('.education-study-continue').click();await secondReached;assert.equal(await pairPage.evaluate(k=>localStorage.getItem(k),key),draft);
+  const reload=pairPage.reload();release();await reload;await pairPage.unrouteAll();await pairPage.locator('#pilot-education-choice-2').waitFor();assert.equal(await pairPage.evaluate(k=>localStorage.getItem(k),key),draft);
+  await fillPair();await pairPage.locator('.education-study-continue').click();await pairPage.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).events.filter(e=>e.command.type==='education-skill').length===2,key);await pairPage.close();
+ }
  await p.evaluate(({key,fixture})=>{localStorage.setItem(key,JSON.stringify(fixture.before));localStorage.setItem('traveller-character-generator.v1','ORIGINAL');},{key,fixture});await p.reload();await p.locator('[data-action=precareer][data-id="core.university"]').waitFor();
  assert.equal(await p.locator('#precareer-standard .precareer-intro').textContent(),'Option to attempt a Pre-Career?');
  assert.equal(await p.locator('#precareer-standard .pilot-message-region blockquote').first().evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(255, 240, 189)');
@@ -73,11 +88,16 @@ for(const mode of ['', '?api=local'])for(const width of [1440,390,320]){
  assert.equal(await p.locator('#pilot-education-choice option[value="Animals (riding)"]').count(),0);
  assert.equal(await p.locator('#pilot-education-choice option[value="__custom:Animals"]').count(),0);
  await p.locator('#pilot-education-choice').selectOption('__custom:Science');assert.equal(await p.locator('#pilot-education-choice').isVisible(),false);
- await p.locator('.pilot-skill-list').click();assert.equal(await p.locator('#pilot-forward').isDisabled(),true);await p.locator('#pilot-education-choice').selectOption('__custom:Science');
- await p.locator('#education-skill').fill('Science (xenobotany)');await p.locator('#precareer-dismiss').click();await p.waitForFunction(()=>document.getElementById('pilot-forward').disabled);await p.locator('#precareer-resume').click();assert.equal(await p.locator('#pilot-forward').isEnabled(),true);await p.locator('#pilot-forward').click();
- await p.waitForFunction(()=>document.querySelector('#university-skill-title-2')?.parentElement.querySelector('#education-skill'));
- assert.equal(await p.locator('#pilot-education-choice option[value^="Science"]').count(),0);
- await p.reload();await p.locator('#pilot-education-choice').waitFor();await p.locator('#pilot-education-choice').selectOption('Animals (training)');await p.locator('.education-study-continue').evaluate(e=>{e.click();e.click()});
+ await p.locator('.pilot-skill-list').first().click();assert.equal(await p.locator('#pilot-forward').isDisabled(),true);
+ await p.locator('#pilot-education-choice-2').selectOption('Animals (training)');
+ assert.deepEqual(await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key),saved);
+ await p.locator('#pilot-education-choice').selectOption('Animals (veterinary)');assert.equal(await p.locator('#pilot-forward').isDisabled(),true);
+ await p.locator('#pilot-education-choice').selectOption('__custom:Science');await p.locator('#education-skill').fill('Science (xenobotany)');
+ await p.locator('#precareer-dismiss').click();await p.waitForFunction(()=>document.getElementById('pilot-forward').disabled);await p.locator('#precareer-resume').click();
+ assert.equal(await p.locator('#pilot-education-choice-2').inputValue(),'Animals (training)');assert.equal(await p.locator('#pilot-forward').isEnabled(),true);
+ assert.deepEqual(await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key),saved);
+ assert.equal(await p.locator('.education-study-continue').textContent(),'Confirm both subjects');
+ await p.locator('.education-study-continue').evaluate(e=>{e.click();e.click()});
  await p.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).events.filter(e=>e.command.type==='education-skill').length===2,key);
  saved=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);await p.reload();await p.waitForTimeout(300);
  assert.deepEqual(await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key),saved);
