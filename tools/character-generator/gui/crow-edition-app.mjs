@@ -291,12 +291,13 @@ function statCards(state,pool=false){
  }).join('')+'</div>';
 }
 function statisticsView(state){
- const controls=statisticsControlsView(state,gmControlsView(state,projection.log,{esc,options}),{esc});
- const introduction='<p class="statistics-introduction">Roll a set, then decide where each compatible score belongs. All rerolls and swaps stay in the action log.</p>';
- if(!state.pool.length)return introduction+statisticsCardsView(state,catalog,physicalDiceCards(state,{html:emptyStatisticsView(state,catalog,{esc}),esc}),{esc,infoButton:openingInfoButton})+'<div class="statistics-guidance"><strong>Start with your six characteristic rolls</strong><p>Roll the selected species dice, then review each score before continuing.</p></div>'+statisticsSummaryView(state,{esc})+'<div class="actions statistics-actions">'+button('Roll six characteristics','roll-statistics','statistics-primary')+'</div>'+controls;
- let html=introduction+statisticsCardsView(state,catalog,physicalDiceCards(state,{html:statCards(state,true),esc}),{esc,infoButton:openingInfoButton});
+ const controls=statisticsControlsView(state,gmControlsView(state,projection.log,{esc,options}),{esc})+'<div class="actions">'+(!state.pool.length?'<button type="button" id="pilot-edit-settings">Edit pre-roll settings</button>':'')+'<button type="button" id="pilot-assign-psi">Assign PSI (GM · logged)</button></div>';
+ const cardState={...state,config:{...state.config,extras:state.config.extras.filter(code=>code!=='PSI'||Object.hasOwn(state.character.stats,'PSI')),physicalDice:state.config.physicalDice&&!session.events.some(e=>e.command.type==='roll-statistics')}};
+ const introduction='<p class="statistics-introduction">Roll a set, then decide where each compatible score belongs. Placement stays in the action log. Regenerating scores requires a confirmed new run.</p>';
+ if(!state.pool.length)return introduction+statisticsCardsView(cardState,catalog,physicalDiceCards(cardState,{html:emptyStatisticsView(state,catalog,{esc}),esc}),{esc,infoButton:openingInfoButton})+'<div class="statistics-guidance"><strong>Start with your six characteristic rolls</strong><p>Roll the selected species dice, then review each score before continuing.</p></div>'+statisticsSummaryView(state,{esc})+'<div class="actions statistics-actions">'+button('Roll six characteristics','roll-statistics','statistics-primary')+'</div>'+controls;
+ let html=introduction+statisticsCardsView(cardState,catalog,physicalDiceCards(cardState,{html:statCards(state,true),esc}),{esc,infoButton:openingInfoButton});
  if(state.statisticsComplete!==false&&(state.config.allocation||state.config.gm))html+='<div class="statistics-swap"><div class="inline-fields"><label>Swap this score<select id="swap-a">'+state.pool.map((p,i)=>'<option value="'+i+'">'+p.key+' · raw '+p.base+'</option>').join('')+'</select></label><label>With this score<select id="swap-b">'+state.pool.map((p,i)=>'<option value="'+i+'" '+(i===1?'selected':'')+'>'+p.key+' · raw '+p.base+'</option>').join('')+'</select></label>'+button('Swap scores','swap-statistics','quiet')+'</div><p class="tiny">'+(state.character.species==='aezorgh'&&!state.config.aezorghTwoDice?'Standard Aezorgh: swap one-die characteristics within their group, and DEX/INT separately. GM mode permits exceptions.':state.config.aezorghTwoDice?'Swap any raw 2D6 totals. Halving and species bonuses belong to the destination characteristic.':'Swap any of the six raw scores; species modifiers remain with their characteristics.')+(state.pool.some(p=>p.finalOverride!==undefined)?' GM-set final scores stay with their characteristics; rerolling starts a new set.':'')+'</p></div>';
- return html+statisticsSummaryView(state,{esc})+'<div class="actions statistics-actions">'+button('Keep these characteristics','accept-statistics','statistics-primary','')+button(state.statisticsComplete===false?'Roll a computer set':'Reroll this set','roll-statistics','quiet',(!state.statisticsCanReroll&&state.statisticsComplete!==false?'disabled title="'+(state.config.minimumReroll?'The raw total meets the reroll threshold.':'Minimum-total rerolls are off.')+'"':''))+'</div>'+controls;
+ return html+statisticsSummaryView(state,{esc})+'<div class="actions statistics-actions">'+button('Keep these characteristics','accept-statistics','statistics-primary','')+button('Regenerate · new run','pilot-new-run','quiet')+'</div>'+controls;
 }
 function backgroundView(state){
  return backgroundSkillsView(state,backgroundDraft?.skills??[],catalog,{esc});
@@ -476,8 +477,8 @@ function stageView(state,insideEquipmentDialog=false){
  case 'injury-loss':return injuryLossView(state);
  case 'injury-treatment':return injuryTreatmentView(state);
  case 'aslan-family':case 'aslan-birth-order':case 'aslan-estate':case 'aslan-clan':case 'aslan-pride':case 'aslan-rite':return aslanOriginView(state,{esc,button,sourceLabel});
- case 'statistics':if(editingOpeningSettings)return setupView();return '<section class="notice"><h3>Opening complete · Beta 0.1 boundary</h3><p>Your identity and GM settings have been recorded by the existing rules engine. No dice have been rolled.</p><p>Characteristic rolls, background, University and careers are not included in this opening-screen pilot. Use Back to review accepted choices read-only. Earlier terms and accepted rolls remain read-only. Identity is locked; pre-roll settings can still be edited. GM assignment is an explicitly logged exception.</p><button type="button" id="pilot-edit-settings">Edit pre-roll settings</button><button type="button" id="pilot-assign-psi">Assign PSI (GM · logged)</button></section>';
- case 'background':return backgroundView(state);
+ case 'statistics':return editingOpeningSettings?setupView():statisticsView(state);
+ case 'background':return '<section class="notice"><h3>Characteristics accepted · pilot boundary</h3><p>Your accepted characteristics and recorded rolls are read-only. Back reviews earlier screens without changing them. GM corrections remain explicitly logged exceptions. Background, University and careers are not included yet.</p></section>';
  case 'precareer':return preCareerView(state);
  case 'companion-admission':return companionAdmissionView(state);
  case 'companion-skill':return companionSkillView(state);
@@ -638,6 +639,7 @@ function readEffects(){
 document.addEventListener('click',async event=>{
  const el=event.target.closest('[data-action]');if(!el||busy)return;
  const action=el.dataset.action;
+ if(action==='pilot-new-run')return $('#new').click();
  if(action==='acknowledge-final-benefit')return send(action,{pendingId:el.dataset.pendingId});
  if(action==='psionic-training-info')return showPsionicTrainingAccess(document,el);
  if(action==='begin-psionic-training')return requestPsionicTraining();
@@ -931,7 +933,7 @@ document.addEventListener('click',event=>{
  const trigger=event.target.closest('[data-opening-help="species"]');
  if(!trigger)return;
  event.preventDefault();event.stopImmediatePropagation();
- document.dispatchEvent(new CustomEvent('character-information',{detail:{trigger,info:{title:'Species and society',paragraphs:['Human is the available species in Crow Edition Beta 0.1. More species can be added in later reviewed screens.','Species determines characteristic dice, modifiers and available paths. This pilot stops after opening setup; no characteristics are rolled yet.'],source:'Human generation: Core Rulebook Update 2022 p. 9.'}}}));
+ document.dispatchEvent(new CustomEvent('character-information',{detail:{trigger,info:{title:'Species and society',paragraphs:['Human is the available species in Crow Edition Beta 0.1. More species can be added in later reviewed screens.','Species determines characteristic dice, modifiers and available paths. This pilot includes opening setup and characteristic rolls, and stops after accepting characteristics.'],source:'Human generation: Core Rulebook Update 2022 p. 9.'}}}));
 },true);
 
 // Pilot presentation only. All accepted changes still pass through the existing API.
@@ -958,10 +960,16 @@ function syncPilotControls(){
  }
  const assign=document.getElementById('pilot-assign-psi');if(assign){assign.disabled=busy||isEmbeddedScreenReview||!statisticEditTarget(state,'PSI',false);assign.onclick=()=>statisticEditor.open('PSI',false,assign);}
  const edit=document.getElementById('pilot-edit-settings');if(edit){edit.disabled=busy||isEmbeddedScreenReview||!!state.pool.length;edit.onclick=()=>{editingOpeningSettings=true;render();};}
+const rerollHelp=document.querySelector('.statistics-summary .help');if(rerollHelp)rerollHelp.textContent='Regenerating characteristics starts a new run after confirmation. Recorded rolls are kept in this run.';
+ const fields=document.getElementById('gm-field');if(fields){for(const option of [...fields.options])if(!/^(pool\.[0-5]|stat\.(STR|DEX|END|INT|EDU|SOC|PSI|LCK|WLT|MOR|SAN|CHA))$/.test(option.value))option.remove();document.getElementById('gm-value-form').hidden=!fields.options.length;syncCorrectionField(state,$);}
+ for(const option of document.querySelectorAll('#gm-task option'))if(option.value!=='value')option.disabled=true;
+ for(const id of ['gm-iron-man','additional-characteristics']){const el=document.getElementById(id);if(el)(el.closest('label')??el).hidden=true;}
+ if(state.stage==='statistics'&&state.pool.length){const physical=document.getElementById('gm-physical-dice');if(physical&&session.events.some(e=>e.command.type==='roll-statistics'))physical.disabled=true;}
  const nav=document.getElementById('pilot-navigation');if(!nav)return;
  nav.hidden=isEmbeddedScreenReview;
  const back=document.getElementById('pilot-back'),forward=document.getElementById('pilot-forward');
  back.disabled=busy||!screenReview.available();back.onclick=()=>screenReview.open(back);
- forward.disabled=busy||!form;forward.textContent=form?(state.stage==='identity'?'Forward · Begin':'Forward · Save settings'):'Forward · not built yet';
- forward.onclick=()=>{if(!busy)document.getElementById('setup-form')?.requestSubmit();};
+ const accept=state.stage==='statistics'&&!form&&state.pool.length>0&&state.statisticsComplete!==false;
+ forward.disabled=busy||(!form&&!accept);forward.textContent=form?(state.stage==='identity'?'Forward · Begin':'Forward · Save settings'):accept?'Forward · Keep characteristics':'Forward';
+ forward.onclick=()=>{if(busy)return;if(form)form.requestSubmit();else if(accept)send('accept-statistics');};
 }

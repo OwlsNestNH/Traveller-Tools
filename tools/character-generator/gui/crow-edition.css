@@ -1,7 +1,12 @@
 /* Isolated pilot controls; original styling remains unchanged. */
-#pilot-navigation{display:flex;justify-content:space-between;gap:1rem;margin:1rem 24px;}
+#pilot-navigation{display:flex;justify-content:space-between;gap:1rem;width:min(1440px,calc(100% - 48px));margin:1rem auto;}
 #pilot-navigation button{max-width:48%;}
 .pilot-psi-controls{display:flex;flex-wrap:wrap;gap:1rem;align-items:start;border-top:1px solid #897635;padding-top:1rem;}
 .pilot-psi-controls>*{flex:1 1 260px;min-width:0;}
 .screen-review-entry{display:none;}
-@media(max-width:480px){#pilot-navigation{margin:1rem 14px;}}
+@media(max-width:760px){#pilot-navigation{width:calc(100% - 28px);}}
+
+#pilot-notice{margin:1rem auto;}
+body[data-stage="identity"] .layout{align-items:stretch;}
+body[data-stage="identity"] #sheet{align-self:start;}
+@media print{#pilot-navigation{display:none;}}
