@@ -34,7 +34,7 @@ try{
     await page.waitForFunction(({key,revision})=>JSON.parse(localStorage.getItem(key)).events.length===revision+1,{key,revision:before.revision});await ready(page);
     const after=await read(page);assert.equal(after.revision,before.revision+1);assert.equal(after.log.at(-1).rolls.length,fixture===betrayal?0:1);
     if(fixture===betrayal)assert.equal(after.state.stage,'borrowed-event-roll');
-    const text=await page.locator('#last-action-result').innerText();await page.reload();await ready(page);assert.equal((await read(page)).raw,after.raw);assert.equal(await page.locator('#last-action-result').innerText(),text);
+    const review=page.locator('#career-event-review'),resultSelector=await review.count()?'#career-event-review':'#last-action-result';assert.equal(resultSelector,fixture===random?'#career-event-review':'#last-action-result');if(resultSelector==='#career-event-review'){assert.equal(fixture,random,'Only the completed approved Agent mishap opens the review');assert.equal(await page.locator('#last-action-result').count(),0);assert.match(await review.innerText(),/Agent event 8/);}const text=await page.locator(resultSelector).innerText();await page.reload();await ready(page);assert.equal((await read(page)).raw,after.raw);assert.equal(await page.locator(resultSelector).innerText(),text);
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    }
   }finally{await context.close();}

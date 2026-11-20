@@ -62,7 +62,7 @@ export function mountScreenReview({document,getSession,isBusy,onNewCharacter,onF
    const cancel=workspace.querySelector('#cancel-character');
    if(cancel){let row=cancel.parentElement;const other=[...row.children].filter(n=>n!==cancel&&n!==entry);
     if(other.length){row=document.createElement('div');row.className='actions screen-review-footer';workspace.append(row);row.append(cancel);}
-    row.classList.add('screen-review-footer');if(entry.parentElement!==row)row.prepend(entry);return;
+    row.classList.add('screen-review-footer');if(entry.parentElement!==row)row.prepend(entry);if(workspace.querySelector('#career-event-review'))workspace.append(row);return;
    }
   }
   if(flow&&entry.parentElement!==flow)flow.append(entry);else if(flow&&flow.lastElementChild!==entry)flow.append(entry);
