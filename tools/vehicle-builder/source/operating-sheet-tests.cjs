@@ -1,0 +1,17 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const nodes=new Map(),node=()=>({children:[],dataset:{},style:{},classList:{toggle(){},add(){},remove(){}},addEventListener(){},showModal(){},close(){}});
+const context={console,structuredClone,setTimeout(){},document:{querySelector(s){if(!nodes.has(s))nodes.set(s,node());return nodes.get(s);},querySelectorAll(){return [];},addEventListener(){}},window:{},navigator:{}};
+vm.createContext(context);
+for(const f of ['data.js','engine.js','ui-model.js','option-help.js','audit-data.js','operating-sheet.js','app.js'])vm.runInContext(fs.readFileSync('dist/'+f,'utf8'),context,{filename:f});
+context.fixture=JSON.parse(fs.readFileSync('appendix-i-design.json','utf8'));
+vm.runInContext(`state=validateImport(fixture);result=F.calculate(state);globalThis.beforeState=JSON.stringify(state);globalThis.beforeResult=JSON.stringify(result);tab='record';recordView='operating';render();globalThis.html=$('#editor').innerHTML;`,context);
+for(const text of ['Autocannon (heavy)','Rocket Pod (medium)','100','Cr2,000','Cr8,000','Basic (+1)','Forward','Ventral','70 (77)','25 (32)','Transceiver Encryption','2.5 km','Tow Hitch × 20','Submarine Drive','autopilot','3 hours','loader(s) unassigned'])assert.ok(context.html.includes(text),'Missing '+text);
+vm.runInContext(`if(JSON.stringify(state)!==beforeState||JSON.stringify(result)!==beforeResult)throw Error('Operating render mutated design or calculations');recordView='construction';render();globalThis.construction=$('#editor').innerHTML;`,context);
+assert.match(context.construction,/Construction ledger/);assert.match(context.construction,/Complete saved specification/);assert.match(context.construction,/&quot;armourShift&quot;/);assert.match(context.construction,/Options!/);
+vm.runInContext(`state={...structuredClone(F.defaults),tl:14,name:'<script> & quoted',spaces:50,equipment:[{name:'Sensor System (improved)',quantity:1,rangeBoost:1,highFidelity:true,hardened:true,mast:true},{name:'Robot Manipulator Arm',quantity:3,armSize:6,strIncrease:1,dexIncrease:4}],weapons:[{weapon:'Machinegun (light)',quantity:2,mount:'Turret',facing:'Dorsal',remote:true,fireControl:'Basic',ammo:100,ammoType:'Standard',gunShield:3,autoloader:true,popup:true,modular:true}],description:'Keep <all> & notes'};result=F.calculate(state);recordView='operating';render();globalThis.custom=$('#editor').innerHTML;`,context);
+for(const text of ['&lt;script&gt; &amp; quoted','DM +2','50 km','High fidelity','Hardened','Sensor mast','STR 12','DEX 12','Reserve ammunition','100 Standard rounds','Linked: +1/die','Autoloader','Pop-up','Modular','Gun shield 3','Keep &lt;all&gt; &amp; notes'])assert.ok(context.custom.includes(text),'Missing custom operating information: '+text);
+assert.ok(!context.custom.includes('<script>'));
+console.log('Operating sheet retains dense-build systems, armour, magazine costs, warnings, auxiliary drive, custom sensors/manipulators, fittings, reserves and escaped notes. Full specification remains separate; design and calculations unchanged.');
+
+vm.runInContext(`state={...structuredClone(F.defaults),type:'Submersible',features:[],depth:2};recordView='operating';render();globalThis.depthHtml=$('#editor').innerHTML;`,context);assert.match(context.depthHtml,/1,200 \/ 3,600 m/);
+vm.runInContext(`state=validateImport(fixture);recordView='operating';render();globalThis.auxHtml=$('#editor').innerHTML;`,context);assert.match(context.auxHtml,/safe\/crush depth 300 \/ 900 m/);
