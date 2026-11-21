@@ -1,0 +1,21 @@
+name: Pages rebuild recovery checks
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - '.github/workflows/pages-rebuild.yml'
+      - '.github/workflows/pages-rebuild-checks.yml'
+      - 'tests/pages-rebuild-recovery.py'
+permissions:
+  contents: read
+jobs:
+  recovery-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Test guards and receipt verification without network access
+        run: python3 tests/pages-rebuild-recovery.py
